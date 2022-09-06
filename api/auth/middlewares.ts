@@ -1,0 +1,19 @@
+import { Validall } from "@pestras/validall";
+import { Request, Response, NextFunction } from "express";
+import { HttpError } from "../../misc/errors";
+import { HttpCode } from "../../misc/http-codes";
+import validators from "./validators";
+
+export default {
+
+  validate(schema: validators) {
+    const validator = Validall.Get(schema);
+
+    return (req: Request, res: Response, next: NextFunction) => {
+      if (validator.validate(req.body))
+        next();
+
+      next(new HttpError(HttpCode.BAD_REQUEST, validator.error.message));
+    }
+  }
+};
