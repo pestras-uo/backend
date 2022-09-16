@@ -1,8 +1,8 @@
-import { User } from "../models/user/doc";
+import { UserDetails } from "../models/auth/user/interface";
 import { TokenData } from "./token";
 
 export interface ResLocals {
-  user: User;
+  user: UserDetails;
   token: string;
   tokenData: TokenData;
 }

@@ -1,20 +1,20 @@
 import config from '../../config';
 import { NextFunction, Request, Response } from 'express';
 import authModel from '../../models/auth/index';
-import usersModel from '../../models/user/index';
-import organziationsModel from '../../models/organization';
+import usersModel from '../../models/auth/user/index';
+import organziationsModel from '../../models/core/organization';
 import { sign } from 'jsonwebtoken';
 import { TokenData, TokenType } from '../../auth/token';
 import { HttpCode } from '../../misc/http-codes';
-import { User, UserProfile } from '../../models/user/doc';
-import { Auth } from '../../models/auth/doc';
+import { User, UserProfile } from '../../models/auth/user/interface';
+import { Auth } from '../../models/auth/auth/interface';
 import { ObjectId } from 'mongodb';
 import crypt from '../../auth/crypt';
 import pubSub from '../../misc/pub-sub';
 import { HttpError } from '../../misc/errors';
 import { LoginBody, ResendActiviationEmailBody, ResetPasswordBody, SignUpBody } from './interfaces';
 import { ResLocals } from '../../auth/interfaces';
-import { Organization } from '../../models/organization/doc';
+import { Organization } from '../../models/core/organization/interface';
 
 export default {
 

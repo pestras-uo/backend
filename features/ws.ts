@@ -2,7 +2,7 @@ import http from 'http';
 import { Server } from 'socket.io';
 import { TokenType, verifyToken } from '../auth/token';
 import pubsub, { PubSubEvent } from '../misc/pub-sub';
-import authModel from '../models/auth';
+import authModel from '../models/auth/auth';
 
 const ws = {
   init(httpServer: http.Server) {
@@ -13,7 +13,7 @@ const ws = {
       const token = socket.handshake.query.token;
 
       try {
-        socket.data._id = (await verifyToken(<string>token, TokenType.API)).user._id;
+        socket.data._id = (await verifyToken(<string>token, TokenType.API)).user.ID;
         socket.data.token = token;
         next();
       } catch (error: any) {
@@ -24,7 +24,7 @@ const ws = {
     io.on("connection", async socket => {
       console.log("socket connected:", socket.id);
       
-      await authModel.addSocket(socket.data.userId, socket.data.token, socket.id);
+      await authModel.setSocket(socket.data.userId, socket.id);
       pubsub.emit('ws.connected', { data: socket.id });
 
       socket.on('disconnect', async () => {
@@ -32,11 +32,11 @@ const ws = {
 
         socket.offAny();
 
-        await authModel.removeSocket(socket.data.userId, socket.data.token);
+        await authModel.removeSocket(socket.data.userId);
         pubsub.emit('ws.disconnected', { data: socket.id });
       });
 
-      socket.onAny((name: string, e: any, groups?: string[]) => {
+      socket.onAny((name: string, e: any, groups?: number[]) => {
         pubsub.emit(`ws.${name}`, { data: e , socket: socket.id , groups });
       });
     });
@@ -47,7 +47,7 @@ const ws = {
       if (!e.groups || e.groups.length === 0)
         io.emit(e.name!.slice(8), e.data);
       else
-        io.to(e.groups).emit(e.name!.slice(8), e.data);
+        io.to(e.groups.map(g => `${g}`)).emit(e.name!.slice(8), e.data);
     }
   }
 }

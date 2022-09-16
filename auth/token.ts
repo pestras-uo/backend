@@ -1,12 +1,11 @@
 import config from '../config';
 import { verify } from 'jsonwebtoken';
 
-import usersModel from '../models/user';
-import authModel from '../models/auth';
+import usersModel from '../models/auth/user';
+import authModel from '../models/auth/auth';
 import { HttpError } from '../misc/errors';
 import { HttpCode } from '../misc/http-codes';
-import { ObjectId } from 'mongodb';
-import { User } from '../models/user/doc';
+import { User } from '../models/auth/user/interface';
 
 export enum TokenType {
   API,
@@ -16,17 +15,17 @@ export enum TokenType {
 }
 
 export interface TokenData<T = any> {
-  _id: string;
+  id: number;
   type: TokenType;
   date: number;
   remember?: boolean;
+  duration?: number;
   payload?: T;
 }
 
 export async function verifyToken(token: string, type: TokenType) {
   let tokenData: TokenData;
-  let userId: ObjectId;
-  let user: User | null;
+  let userId: number;
 
   if (!token)
     throw new HttpError(HttpCode.TOKEN_REQUIRED, "unauthorized");
@@ -37,18 +36,16 @@ export async function verifyToken(token: string, type: TokenType) {
     throw new HttpError(HttpCode.INVALID_TOKEN, "invalidToken");
   }
 
-  if (!tokenData._id)
+  if (!tokenData.id)
     throw new HttpError(HttpCode.INVALID_TOKEN, "invalidTokenData");
 
+  userId = tokenData.id;
+
+  // confirm token has the matched type
   if (tokenData.type !== type)
     throw new HttpError(HttpCode.INVALID_TOKEN, "invalidTokenType");
 
-  try {
-    userId = new ObjectId(tokenData._id);
-  } catch (error: any) {
-    throw new HttpError(HttpCode.INVALID_TOKEN, "invalidTokenId");
-  }
-
+  // Check token expire date
   if (tokenData.type === TokenType.API) {
     if (!(await authModel.hasSession(userId, token)))
       throw new HttpError(HttpCode.INVALID_TOKEN, "outDatedToken");
@@ -65,7 +62,7 @@ export async function verifyToken(token: string, type: TokenType) {
     }
 
     if (expired) {
-      await authModel.removeSession(userId, token);
+      await authModel.endSession(userId);
       throw new HttpError(HttpCode.INVALID_TOKEN, "tokenExpired");
     }
 
@@ -78,10 +75,11 @@ export async function verifyToken(token: string, type: TokenType) {
       throw new HttpError(HttpCode.INVALID_TOKEN, "tokenExpired");
 
   } else if (tokenData.type === TokenType.SHARE) {
-    // TODO
+    if (tokenData.duration && Date.now() - tokenData.date > tokenData.duration)
+      throw new HttpError(HttpCode.INVALID_TOKEN, "tokenExpired");
   }
 
-  user = await usersModel.get(userId, { active: 1, email: 1, roles: 1, groups: 1, username: 1, organization: 1 });
+  const user = await usersModel.get(userId);
 
   if (!user)
     throw new HttpError(HttpCode.UNAUTHORIZED, "userNotFound");

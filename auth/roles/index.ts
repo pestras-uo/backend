@@ -1,12 +1,14 @@
 import { Action } from "./actions";
 
-export const RolesList = ["root", "admin", "viewer"] as const;
-export type Role = typeof RolesList[number];
+const RolesMap = new Map<number, Action[]>();
 
-const RolesMap = new Map<typeof RolesList[number], (Action | Role)[]>();
+// root
+RolesMap.set(0, ["*"]);
+// admin
+RolesMap.set(1, ["*"]);
+// viewer
+RolesMap.set(2, ["users.get.one"]);
 
-RolesMap.set("root", ["*"]);
-RolesMap.set("admin", ["*"]);
-RolesMap.set("viewer", ["users.get.one"]);
+const RolesList = Array.from(RolesMap.keys());
 
-export { RolesMap };
+export { RolesMap, RolesList };

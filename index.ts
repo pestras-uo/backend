@@ -13,10 +13,9 @@ import { HttpError } from "./misc/errors";
 import { HttpCode } from "./misc/http-codes";
 
 // features
-import mongo from './features/db';
+import oracle from './db/oracle';
 import ws from './features/ws';
 import sse from './features/sse';
-import email from './features/email';
 
 // import apis
 import api from "./api";
@@ -27,8 +26,7 @@ import api from "./api";
 
 
   ws.init(server);
-  await mongo.connect();
-  email();
+  await oracle.connect();
 
   app.use(morgan('combined'));
   app.use(cors());

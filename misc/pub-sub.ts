@@ -3,31 +3,25 @@ import EventEmitter from 'eventemitter2';
 const eventEmitter = new EventEmitter({
   // set this to `true` to use wildcards
   wildcard: true,
-
   // the delimiter used to segment namespaces
   delimiter: '.', 
-
   // set this to `true` if you want to emit the newListener event
-  newListener: false, 
-
+  newListener: false,
   // set this to `true` if you want to emit the removeListener event
-  removeListener: false, 
-
+  removeListener: false,
   // the maximum amount of listeners that can be assigned to an event
   maxListeners: 10000,
-
   // show event name in memory leak message when more than maximum amount of listeners is assigned
   verboseMemoryLeak: true,
-
   // disable throwing uncaughtException if an error event is emitted and it has no listeners
   ignoreErrors: false
 });
 
 export interface PubSubEvent<T = any> {
   name?: string;
-  toId?: string;
+  toId?: number;
   socket?: string;
-  groups?: string[];
+  groups?: number[];
   data?: T;
 }
 
@@ -57,11 +51,11 @@ export default {
     eventEmitter.off(namespace, listener);
   },
 
-  inGroups(e: PubSubEvent, groups: string[]) {
+  inGroups(e: PubSubEvent, groups: number[]) {
     if (!e.groups)
       return false;
 
-    if (e.groups.includes("*") || groups.includes("*"))
+    if (e.groups.includes(-1))
       return true;
 
     for (const group of e.groups)

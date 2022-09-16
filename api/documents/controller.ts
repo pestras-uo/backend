@@ -3,8 +3,8 @@ import { ObjectId } from "mongodb";
 import { HttpError } from "../../misc/errors";
 import { HttpCode } from "../../misc/http-codes";
 import { CreateDocumentBody } from "./interfaces";
-import documentsModel from '../../models/document';
-import Document from "../../models/document/doc";
+import documentsModel from '../../models/misc/document';
+import Document from "../../models/misc/document/interface";
 import pubSub from "../../misc/pub-sub";
 
 export default {

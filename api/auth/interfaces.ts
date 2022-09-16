@@ -1,4 +1,4 @@
-import { UserTitle } from "../../models/user/doc";
+import { UserTitle } from "../../models/auth/user/interface";
 
 export interface LoginBody {
   usernameOrEmail: string;

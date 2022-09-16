@@ -4,7 +4,7 @@ import middlewares from './middlewares';
 import usersMiddleWares from '../../middlewares/users';
 import auth from '../../middlewares/auth';
 import { TokenType } from '../../auth/token';
-import orgMiddleWares from '../../middlewares/organziations';
+import orgMiddleWares from '../../middlewares/orgunits';
 import AdminValidators from './validators';
 
 export default Router()
@@ -12,7 +12,7 @@ export default Router()
     "/create",
     middlewares.validate(AdminValidators.CREATE_USER),
     auth(TokenType.API, ["users.create"]),
-    usersMiddleWares.usernameOrEmailExists("body.username", "body.email"),
+    usersMiddleWares.usernameExists("body.username"),
     controller.createUser
   )
   .put(
@@ -23,22 +23,16 @@ export default Router()
     controller.updateRoles
   )
   .put(
-    '/change-organziation/:id',
+    '/change-orgunit/:id',
     middlewares.validate(AdminValidators.CHANGE_USER_ORG),
-    auth(TokenType.API, ["user.update.organziation"]),
+    auth(TokenType.API, ["users.update.orgunit"]),
     usersMiddleWares.exists("params.id"),
     orgMiddleWares.exists("body.organization"),
-    controller.updateOrganization
+    controller.updateOrgunit
   )
   .put(
-    '/activate/:id',
+    '/activate/:id/:state',
     auth(TokenType.API, ["users.update.active"], "id"),
     usersMiddleWares.exists("params.id"),
     controller.activateUser
   )
-  .put(
-    '/deactivate/:id',
-    auth(TokenType.API, ["users.update.active"], "id"),
-    usersMiddleWares.exists("params.id"),
-    controller.activateUser
-  );

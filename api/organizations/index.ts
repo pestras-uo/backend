@@ -4,7 +4,7 @@ import auth from '../../middlewares/auth';
 import controller from './controller';
 import middlewares from './middlewares';
 import OrgValidators from './validators';
-import orgsMiddlewares from '../../middlewares/organziations';
+import orgsMiddlewares from '../../middlewares/orgunits';
 
 export default Router()
   .get(

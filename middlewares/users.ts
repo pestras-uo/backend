@@ -2,36 +2,18 @@ import { NextFunction, Request, Response } from "express";
 import { HttpError } from "../misc/errors";
 import { HttpCode } from "../misc/http-codes";
 import getValue from '../util/valueFromPath';
-import usersModel from '../models/user';
-import { ObjectId } from "mongodb";
+import usersModel from '../models/auth/user';
 
 export default {
   exists(path: string) {
     return async (req: Request, res: Response, next: NextFunction) => {
-      let id: ObjectId;
+      const id = +getValue(req, path);
 
-      try {
-        id = new ObjectId(getValue(req, path));
-      } catch (error) {
-        return next(new HttpError(HttpCode.BAD_REQUEST, "invalidUserId"));
-      }
+      if (!id)
+        return next(new HttpError(HttpCode.BAD_REQUEST, "invalidIdParam"));
 
-      if (await usersModel.exists(id))
-        return next(new HttpError(HttpCode.CONFLICT, "emailAlreadyExists"));
-
-      next();
-    }
-  },
-
-  emailExists(path: string) {
-    return async (req: Request, res: Response, next: NextFunction) => {
-      const email = getValue(req, path);
-
-      if (!email)
-        return next(new HttpError(HttpCode.BAD_REQUEST, "emailNotFound"));
-
-      if (await usersModel.emailExists(email))
-        return next(new HttpError(HttpCode.CONFLICT, "emailAlreadyExists"));
+      if (!(await usersModel.exists(id)))
+        return next(new HttpError(HttpCode.NOT_FOUND, "userNotFound"));
 
       next();
     }
@@ -50,24 +32,4 @@ export default {
       next();
     }
   },
-
-  usernameOrEmailExists(usernamePath: string, emailPath: string) {
-    return async (req: Request, res: Response, next: NextFunction) => {
-      const username = getValue(req, usernamePath);
-      const email = getValue(req, emailPath);
-
-      if (!username)
-        return next(new HttpError(HttpCode.BAD_REQUEST, "usernameNotFound"));
-
-      if (!email)
-        return next(new HttpError(HttpCode.BAD_REQUEST, "emailNotFound"));
-
-      const exists = await usersModel.usernameOremailExists(username, email)
-      
-      if (exists)
-        return next(new HttpError(HttpCode.CONFLICT, exists === 1 ? "usernameAlreadyExists" : "emailAlreadyExists"));
-
-      next();
-    }
-  }
 }

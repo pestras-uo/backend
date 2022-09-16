@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { ResLocals } from "../../auth/interfaces";
 import { ChangeEmailBody, ChangePasswordBody, ChangeUsernameBody, UpdateProfileBody } from "./interfaces";
-import usersModel from '../../models/user';
+import usersModel from '../../models/auth/user';
 import authModel from '../../models/auth';
 import pubSub from "../../misc/pub-sub";
 import { sign } from "jsonwebtoken";

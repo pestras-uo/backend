@@ -1,4 +1,4 @@
-import { UserProfile } from "../../models/user/doc";
+import { UserProfile } from "../../models/auth/user/interface";
 
 export interface ChangeUsernameBody {
   username: string

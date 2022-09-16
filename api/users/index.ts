@@ -3,7 +3,7 @@ import auth from '../../middlewares/auth';
 import controller from './controller';
 import middlewares from './middlewares';
 import usersMiddlewares from '../../middlewares/users';
-import orgMiddlewares from '../../middlewares/organziations';
+import orgMiddlewares from '../../middlewares/orgunits';
 import { TokenType } from '../../auth/token';
 import UserValidators from './validators';
 

@@ -4,7 +4,7 @@ import auth from "../middlewares/auth";
 import { HttpCode } from "../misc/http-codes";
 import pubSub from '../misc/pub-sub';
 
-const connected = new Map<string, Response<any, ResLocals>>();
+const connected = new Map<number, Response<any, ResLocals>>();
 
 function sse(req: Request, res: Response<any, ResLocals>) {
   const headers = {
@@ -15,11 +15,11 @@ function sse(req: Request, res: Response<any, ResLocals>) {
 
   res.writeHead(HttpCode.OK, headers);
 
-  connected.set(res.locals.user._id!.toHexString(), res);
+  connected.set(res.locals.user.ID, res);
 
   req.on('close', () => {
     console.log("sse connection closed:", res.locals.token);
-    connected.delete(res.locals.user._id!.toHexString());
+    connected.delete(res.locals.user.ID);
   });
 }
 
@@ -30,7 +30,7 @@ pubSub.on('sse.message', e => {
 
   } else if (e.groups?.length) {
     for (const res of connected.values())
-      if (pubSub.inGroups(e, res.locals.user.groups))
+      if (pubSub.inGroups(e, res.locals.user.GROUPS))
         res.json(e.data);
 
   } else {

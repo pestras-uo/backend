@@ -2,8 +2,8 @@ import { NextFunction, Request, Response } from "express";
 import { ObjectId } from "mongodb";
 import { HttpError } from "../../misc/errors";
 import { HttpCode } from "../../misc/http-codes";
-import orgsModel from '../../models/organization';
-import { Organization } from "../../models/organization/doc";
+import orgsModel from '../../models/core/organization';
+import { Organization } from "../../models/core/organization/interface";
 import { CreateOrganziationBody, UpdateOrganziationName, UpdateOrganziationTags } from "./interfaces";
 
 export default {

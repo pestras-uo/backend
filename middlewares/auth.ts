@@ -4,8 +4,7 @@ import { TokenType, verifyToken } from '../auth/token';
 import { Action } from "../auth/roles/actions";
 import RolesManager from "../auth/roles/manager";
 import { HttpError } from "../misc/errors";
-import { ObjectId } from "mongodb";
-import userModel from '../models/user';
+import userModel from '../models/auth/user';
 
 export default function (tokenType = TokenType.API, actions: Action[] = [], affectedIdParam?: string) {
   return async (req: Request, res: Response, next: NextFunction) => {
@@ -50,16 +49,10 @@ export default function (tokenType = TokenType.API, actions: Action[] = [], affe
 }
 
 async function getAffectedUser(req: Request, param: string) {
-  let id: ObjectId;
+  const id = +req.params[param];
 
-  if (!req.params[param])
+  if (!id)
     throw new HttpError(HttpCode.BAD_REQUEST, 'affectedUserIdParamNotFound');
-
-  try {
-    id = new ObjectId(req.params[param]);
-  } catch (error) {
-    throw new HttpError(HttpCode.BAD_REQUEST, 'invalidAffectedUserId');
-  }
 
   const user = await userModel.get(id);
 
