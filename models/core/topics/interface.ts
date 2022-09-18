@@ -1,6 +1,5 @@
 export interface Topic {
-  ID: number;
-  SERIAL: string;
+  ID: string;
 
   NAME_AR: string;
   NAME_EN: string;

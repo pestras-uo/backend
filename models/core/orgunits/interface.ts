@@ -1,6 +1,5 @@
-export interface Organization {
-  ID: number;
-  SERIAL: string;
+export interface Orgunit {
+  ID: string;
 
   NAME_AR: string; 
   NAME_EN: string;

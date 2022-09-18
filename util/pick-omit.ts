@@ -3,7 +3,7 @@ export function omit<T = any, U extends Object = any>(src: U, props: (keyof U)[]
 
   for (const prop in src)
     if (!props.includes(prop as keyof U))
-      output[prop] = src[prop];
+      (output as any)[prop] = src[prop];
 
   return output;
 }

@@ -4,7 +4,7 @@ import auth from "../middlewares/auth";
 import { HttpCode } from "../misc/http-codes";
 import pubSub from '../misc/pub-sub';
 
-const connected = new Map<number, Response<any, ResLocals>>();
+const connected = new Map<string, Response<any, ResLocals>>();
 
 function sse(req: Request, res: Response<any, ResLocals>) {
   const headers = {

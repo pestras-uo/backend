@@ -1,12 +1,12 @@
 export interface User {
-  ID: number;
-  ORGUNIT_ID: number;
+  ID: string;
+  ORGUNIT_ID: string;
 
   USERNAME: string;
   IS_ACTIVE: number;
 
   // document id
-  AVATAR?: number;
+  AVATAR?: string;
 
   FULLNAME: string;
   EMAIL?: string;
@@ -17,11 +17,11 @@ export interface User {
 }
 
 export interface UserDetails extends User {
-  GROUPS: number[];
+  GROUPS: string[];
   ROLES: number[];
 }
 
 export interface UserDetailsQueryResultItem extends User {
-  GROUP_ID: number;
+  GROUP_ID: string;
   ROLE_ID: number;
 }

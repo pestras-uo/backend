@@ -9,7 +9,7 @@ const TABLE_NAME = 'categories';
 
 export default {
 
-  async get(id: number) {
+  async get(id: string) {
     return (await oracle.exec<Category>(`
     
       SELECT *
@@ -38,7 +38,7 @@ export default {
     `, [name_ar, name_en])).rows?.[0].COUNT! > 0;
   },
 
-  async updateNameExists(id: number, name_ar: string, name_en: string) {
+  async updateNameExists(id: string, name_ar: string, name_en: string) {
     return (await oracle.exec<{ COUNT: number }>(`
     
       SELECT COUNT(*) as COUNT
@@ -58,14 +58,14 @@ export default {
       throw new HttpError(HttpCode.CONFLICT, "nameAlreadyExists");
 
     const siblings = !!parent ? [] : await getChildren(TABLE_NAME, parent!);
-    const serial = Serial.gen(parent, siblings);
+    const id = Serial.gen(parent, siblings);
 
     const result = await oracle.exec(`
     
-      INSERT INTO ${TABLE_NAME} (serial, name_ar, name_en)
+      INSERT INTO ${TABLE_NAME} (id, name_ar, name_en)
       VALUES (:a, :b, :d)
     
-    `, [serial, name_ar, name_en]);
+    `, [id, name_ar, name_en]);
 
     return getByRowId<Category>(TABLE_NAME, result.lastRowid!);
   },
@@ -75,7 +75,7 @@ export default {
 
   // update
   // ----------------------------------------------------------------------------
-  async update(id: number, name_ar: string, name_en: string) {
+  async update(id: string, name_ar: string, name_en: string) {
     if (await this.updateNameExists(id, name_ar, name_en))
       throw new HttpError(HttpCode.CONFLICT, "nameAlreadyExists");
 
@@ -97,7 +97,7 @@ export default {
 
   // delete methods
   // ----------------------------------------------------------------------------------------------------------------
-  async delete(id: number) {
+  async delete(id: string) {
     await oracle.exec(`
       DELETE FROM ${TABLE_NAME}
       WHERE id = :id

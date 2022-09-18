@@ -1,5 +1,5 @@
 export interface District {
-  ID: number;
+  ID: string;
 
   NAME_AR: string;
   NAME_EN: string;

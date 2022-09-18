@@ -1,9 +1,7 @@
 export interface Indicator {
-  ID: number;
-
-  SERIAL: string;
-  ORGUNIT_SERIAL: string;
-  TOPIC_SERIAL: string;
+  ID: string;
+  ORGUNIT_ID: string;
+  TOPIC_ID: string;
 
   NAME_AR: string;
   NAME_EN: string;
@@ -25,4 +23,18 @@ export interface Indicator {
 
   CREATE_DATE: Date;
   UPDATE_DATE?: Date;
+}
+
+export interface IndicatorDetails extends Indicator {
+  GROUPS: number[];
+  CATEGORIES: number[];
+}
+
+export interface IndicatorDetailsQueryResultItem extends Indicator {
+  GROUP_ID: number;
+  CATEGORY_ID: number;
+}
+
+export interface Arguments extends Indicator {
+  VARIABLE: string;
 }

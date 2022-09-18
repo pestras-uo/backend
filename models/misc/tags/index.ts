@@ -3,6 +3,7 @@ import oracle from "../../../db/oracle"
 import { HttpError } from "../../../misc/errors";
 import { HttpCode } from "../../../misc/http-codes";
 import { TagKey, TagValue } from "./interface";
+import { randomUUID } from 'crypto';
 
 const TAGS_KEYS_TABLE_NAME = 'tags_keys';
 const TAGS_VALUES_TABLE_NAME = 'tags_values';
@@ -30,7 +31,7 @@ export default {
     `)).rows || [];
   },
 
-  async getKey(id: number) {
+  async getKey(id: string) {
     return (await oracle.exec<TagKey>(`
     
       SELECT *
@@ -40,7 +41,7 @@ export default {
     `, [id])).rows?.[0] || null;
   },
 
-  async getValue(id: number) {
+  async getValue(id: string) {
     return (await oracle.exec<TagValue>(`
     
       SELECT *
@@ -52,7 +53,7 @@ export default {
 
 
 
-  
+
   // Util
   // -------------------------------------------------------------------------------
   async keysExists(name_ar: string, name_en: string) {
@@ -65,7 +66,7 @@ export default {
     `, [name_ar, name_en])).rows?.[0].COUNT! > 0;
   },
 
-  async valueExists(key_id: number, name_ar: string, name_en: string) {
+  async valueExists(key_id: string, name_ar: string, name_en: string) {
     return (await oracle.exec<{ COUNT: number }>(`
     
       SELECT COUNT(*)
@@ -75,7 +76,7 @@ export default {
     `, [name_ar, name_en, key_id])).rows?.[0].COUNT! > 0;
   },
 
-  async updateKeyExists(id: number, name_ar: string, name_en: string) {
+  async updateKeyExists(id: string, name_ar: string, name_en: string) {
     return (await oracle.exec<{ COUNT: number }>(`
     
       SELECT COUNT(*)
@@ -85,7 +86,7 @@ export default {
     `, [name_ar, name_en, id])).rows?.[0].COUNT! > 0;
   },
 
-  async updateValueExists(key_id: number, value_id: number, name_ar: string, name_en: string) {
+  async updateValueExists(key_id: string, value_id: string, name_ar: string, name_en: string) {
     return (await oracle.exec<{ COUNT: number }>(`
     
       SELECT COUNT(*)
@@ -97,43 +98,45 @@ export default {
 
 
 
-  
+
   // create
   // -------------------------------------------------------------------------------
   async createKey(name_ar: string, name_en: string) {
     if (await this.keysExists(name_ar, name_en))
       throw new HttpError(HttpCode.CONFLICT, "tagKeyAlreadyExists");
 
+    const id = randomUUID();
     const result = await oracle.exec(`
     
-      INSERT INTO ${TAGS_KEYS_TABLE_NAME} (name_ar, name_en)
-      VALUES(:a, :b)
+      INSERT INTO ${TAGS_KEYS_TABLE_NAME} (id, name_ar, name_en)
+      VALUES(:a, :b, :c)
     
-    `, [name_ar, name_en]);
+    `, [id, name_ar, name_en]);
 
     return getByRowId<TagKey>(TAGS_KEYS_TABLE_NAME, result.lastRowid!);
   },
 
-  async createValue(key_id: number, name_ar: string, name_en: string) {
+  async createValue(key_id: string, name_ar: string, name_en: string) {
     if (await this.valueExists(key_id, name_ar, name_en))
       throw new HttpError(HttpCode.CONFLICT, "tagValueAlreadyExists");
 
+    const id = randomUUID();
     const result = await oracle.exec(`
     
-      INSERT INTO ${TAGS_VALUES_TABLE_NAME} (taag_key_id, name_ar, name_en)
-      VALUES(:a, :b, :c)
+      INSERT INTO ${TAGS_VALUES_TABLE_NAME} (id, taag_key_id, name_ar, name_en)
+      VALUES(:a, :b, :c, :d)
     
-    `, [key_id, name_ar, name_en]);
+    `, [id, key_id, name_ar, name_en]);
 
     return getByRowId<TagKey>(TAGS_KEYS_TABLE_NAME, result.lastRowid!);
   },
 
 
 
-  
+
   // update
   // -------------------------------------------------------------------------------
-  async updateKeys(id: number, name_ar: string, name_en: string) {
+  async updateKeys(id: string, name_ar: string, name_en: string) {
     if (await this.updateKeyExists(id, name_ar, name_en))
       throw new HttpError(HttpCode.CONFLICT, "nameAlreadyExists");
 
@@ -150,7 +153,7 @@ export default {
     return date;
   },
 
-  async updateValues(key_id: number, value_id: number, name_ar: string, name_en: string) {
+  async updateValues(key_id: string, value_id: string, name_ar: string, name_en: string) {
     if (await this.updateValueExists(key_id, value_id, name_ar, name_en))
       throw new HttpError(HttpCode.CONFLICT, "nameAlreadyExists");
 
@@ -169,10 +172,10 @@ export default {
 
 
 
-  
+
   // update
   // -------------------------------------------------------------------------------
-  async deleteKey(id: number) {
+  async deleteKey(id: string) {
     await oracle.exec(`
       DELETE FROM ${TAGS_KEYS_TABLE_NAME}
       WHERE id = :id
@@ -181,7 +184,7 @@ export default {
     return true;
   },
 
-  async deleteValue(id: number) {
+  async deleteValue(id: string) {
     await oracle.exec(`
       DELETE FROM ${TAGS_VALUES_TABLE_NAME}
       WHERE id = :id

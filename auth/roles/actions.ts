@@ -4,15 +4,17 @@ export const Actions = [
   // Users
   "users.*",
   "users.get.*",
-  "users.get.many",
+  "users.get.all",
   "users.get.one",
   "users.get.inactive",
+  "users.get.by-orgunit",
   "users.create",
   "users.update.*",
   "users.update.orgunit",
   "users.update.username",
   "users.update.email",
   "users.update.password",
+  "users.update.groups",
   "users.update.roles",
   "users.update.active",
 

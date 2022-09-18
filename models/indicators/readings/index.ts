@@ -3,6 +3,7 @@ import oracle from "../../../db/oracle";
 import { HttpError } from "../../../misc/errors";
 import { HttpCode } from "../../../misc/http-codes";
 import { IndicatorReading, ReadingHistoryItem } from "./interface";
+import { randomUUID } from 'crypto';
 
 const TABLE = 'indicators_readings';
 
@@ -10,7 +11,7 @@ export default {
 
   // getters
   // --------------------------------------------------------------------------------------
-  async getByTopic(indicator_id: number, offset = 0, limit = 100) {
+  async getByIndicator(indicator_id: string, offset = 0, limit = 100) {
     return (await oracle.exec<IndicatorReading>(`
     
       SELECT *
@@ -22,7 +23,7 @@ export default {
     `, [indicator_id, offset, limit])).rows || []
   },
 
-  async get(id: number) {
+  async get(id: string) {
     return (await oracle.exec<IndicatorReading>(`
     
       SELECT *
@@ -37,14 +38,15 @@ export default {
   
   // Create
   // --------------------------------------------------------------------------------------
-  async create(ind_id: number, dis_id: number, value: number, date: Date, note_ar = "", note_en = "") {
+  async create(ind_id: string, dis_id: string, value: number, date: Date, note_ar = "", note_en = "") {
 
+    const id = randomUUID();
     const result = await oracle.exec(`
     
-      INSERT INTO ${TABLE} (indicator_id, district_id, value, note_ar, note_en, reading_date)
-      VALUES (:a, :b, :c, :d, :e, :f)
+      INSERT INTO ${TABLE} (id, indicator_id, district_id, value, note_ar, note_en, reading_date)
+      VALUES (:a, :b, :c, :d, :e, :f, :g)
     
-    `, [ind_id, dis_id, value, note_ar, note_en, date]);
+    `, [id, ind_id, dis_id, value, note_ar, note_en, date]);
 
     return getByRowId(TABLE, result.lastRowid!);
 
@@ -55,7 +57,7 @@ export default {
   
   // update value
   // --------------------------------------------------------------------------------------
-  async updateValue(id: number, value: number, reading_date: Date, note_ar = "", note_en = "") {
+  async updateValue(id: string, value: number, reading_date: Date, note_ar = "", note_en = "") {
     const reading = await this.get(id);
     const date = new Date();
 
@@ -90,7 +92,7 @@ export default {
   
   // approve
   // --------------------------------------------------------------------------------------
-  async approve(id: number, state = 1) {
+  async approve(id: string, state = 1) {
     const date = new Date();
 
     await oracle.exec(`
@@ -109,7 +111,7 @@ export default {
   
   // delete
   // --------------------------------------------------------------------------------------
-  async delete(id: number) {
+  async delete(id: string) {
     await oracle.exec(`
     
       DELETE FROM ${TABLE}
@@ -118,6 +120,21 @@ export default {
     `, [id]);
 
     return true;
+  },
+
+
+
+
+  // documents
+  // ----------------------------------------------------------------------------------------------------------------
+  async getDocuments(reading_id: string) {
+    return (await oracle.exec<Document>(`
+    
+      SELECT D.*
+      FROM DOCUMENTS D, READING_DOCUMENT RD
+      WHERE RD.READING_ID = :a AND D.ID = RD.DOCUMENT_ID
+    
+    `, [reading_id])).rows || [];
   }
 
 }

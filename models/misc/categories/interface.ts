@@ -1,6 +1,5 @@
 export interface Category {
-  ID: number;
-  SERIAL: string;
+  ID: string;
 
   NAME_AR: string;
   NAME_EN: string;

@@ -5,7 +5,6 @@ import usersModel from '../models/auth/user';
 import authModel from '../models/auth/auth';
 import { HttpError } from '../misc/errors';
 import { HttpCode } from '../misc/http-codes';
-import { User } from '../models/auth/user/interface';
 
 export enum TokenType {
   API,
@@ -15,7 +14,7 @@ export enum TokenType {
 }
 
 export interface TokenData<T = any> {
-  id: number;
+  id: string;
   type: TokenType;
   date: number;
   remember?: boolean;
@@ -25,7 +24,6 @@ export interface TokenData<T = any> {
 
 export async function verifyToken(token: string, type: TokenType) {
   let tokenData: TokenData;
-  let userId: number;
 
   if (!token)
     throw new HttpError(HttpCode.TOKEN_REQUIRED, "unauthorized");
@@ -39,7 +37,7 @@ export async function verifyToken(token: string, type: TokenType) {
   if (!tokenData.id)
     throw new HttpError(HttpCode.INVALID_TOKEN, "invalidTokenData");
 
-  userId = tokenData.id;
+  const userId = tokenData.id;
 
   // confirm token has the matched type
   if (tokenData.type !== type)

@@ -1,6 +1,6 @@
 export interface IndicatorReading {
-  ID: number;
-  DISTRICT_ID: number;
+  ID: string;
+  DISTRICT_ID: string;
 
   INDICATOR_ID: string;
 

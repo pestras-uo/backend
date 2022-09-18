@@ -1,18 +1,20 @@
-import { getByRowId } from "../..";
 import oracle from "../../../db/oracle";
 import { HttpError } from "../../../misc/errors";
 import { HttpCode } from "../../../misc/http-codes";
 import { Group } from "./interface";
+import { randomUUID } from 'crypto';
 
-const TABLE_NAME = 'groups';
+const TABLE = 'groups';
 
 export default {
 
-  async get(id: number) {
+  // getters
+  // ----------------------------------------------------------------------------------------------------------------
+  async get(id: string) {
     return (await oracle.exec<Group>(`
 
       SELECT *
-      FROM ${TABLE_NAME}
+      FROM ${TABLE}
       WHERE id = :id
 
     `, [id])).rows?.[0] || null;
@@ -22,45 +24,87 @@ export default {
     return (await oracle.exec<Group>(`
 
       SELECT * 
-      FROM ${TABLE_NAME}
+      FROM ${TABLE}
 
     `)).rows || [];
   },
 
+
+
+
+
+  // util
+  // ----------------------------------------------------------------------------------------------------------------
   async nameExists(name: string) {
-    return (await oracle.exec<{ count: number }>(`
+    return (await oracle.exec<{ COUNT: number }>(`
     
       SELECT COUNT(id) as count
-      FROM ${TABLE_NAME}
-      WHERE name = :name
+      FROM ${TABLE}
+      WHERE name = :a
     
-    `, [name])).rows?.[0].count! > 0;
+    `, [name])).rows?.[0].COUNT! > 0;
   },
 
-  async create(name: string) {
-    if (await this.nameExists(name))
+  async idExists(id: string) {
+    return (await oracle.exec<{ COUNT: number }>(`
+    
+      SELECT COUNT(*) as COUNT
+      FROM ${TABLE}
+      WHERE id = :a
+    
+    `, [id])).rows?.[0].COUNT! > 0;
+  },
+
+  async idsExists(ids: string[]) {
+    const cs_id = ids.reduce((str: string, id: string) => str ? `${str}, ${id}` : str, '');
+    return (await oracle.exec<{ COUNT: number }>(`
+    
+      SELECT COUNT(*) as COUNT
+      FROM ${TABLE}
+      WHERE id IN :a
+    
+    `, [cs_id])).rows?.[0].COUNT === ids.length;
+  },
+
+
+
+
+
+  // create
+  // ----------------------------------------------------------------------------------------------------------------
+  async create(NAME: string) {
+    if (await this.nameExists(NAME))
       throw new HttpError(HttpCode.CONFLICT, "nameAlreadyExists");
 
-    const result = await oracle.exec(`
+    const ID = randomUUID();
+
+    await oracle.exec(`
     
-      INSERT INTO ${TABLE_NAME} (name)
-      VALUES (:name)
+      INSERT INTO ${TABLE} (id, name)
+      VALUES (:a, :b)
 
-    `, [name]);
+    `, [ID, NAME]);
 
-    return getByRowId(TABLE_NAME, result.lastRowid!);
+    return { ID, NAME } as Group;
   },
 
-  async update(id: number, name: string) {
+
+
+
+
+  // update
+  // ----------------------------------------------------------------------------------------------------------------
+  async update(id: string, name: string) {
     if (await this.nameExists(name))
       throw new HttpError(HttpCode.CONFLICT, "nameAlreadyExists");
 
     await oracle.exec(`
     
-      UPDATE ${TABLE_NAME}
-      SET name = :name
+      UPDATE ${TABLE}
+      SET name = :a
+      WHERE id = :b
 
-    `, [name]);
+    `, [name, id]);
 
     return true;
   }

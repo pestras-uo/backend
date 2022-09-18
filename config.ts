@@ -29,8 +29,9 @@ const config = {
   frontEndUrl: process.env.FRONTEND_URL,
   sendGridApiKey: process.env.SEND_GRID_API_KEY,
 
-  // uplaod document config
-  maxUploadSize: +(process.env.MAX_UPLOAD_SIZE || 0) || (1024 * 1024)
+  // upload files config
+  maxDocumentUploadSize: +(process.env.MAX_UPLOAD_SIZE || 0) || (1024 * 1024),
+  maxAvatarUploadSize: +(process.env.MAX_UPLOAD_SIZE || 0) || 1024
 } as const;
 
 export default config;

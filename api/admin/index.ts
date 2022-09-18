@@ -23,6 +23,13 @@ export default Router()
     controller.updateRoles
   )
   .put(
+    '/update-groups/:id',
+    middlewares.validate(AdminValidators.UPDATE_USER_ROLES),
+    auth(TokenType.API, ["users.update.groups"], "id"),
+    usersMiddleWares.exists("params.id"),
+    controller.updateGroups
+  )
+  .put(
     '/change-orgunit/:id',
     middlewares.validate(AdminValidators.CHANGE_USER_ORG),
     auth(TokenType.API, ["users.update.orgunit"]),

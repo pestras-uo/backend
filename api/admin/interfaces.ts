@@ -1,5 +1,5 @@
 export interface CreateUserBody {
-  orgunit: number;
+  orgunit: string;
   username: string;
   password: string;
   roles: number[];
@@ -10,5 +10,9 @@ export interface UpdateRolesBody {
 }
 
 export interface ChangeOrgunit {
-  orgunit: number;
+  orgunit: string;
+}
+
+export interface UpdateGroupsBody {
+  groups: string[];
 }

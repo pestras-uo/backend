@@ -1,27 +1,21 @@
 export interface TagKey {
-  ID: number;
+  ID: string;
 
   NAME_AR: string;
-  NAME_EN: string;
-
-  CREATE_DATE: Date; 
-  UPDATE_DATE?: Date; 
+  NAME_EN: string; 
 }
 
 export interface TagValue {
-  ID: number;
-  TAG_ID: number;
+  ID: string;
+  TAG_ID: string;
 
   NAME_AR: string;
   NAME_EN: string;
-  
-  CREATE_DATE: Date; 
-  UPDATE_DATE?: Date; 
 }
 
 export interface Tag {
-  KEY_ID: number;
-  VALUE_ID: number;
+  KEY_ID: string;
+  VALUE_ID: string;
 
   KEY_AR: string;
   KEY_EN: string;

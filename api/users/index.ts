@@ -6,12 +6,13 @@ import usersMiddlewares from '../../middlewares/users';
 import orgMiddlewares from '../../middlewares/orgunits';
 import { TokenType } from '../../auth/token';
 import UserValidators from './validators';
+import { avatarUpload } from '../../middlewares/upload';
 
 export default Router()
   .get(
     '/', 
-    auth(TokenType.API, ["users.get.many"]), 
-    controller.getMany
+    auth(TokenType.API, ["users.get.all"]), 
+    controller.getAll
   )
   .get(
     '/inactive',
@@ -20,9 +21,9 @@ export default Router()
   )
   .get(
     '/organziation/:id', 
-    auth(TokenType.API, ["users.get.many"]),
+    auth(TokenType.API, ["users.get.by-orgunit"]),
     orgMiddlewares.exists("params.id"),
-    controller.getByOrganziation
+    controller.getByOrgunit
   )
   .get(
     '/:id',
@@ -37,13 +38,6 @@ export default Router()
     controller.changeUsername
   )
   .put(
-    '/change-email', 
-    middlewares.validate(UserValidators.CHNAGE_EMAIL), 
-    auth(), 
-    usersMiddlewares.emailExists("body.email"),
-    controller.changeEmail
-  )
-  .put(
     '/change-password',
     middlewares.validate(UserValidators.CHANGE_PASSWORD),
     auth(),
@@ -53,5 +47,12 @@ export default Router()
     '/profile',
     middlewares.validate(UserValidators.UPDATE_PROFILE),
     auth(),
+    avatarUpload.single('avatar'),
     controller.updateProfile
-  );
+  )
+  .put(
+    '/avatar',
+    auth(),
+    avatarUpload.single('avatar'),
+    controller.updateAvatar
+  )

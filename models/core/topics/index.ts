@@ -10,33 +10,38 @@ import { Category } from "../../misc/categories/interface";
 import { Tag } from "../../misc/tags/interface";
 import { omit } from "../../../util/pick-omit";
 
-const TABLE_NAME = 'topics';
+const TABLE = 'topics';
 
 export default {
 
   // Getters
   // ----------------------------------------------------------------------------
   async getAll() {
+    return (await oracle.exec<Topic>(`
+
+      SELECT *
+      FROM ${TABLE}
+
+    `)).rows || [];
+  },
+
+  async get(id: string) {
     const result = (await oracle.exec<TopicDetailsQueryResultItem>(`
 
       SELECT
         T.*,
-        G.ID GROUP_ID,
-        C.ID CATEGORY_ID
+        TG.GROUP_ID GROUP_ID,
+        TC.GROUP_ID CATEGORY_ID
       FROM
         TOPICS T,
         TOPIC_GROUP TG,
-        GROUPS G,
-        TOPIC_CATEGORY TG,
-        CATEGORIES G
+        TOPIC_CATEGORY TG
       WHERE
         T.ID = :a
         AND T.ID = TG.TOPIC_ID
-        AND G.ID = TG.GROUP_ID
         AND T.ID = TC.TOPIC_ID
-        AND C.ID = TC.CATEGORY_ID
 
-    `)).rows || [];
+    `, [id])).rows || [];
 
     if (result.length === 0)
       return null;
@@ -45,7 +50,7 @@ export default {
       'GROUP_ID',
       'CATEGORY_ID',
     ]);
-    
+
     const groups = new Set<number>();
     const categories = new Set<number>();
 
@@ -60,36 +65,16 @@ export default {
     return topic;
   },
 
-  async get(id: number) {
-    return (await oracle.exec<Topic>(`
-
-      SELECT *
-      FROM ${TABLE_NAME}
-      WHERE id = :id
-
-    `, [id])).rows?.[0] || null;
-  },
-
-  async getBySerial(serial: string) {
-    return (await oracle.exec<Topic>(`
-
-      SELECT *
-      FROM ${TABLE_NAME}
-      WHERE serial = :serial
-
-    `, [serial])).rows?.[0] || null;
-  },
-
 
 
 
   // Util
   // ----------------------------------------------------------------------------
-  async exists(id: number) {
+  async exists(id: string) {
     return (await oracle.exec<{ count: number }>(`
 
       SELECT COUNT(id) as count
-      FROM ${TABLE_NAME}
+      FROM ${TABLE}
       WHERE id = :id
 
     `, [id])).rows?.[0].count! > 0;
@@ -99,17 +84,17 @@ export default {
     return (await oracle.exec<{ COUNT: number }>(`
 
       SELECT COUNT(name) as count
-      FROM ${TABLE_NAME}
+      FROM ${TABLE}
       WHERE name_ar = :name_ar OR name_en = :name_en
 
     `, [name_ar, name_en])).rows?.[0].COUNT! > 0;
   },
 
-  async updatedNameExists(id: number, name_ar: string, name_en: string) {
+  async updatedNameExists(id: string, name_ar: string, name_en: string) {
     return (await oracle.exec<{ count: number }>(`
 
       SELECT COUNT(name) as count
-      FROM ${TABLE_NAME}
+      FROM ${TABLE}
       WHERE (name_ar = :name_ar OR name_en = :name_en) AND id <> :id
 
     `, [name_ar, name_en, id])).rows?.[0].count! > 0;
@@ -124,17 +109,17 @@ export default {
     if (await this.nameExists(name_ar, name_en))
       throw new HttpError(HttpCode.CONFLICT, "nameAlreadyExists");
 
-    const siblings = !!parent ? [] : await getChildren(TABLE_NAME, parent!);
-    const serial = Serial.gen(parent, siblings);
+    const siblings = !!parent ? [] : await getChildren(TABLE, parent!);
+    const id = Serial.gen(parent, siblings);
 
     const result = await oracle.exec(`
 
-      INSERT INTO ${TABLE_NAME} (serial, name_ar, name_en, desc_ar, desc_en)
+      INSERT INTO ${TABLE} (id, name_ar, name_en, desc_ar, desc_en)
       VALUES (:a, :b, :c, :d, :e)
 
-    `, [serial, name_ar, name_en, desc_ar, desc_en]);
+    `, [id, name_ar, name_en, desc_ar, desc_en]);
 
-    return getByRowId<Topic>(TABLE_NAME, result.lastRowid!);
+    return getByRowId<Topic>(TABLE, result.lastRowid!);
   },
 
 
@@ -142,15 +127,15 @@ export default {
 
   // update
   // ----------------------------------------------------------------------------
-  async updateName(id: number, name_ar: string, name_en: string, desc_ar?: string, desc_en?: string) {
+  async updateName(id: string, name_ar: string, name_en: string, desc_ar?: string, desc_en?: string) {
     if (await this.updatedNameExists(id, name_ar, name_en))
       throw new HttpError(HttpCode.CONFLICT, "nameAlreadyExists");
 
-    const date = Date.now();
+    const date = new Date();
 
     await oracle.exec(`
     
-      UPDATE ${TABLE_NAME}
+      UPDATE ${TABLE}
       SET (name_ar = :a, name_en = :b, desc_ar = :c, desc_en = :d update_date = :e)
       WHERE id = :f
     
@@ -158,13 +143,13 @@ export default {
 
     return date;
   },
-  
-  
-  
-  
+
+
+
+
   // category
   // ----------------------------------------------------------------------------
-  async getCategories(topic_id: number) {
+  async getCategories(topic_id: string) {
     return (await oracle.exec<Category>(`
     
       SELECT C.*
@@ -174,7 +159,7 @@ export default {
     `, [topic_id])).rows || [];
   },
 
-  async addCategory(topic_id: number, cat_id: number) {
+  async addCategory(topic_id: string, cat_id: string) {
     await oracle.exec(`
     
       INSERT INTO topic_category (topic_id, category_id)
@@ -185,7 +170,7 @@ export default {
     return true;
   },
 
-  async removeCategory(topic_id: number, cat_id: number) {
+  async removeCategory(topic_id: string, cat_id: string) {
     await oracle.exec(`
     
       DELETE FROM topic_category
@@ -201,7 +186,7 @@ export default {
 
   // tags
   // ----------------------------------------------------------------------------
-  async getTags(topic_id: number) {
+  async getTags(topic_id: string) {
     return (await oracle.exec<Tag>(`
     
       SELECT
@@ -223,7 +208,7 @@ export default {
     `, [topic_id])).rows || [];
   },
 
-  async addTag(topic_id: number, tag_value_id: number) {
+  async addTag(topic_id: string, tag_value_id: string) {
     await oracle.exec(`
     
       INSERT INTO topic_tag (topic_id, tag_value_id)
@@ -234,7 +219,7 @@ export default {
     return true;
   },
 
-  async removeTag(topic_id: number, tag_id: number) {
+  async removeTag(topic_id: string, tag_id: string) {
     await oracle.exec(`
     
       DELETE FROM topic_tag
@@ -251,7 +236,7 @@ export default {
 
   // groups
   // ----------------------------------------------------------------------------------------------------------------
-  async getGroups(topic_id: number) {
+  async getGroups(topic_id: string) {
     return (await oracle.exec<Group>(`
     
       SELECT G.*
@@ -262,7 +247,7 @@ export default {
   },
 
 
-  async assignGroup(topic_id: number, group_id: number) {
+  async assignGroup(topic_id: string, group_id: string) {
     await oracle.exec(`
     
       INSERT INTO topic_group (topic_id, group_id)
@@ -273,7 +258,7 @@ export default {
     return true;
   },
 
-  async removeGroup(topic_id: number, group_id: number) {
+  async removeGroup(topic_id: string, group_id: string) {
     await oracle.exec(`
     
       DELETE FROM topic_group
@@ -289,7 +274,7 @@ export default {
 
   // documents
   // ----------------------------------------------------------------------------------------------------------------
-  async getDocuments(topic_id: number) {
+  async getDocuments(topic_id: string) {
     return (await oracle.exec<Document>(`
     
       SELECT D.*
@@ -297,5 +282,5 @@ export default {
       WHERE TD.TOPIC_ID = :a AND D.ID = TD.DOCUMENT_ID
     
     `, [topic_id])).rows || [];
-  },
+  }
 }

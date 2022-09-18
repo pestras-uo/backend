@@ -1,7 +1,7 @@
 import oracle from "../../../db/oracle";
 import { HttpError } from "../../../misc/errors";
 import { HttpCode } from "../../../misc/http-codes";
-import { Organization } from "./interface";
+import { Orgunit } from "./interface";
 import Serial from '../../../util/serial';
 import { getByRowId, getChildren } from "../..";
 
@@ -12,7 +12,7 @@ export default {
   // Getters
   // ----------------------------------------------------------------------------
   async getAll() {
-    return (await oracle.exec<Organization>(`
+    return (await oracle.exec<Orgunit>(`
 
       SELECT * 
       FROM ${TABLE_NAME}
@@ -20,8 +20,8 @@ export default {
     `)).rows || [];
   },
 
-  async get(id: number) {
-    return (await oracle.exec<Organization>(`
+  async get(id: string) {
+    return (await oracle.exec<Orgunit>(`
 
       SELECT *
       FROM ${TABLE_NAME}
@@ -30,22 +30,12 @@ export default {
     `, [id])).rows?.[0] || null;
   },
 
-  async getBySerial(serial: string) {
-    return (await oracle.exec<Organization>(`
-
-      SELECT *
-      FROM ${TABLE_NAME}
-      WHERE serial = :serial
-
-    `, [serial])).rows?.[0] || null;
-  },
-
 
 
 
   // Util
   // ----------------------------------------------------------------------------
-  async exists(id: number) {
+  async exists(id: string) {
    return (await oracle.exec<{ count: number }>(`
 
       SELECT COUNT(id) as count
@@ -65,7 +55,7 @@ export default {
     `, [name_ar, name_en])).rows?.[0].COUNT! > 0;
   },
 
-  async updatedNameExists(id: number, name_ar: string, name_en: string) {
+  async updatedNameExists(id: string, name_ar: string, name_en: string) {
    return (await oracle.exec<{ count: number }>(`
 
       SELECT COUNT(name) as count
@@ -85,20 +75,20 @@ export default {
       throw new HttpError(HttpCode.CONFLICT, "nameAlreadyExists");
 
     const siblings = !!parent ? [] : await getChildren(TABLE_NAME, parent!);
-    const serial = Serial.gen(parent, siblings);
+    const id = Serial.gen(parent, siblings);
 
     const result = await oracle.exec(`
 
-      INSERT INTO ${TABLE_NAME} (serial, name_ar, name_en)
+      INSERT INTO ${TABLE_NAME} (id, name_ar, name_en)
       VALUES (:a, :b, :c)
 
     `, [
-      serial,
+      id,
       name_ar,
       name_en
     ]);
 
-    return getByRowId<Organization>(TABLE_NAME, result.lastRowid!);
+    return getByRowId<Orgunit>(TABLE_NAME, result.lastRowid!);
   },
 
 
@@ -106,11 +96,11 @@ export default {
 
   // update
   // ----------------------------------------------------------------------------
-  async update(id: number, name_ar: string, name_en: string) {
+  async update(id: string, name_ar: string, name_en: string) {
     if (await this.updatedNameExists(id, name_ar, name_en))
       throw new HttpError(HttpCode.CONFLICT, "nameAlreadyExists");
 
-    const date = Date.now();
+    const date = new Date();
 
     await oracle.exec(`
     

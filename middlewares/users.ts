@@ -7,7 +7,7 @@ import usersModel from '../models/auth/user';
 export default {
   exists(path: string) {
     return async (req: Request, res: Response, next: NextFunction) => {
-      const id = +getValue(req, path);
+      const id = getValue(req, path);
 
       if (!id)
         return next(new HttpError(HttpCode.BAD_REQUEST, "invalidIdParam"));

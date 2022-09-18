@@ -5,7 +5,7 @@ const TABLE_NAME = "auth";
 
 export default {
 
-  async getPassword(user_id: number) {
+  async getPassword(user_id: string) {
     return (await oracle.exec<Auth>(`
 
       SELECT * password, salt
@@ -15,7 +15,7 @@ export default {
     `, [user_id])).rows?.[0] || null;
   },
 
-  async getSession(user_id: number) {
+  async getSession(user_id: string) {
     return (await oracle.exec<Pick<Auth, 'SOCKET' | 'TOKEN'>>(`
 
       SELECT * token, socket
@@ -25,7 +25,7 @@ export default {
     `, [user_id])).rows?.[0] || null;
   },
 
-  async hasSession(user_id: number, token: string) {
+  async hasSession(user_id: string, token: string) {
     return (await oracle.exec<{ COUNT: number }>(`
 
       SELECT COUNT(*) as COUNT
@@ -35,7 +35,7 @@ export default {
     `, [user_id, token])).rows?.[0].COUNT! > 0;
   },
 
-  async create(user_id: number, password: string, salt: string) {
+  async create(user_id: string, password: string, salt: string) {
     await oracle.exec(`
 
       INSERT INTO ${TABLE_NAME} (user_id, password, salt)
@@ -46,7 +46,7 @@ export default {
     return true;
   },
 
-  async setToken(user_id: number, token: string) {
+  async setToken(user_id: string, token: string) {
     await oracle.exec(`
 
       UPDATE ${TABLE_NAME}
@@ -58,7 +58,7 @@ export default {
     return true;
   },
 
-  async setSocket(user_id: number, socket: string) {
+  async setSocket(user_id: string, socket: string) {
     await oracle.exec(`
 
       UPDATE ${TABLE_NAME}
@@ -70,7 +70,7 @@ export default {
     return true;
   },
 
-  async updatePassword(user_id: number, password: string, salt: string) {
+  async updatePassword(user_id: string, password: string, salt: string) {
     await oracle.exec(`
 
       UPDATE ${TABLE_NAME}
@@ -82,7 +82,7 @@ export default {
     return true;
   },
 
-  async endSession(user_id: number) {
+  async endSession(user_id: string) {
     await oracle.exec(`
 
       UPDATE ${TABLE_NAME}
@@ -94,7 +94,7 @@ export default {
     return true;
   },
 
-  async removeSocket(user_id: number) {
+  async removeSocket(user_id: string) {
     await oracle.exec(`
 
       UPDATE ${TABLE_NAME}

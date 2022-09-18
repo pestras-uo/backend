@@ -19,9 +19,9 @@ const eventEmitter = new EventEmitter({
 
 export interface PubSubEvent<T = any> {
   name?: string;
-  toId?: number;
+  toId?: string;
   socket?: string;
-  groups?: number[];
+  groups?: string[];
   data?: T;
 }
 
@@ -51,11 +51,11 @@ export default {
     eventEmitter.off(namespace, listener);
   },
 
-  inGroups(e: PubSubEvent, groups: number[]) {
+  inGroups(e: PubSubEvent, groups: string[]) {
     if (!e.groups)
       return false;
 
-    if (e.groups.includes(-1))
+    if (e.groups.includes("*"))
       return true;
 
     for (const group of e.groups)

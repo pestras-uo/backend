@@ -1,6 +1,5 @@
 export interface Auth {
-  ID: number;
-  USER_ID: number;
+  USER_ID: string;
   
   PASSWORD: string;
   SALT: string;

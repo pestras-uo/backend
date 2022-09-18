@@ -1,15 +1,29 @@
 import multer from 'multer';
 import path from 'path';
 import config from '../config';
+import { randomUUID } from 'crypto';
+import { extension } from 'mime-types';
 
-const storage = multer.diskStorage({
+const documentsStorage = multer.diskStorage({
   destination: function (_, __, cb) {
-    cb(null, path.join(process.cwd(), 'public', 'upload'))
+    cb(null, path.join(process.cwd(), 'public', 'upload', 'documents'));
   },
   filename: function (_, file, cb) {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
-    cb(null, file.fieldname + '-' + uniqueSuffix)
+    cb(null, randomUUID() + "." + (extension(file.mimetype) || 'txt'));
   }
 });
 
-export default multer({ storage, limits: { fileSize: config.maxUploadSize } })
+const avatarStorage = multer.diskStorage({
+  destination: function (_, __, cb) {
+    cb(null, path.join(process.cwd(), 'public', 'upload', 'avatars'));
+  },
+  filename: function (_, file, cb) {
+    if (['jpeg', 'jpg'].includes(extension(file.mimetype) as string))
+    cb(null, randomUUID() + "." + (extension(file.mimetype)));
+  }
+});
+
+const documentUpload = multer({ storage: documentsStorage, limits: { fileSize: config.maxDocumentUploadSize } })
+const avatarUpload = multer({ storage: avatarStorage, limits: { fileSize: config.maxAvatarUploadSize } })
+
+export { documentUpload, avatarUpload };

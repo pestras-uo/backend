@@ -1,34 +1,36 @@
 export default {
 
-  regex: /^\d{4}(:\d{4})*$/,
+  separator: '-',
+
+  regex: /^\d{4}(-\d{4})*$/,
 
   isValid(serial: string) {
     return this.regex.test(serial)
   },
 
   levels(serial: string) {
-    return serial.split(':').length;
+    return serial.split(this.separator).length;
   },
 
   root(serial: string) {
-    return serial.split(':')[0];
+    return serial.split(this.separator)[0];
   },
 
   parent(serial: string) {
-    return serial.split(':').slice(0, -1).join(':');
+    return serial.split(this.separator).slice(0, -1).join(this.separator);
   },
 
   last(serial: string) {
     const length = this.levels(serial);
-    return length > 0 ? serial.split(':')[length - 1] : '';
+    return length > 0 ? serial.split(this.separator)[length - 1] : '';
   },
 
   tree(serial: string) {
     const all: string[] = [];
-    const blocks = serial.split(':');
+    const blocks = serial.split(this.separator);
 
     for (let i = 0; i < blocks.length; i++)
-      all.push(i === 0 ? blocks[i] : `${all[i - 1]}:${blocks[i]}`);
+      all.push(i === 0 ? blocks[i] : `${all[i - 1]}${this.separator}${blocks[i]}`);
 
     return all;
   },
@@ -50,14 +52,19 @@ export default {
   },
 
   gen(parentSerial: string = '', exclude: string[] = []) {
+    const chars = [
+      'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','Y','V','W','X','Y','Z',
+      '0','1','2','3','4','5','6','7','8','9'
+    ];
+
     let newSerial = '';
 
     while (true) {
       newSerial = [
-        Math.round((Math.random() * 8) + 1),
-        Math.round((Math.random() * 8) + 1),
-        Math.round((Math.random() * 8) + 1),
-        Math.round((Math.random() * 8) + 1)
+        chars[Math.round(Math.random() * 35)],
+        chars[Math.round(Math.random() * 35)],
+        chars[Math.round(Math.random() * 35)],
+        chars[Math.round(Math.random() * 35)]
       ].join();
 
       if (!exclude.includes(newSerial))

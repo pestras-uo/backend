@@ -2,12 +2,16 @@ import { getByRowId, getChildren } from "../..";
 import oracle from "../../../db/oracle";
 import { HttpError } from "../../../misc/errors";
 import { HttpCode } from "../../../misc/http-codes";
+import { omit } from "../../../util/pick-omit";
 import Serial from "../../../util/serial";
-import { Indicator } from "./interface";
+import { Group } from "../../auth/groups/interface";
+import { Category } from "../../misc/categories/interface";
+import { Tag } from "../../misc/tags/interface";
+import { Indicator, IndicatorDetails, IndicatorDetailsQueryResultItem } from "./interface";
 
 const TABLE_NAME = 'indicators';
 
-async function clearArgs(id: number) {
+async function clearArgs(id: string) {
   return oracle.exec(`
   
     DELETE FROM indicator_arguments
@@ -16,7 +20,7 @@ async function clearArgs(id: number) {
   `, [id]);
 }
 
-async function addArgs(id: number, args: { id: string, variable: string }[]) {
+async function addArgs(id: string, args: { id: string, variable: string }[]) {
   return oracle.execMany(`
   
     INSERT INTO indicator_arguments (indicator_id, arg_id, variable)
@@ -41,14 +45,44 @@ export default {
     `, [offset, limit])).rows || [];
   },
 
-  async get(id: number) {
-    return (await oracle.exec<Indicator>(`
+  async get(id: string) {
+    const result = (await oracle.exec<IndicatorDetailsQueryResultItem>(`
 
-      SELECT *
-      FROM ${TABLE_NAME}
-      WHERE id = :id
+      SELECT
+        I.*,
+        IG.GROUP_ID GROUP_ID,
+        IC.CATEGORY_ID CATEGORY_ID
+      FROM
+        INDICATORS I,
+        INDICATOR_GROUP IG,
+        INDICATOR_CATEGORY IC
+      WHERE
+        I.ID = :a
+        AND I.ID = IG.INDICATOR_ID
+        AND I.ID = IC.INDICATOR_ID
 
-    `, [id])).rows?.[0] || null;
+    `, [id])).rows || [];
+
+    if (result.length === 0)
+      return null;
+
+    const indicator = omit<IndicatorDetails, IndicatorDetailsQueryResultItem>(result[0], [
+      'GROUP_ID',
+      'CATEGORY_ID',
+    ]);
+
+    const groups = new Set<number>();
+    const categories = new Set<number>();
+
+    for (const rec of result) {
+      groups.add(rec.GROUP_ID);
+      categories.add(rec.CATEGORY_ID);
+    }
+
+    indicator.GROUPS = Array.from(groups);
+    indicator.CATEGORIES = Array.from(categories);
+
+    return indicator;
   },
 
   async getBySerial(serial: string) {
@@ -61,7 +95,7 @@ export default {
     `, [serial])).rows?.[0] || null;
   },
 
-  async getByTopic(topic_id: number, active = 1) {
+  async getByTopic(topic_id: string, active = 1) {
     return (await oracle.exec(`
 
       SELECT *
@@ -76,7 +110,7 @@ export default {
 
   // Util
   // ----------------------------------------------------------------------------
-  async exists(id: number) {
+  async exists(id: string) {
     return (await oracle.exec<{ count: number }>(`
  
        SELECT COUNT(id) as count
@@ -96,7 +130,7 @@ export default {
      `, [name_ar, name_en])).rows?.[0].COUNT! > 0;
   },
 
-  async updatedNameExists(id: number, name_ar: string, name_en: string) {
+  async updatedNameExists(id: string, name_ar: string, name_en: string) {
     return (await oracle.exec<{ count: number }>(`
  
        SELECT COUNT(name) as count
@@ -116,17 +150,17 @@ export default {
       throw new HttpError(HttpCode.CONFLICT, "nameAlreadyExists");
 
     const siblings = !!parent ? [] : await getChildren(TABLE_NAME, parent!);
-    const serial = Serial.gen(parent, siblings);
+    const id = Serial.gen(parent, siblings);
 
     const result = await oracle.exec(`
 
-      INSERT INTO ${TABLE_NAME} (serial, orgunit_serial, topic_serial, name_ar, name_en, desc_en, desc_ar, unit_ar, unit_en)
+      INSERT INTO ${TABLE_NAME} (id, orgunit_id, topic_id, name_ar, name_en, desc_en, desc_ar, unit_ar, unit_en)
       VALUES (:a, :b, :c, :d, :e, :f, :g, :h, :i)
 
     `, [
-      serial,
-      ind.ORGUNIT_SERIAL,
-      ind.TOPIC_SERIAL,
+      id,
+      ind.ORGUNIT_ID,
+      ind.TOPIC_ID,
       ind.NAME_AR,
       ind.NAME_EN,
       ind.DESC_AR,
@@ -143,7 +177,7 @@ export default {
 
   // update
   // ----------------------------------------------------------------------------
-  async update(id: number, ind: Indicator) {
+  async update(id: string, ind: Indicator) {
     if (await this.updatedNameExists(id, ind.NAME_AR, ind.NAME_EN))
       throw new HttpError(HttpCode.CONFLICT, "nameAlreadyExists");
 
@@ -174,7 +208,7 @@ export default {
 
   // Interval
   // ----------------------------------------------------------------------------
-  async setInterval(topic_id: number, interval: number) {
+  async setInterval(topic_id: string, interval: number) {
     const date = new Date();
 
     await oracle.exec(`
@@ -193,7 +227,7 @@ export default {
 
   // Kpi
   // ----------------------------------------------------------------------------
-  async setKpi(topic_id: number, min?: number, max?: number) {
+  async setKpi(topic_id: string, min?: number, max?: number) {
     const date = new Date();
 
     await oracle.exec(`
@@ -212,10 +246,10 @@ export default {
 
   // equation
   // ----------------------------------------------------------------------------
-  async setEquation(id: number, eq: string, args: { id: string, variable: string }[]) {
+  async setEquation(id: string, eq: string, args: { id: string, variable: string }[]) {
     await clearArgs(id);
     if (args.length > 0)
-    await addArgs(id, args);
+      await addArgs(id, args);
 
     const date = new Date();
 
@@ -235,8 +269,8 @@ export default {
 
   // organziation
   // ----------------------------------------------------------------------------------------------------------------
-  async updateOrganziation(indicator_id: number, orgunit_id: number) {
-    const date = Date.now();
+  async updateOrganziation(indicator_id: string, orgunit_id: string) {
+    const date = new Date();
 
     await oracle.exec(`
     
@@ -254,7 +288,7 @@ export default {
 
   // activation
   // ----------------------------------------------------------------------------------------------------------------
-  async activate(indicator_id: number) {
+  async activate(indicator_id: string) {
     const date = new Date();
 
     await oracle.exec(`
@@ -268,7 +302,7 @@ export default {
     return date;
   },
 
-  async deactivate(indicator_id: number) {
+  async deactivate(indicator_id: string) {
     const date = new Date();
 
     await oracle.exec(`
@@ -287,18 +321,18 @@ export default {
 
   // groups
   // ----------------------------------------------------------------------------------------------------------------
-  async getGroups(indicator_id: number) {
-    return (await oracle.exec(`
+  async getGroups(indicator_id: string) {
+    return (await oracle.exec<Group>(`
     
-      SELECT *
-      FROM indicator_group
-      WHERE indicator_id = :a
+      SELECT G.*
+      FROM GROUPS G, INDICATOR_GROUP IG
+      WHERE IG.INDICATOR_ID = :a AND G.ID = IG.GROUP_ID
     
     `, [indicator_id])).rows || [];
   },
 
 
-  async assignGroup(indicator_id: number, group_id: number) {
+  async assignGroup(indicator_id: string, group_id: string) {
     await oracle.exec(`
     
       INSERT INTO indicator_group (indicator_id, group_id)
@@ -309,7 +343,7 @@ export default {
     return true;
   },
 
-  async removeGroup(indicator_id: number, group_id: number) {
+  async removeGroup(indicator_id: string, group_id: string) {
     await oracle.exec(`
     
       DELETE FROM indicator_group
@@ -319,13 +353,23 @@ export default {
 
     return true;
   },
-  
-  
-  
-  
+
+
+
+
   // category
   // ----------------------------------------------------------------------------
-  async addCategory(indicator_id: number, cat_id: number) {
+  async getCategories(indicator_id: string) {
+    return (await oracle.exec<Category>(`
+    
+      SELECT C.*
+      FROM CATEGORIES C, INDICATOR_CATEGORY IC
+      WHERE IC.INDICATOR_ID = :a AND C.ID = IC.CATEGORY_ID
+    
+    `, [indicator_id])).rows || [];
+  },
+
+  async addCategory(indicator_id: string, cat_id: string) {
     await oracle.exec(`
     
       INSERT INTO indicator_category (indicator_id, category_id)
@@ -336,7 +380,7 @@ export default {
     return true;
   },
 
-  async removeCategory(indicator_id: number, cat_id: number) {
+  async removeCategory(indicator_id: string, cat_id: string) {
     await oracle.exec(`
     
       DELETE FROM indicator_category
@@ -352,7 +396,29 @@ export default {
 
   // tags
   // ----------------------------------------------------------------------------
-  async addTag(indicator_id: number, tag_value_id: number) {
+  async getTags(indicator_id: string) {
+    return (await oracle.exec<Tag>(`
+    
+      SELECT
+        K.ID as KEY_ID,
+        V.ID as VALUE_ID,
+        K.NAME_AR AS KEY_AR,
+        K.NAME_EN AS KEY_EN,
+        V.NAME_AR AS VALUE_AR,
+        V.NAME_EN AS VALUE_EN
+      FROM 
+        TAGS_KEYS K,
+        TAGS_VALUES V,
+        INDICATOR_TAG IT
+      WHERE
+        IT.INDICATOR_ID = :a 
+        AND V.ID = IT.TAG_VALUE_ID
+        AND K.ID = V.TAG_KEY_ID
+    
+    `, [indicator_id])).rows || [];
+  },
+
+  async addTag(indicator_id: string, tag_value_id: string) {
     await oracle.exec(`
     
       INSERT INTO indicator_tag (indicator_id, tag_value_id)
@@ -363,7 +429,7 @@ export default {
     return true;
   },
 
-  async removeTag(indicator_id: number, tag_id: number) {
+  async removeTag(indicator_id: string, tag_id: string) {
     await oracle.exec(`
     
       DELETE FROM indicator_tag
@@ -372,5 +438,39 @@ export default {
     `, [indicator_id, tag_id]);
 
     return true;
+  },
+
+
+
+
+  // documents
+  // ----------------------------------------------------------------------------------------------------------------
+  async getDocuments(indicator_id: string) {
+    return (await oracle.exec<Document>(`
+    
+      SELECT D.*
+      FROM DOCUMENTS D, INDICATOR_DOCUMENT ID
+      WHERE ID.INDICATOR_ID = :a AND D.ID = ID.DOCUMENT_ID
+    
+    `, [indicator_id])).rows || [];
+  },
+
+
+
+
+  // Arguments
+  // ----------------------------------------------------------------------------------------------------------------
+  async getArguments(indicator_id: string) {
+    return (await oracle.exec(`
+    
+      SELECT I.* IA.VARIABLE
+      FROM
+        INDICAOTRS I,
+        INDICATOR_ARGUMENT IA
+      WHERE
+        IA.INDICATOR_ID = :a
+        AND I.ID = IA.ARG_ID
+
+    `, [indicator_id])).rows || [];
   }
 }

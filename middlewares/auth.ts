@@ -49,7 +49,7 @@ export default function (tokenType = TokenType.API, actions: Action[] = [], affe
 }
 
 async function getAffectedUser(req: Request, param: string) {
-  const id = +req.params[param];
+  const id = req.params[param];
 
   if (!id)
     throw new HttpError(HttpCode.BAD_REQUEST, 'affectedUserIdParamNotFound');

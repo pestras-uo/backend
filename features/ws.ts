@@ -36,7 +36,7 @@ const ws = {
         pubsub.emit('ws.disconnected', { data: socket.id });
       });
 
-      socket.onAny((name: string, e: any, groups?: number[]) => {
+      socket.onAny((name: string, e: any, groups?: string[]) => {
         pubsub.emit(`ws.${name}`, { data: e , socket: socket.id , groups });
       });
     });
@@ -47,7 +47,7 @@ const ws = {
       if (!e.groups || e.groups.length === 0)
         io.emit(e.name!.slice(8), e.data);
       else
-        io.to(e.groups.map(g => `${g}`)).emit(e.name!.slice(8), e.data);
+        io.to(e.groups).emit(e.name!.slice(8), e.data);
     }
   }
 }

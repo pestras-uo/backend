@@ -1,12 +1,5 @@
-import { UserProfile } from "../../models/auth/user/interface";
-
 export interface ChangeUsernameBody {
   username: string
-}
-
-export interface ChangeEmailBody {
-  email: string;
-  isBackup: boolean;
 }
 
 export interface ChangePasswordBody {
@@ -14,4 +7,12 @@ export interface ChangePasswordBody {
   newPassword: string;
 }
 
-export interface UpdateProfileBody extends UserProfile {}
+export interface UpdateProfileBody {
+  fullname: string;
+  email: string;
+  mobile: string;
+}
+
+export interface UpdateAvatarBody {
+  avatar: string;
+}

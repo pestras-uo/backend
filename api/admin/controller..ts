@@ -4,7 +4,7 @@ import { ResLocals } from "../../auth/interfaces";
 import manager from "../../auth/roles/manager";
 import { HttpError } from "../../misc/errors";
 import { HttpCode } from "../../misc/http-codes";
-import { ChangeOrgunit, CreateUserBody, UpdateRolesBody } from "./interfaces";
+import { ChangeOrgunit, CreateUserBody, UpdateGroupsBody, UpdateRolesBody } from "./interfaces";
 import authModel from '../../models/auth/auth';
 import usersModel from '../../models/auth/user';
 import pubSub from "../../misc/pub-sub";
@@ -14,13 +14,11 @@ export default {
 
   async createUser(req: Request<any, any, CreateUserBody>, res: Response<any, ResLocals>, next: NextFunction) {
     const body = req.body;
-    const orgId = body.orgunit;
 
-    if (manager.getTopRole(res.locals.user.ROLES.map(r => r.ID)) <= manager.getTopRole(body.roles))
+    if (manager.getTopRole(res.locals.user.ROLES) <= manager.getTopRole(body.roles))
       return next(new HttpError(HttpCode.UNAUTHORIZED, "unauthorizedRole"));
 
     const [password, salt] = await crypt.hash(req.body.password);
-
     const user = await usersModel.create(req.body.orgunit, req.body.username);
 
     if (!user)
@@ -33,7 +31,7 @@ export default {
   },
 
   async activateUser(req: Request<{ id: string, state: string }>, res: Response) {
-    const user_id = +req.params.id;
+    const user_id = req.params.id;
     const state = +req.params.state;
 
     await usersModel.activate(user_id, state);
@@ -43,15 +41,16 @@ export default {
 
   async updateRoles(req: Request<{ id: string }, any, UpdateRolesBody>, res: Response<any, ResLocals>, next: NextFunction) {
     const roles = req.body.roles;
-    const user_d = +req.params.id;
+    const user_id = req.params.id;
 
-    if (manager.getTopRole(res.locals.user.ROLES.map(r => r.ID)) <= manager.getTopRole(roles))
+    if (manager.getTopRole(res.locals.user.ROLES) <= manager.getTopRole(roles))
       return next(new HttpError(HttpCode.UNAUTHORIZED, "unauthorizedRole"));
 
-    const date = await usersModel.assignRoles(user_d, roles);
+    await usersModel.removeAllRoles(user_id);
+    const date = await usersModel.assignRoles(user_id, roles);
 
     pubSub.emit("sse.message", {
-      toId: user_d,
+      toId: user_id,
       data: {
         action: "user_role.update",
         roles
@@ -61,9 +60,27 @@ export default {
     res.json(date);
   },
 
+  async updateGroups(req: Request<{ id: string }, any, UpdateGroupsBody>, res: Response<any, ResLocals>, next: NextFunction) {
+    const groups = req.body.groups;
+    const user_id = req.params.id;
+
+    await usersModel.removeAllGroups(user_id);
+    const date = await usersModel.assignGroups(user_id, groups);
+
+    pubSub.emit("sse.message", {
+      toId: user_id,
+      data: {
+        action: "user_role.update",
+        groups
+      }
+    });
+
+    res.json(date);
+  },
+
   async updateOrgunit(req: Request<{ id: string }, any, ChangeOrgunit>, res: Response, next: NextFunction) {
     const orgId = req.body.orgunit;
-    const user_id = +req.params.id;
+    const user_id = req.params.id;
 
     const date = await usersModel.updateOrgunit(user_id, orgId);
 

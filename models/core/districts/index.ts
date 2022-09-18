@@ -4,6 +4,7 @@ import { HttpError } from "../../../misc/errors";
 import { HttpCode } from "../../../misc/http-codes";
 import { Category } from "../../misc/categories/interface";
 import { District } from "./interface";
+import { randomUUID } from 'crypto';
 
 const TABLE_NAME = 'districts';
 
@@ -17,7 +18,7 @@ export default {
     `)).rows || [];
   },
 
-  async get(id: number) {
+  async get(id: string) {
     return (await oracle.exec<District>(`
     
       SELECT *
@@ -37,7 +38,7 @@ export default {
     `, [name_ar, name_en])).rows?.[0].COUNT! > 0;
   },
 
-  async updateNameExists(id: number, name_ar: string, name_en: string) {
+  async updateNameExists(id: string, name_ar: string, name_en: string) {
     return (await oracle.exec<{ COUNT: number }>(`
     
       SELECT COUNT(*)
@@ -51,17 +52,19 @@ export default {
     if (await this.nameExists(name_ar, name_en))
       throw new HttpError(HttpCode.CONFLICT, 'nameAlreadyExists');
 
+    const id = randomUUID();
+
     const result = await oracle.exec(`
     
-      INSERT INTO ${TABLE_NAME} (name_ar, name_en)
-      VALUES (:a, :b)
+      INSERT INTO ${TABLE_NAME} (id, name_ar, name_en)
+      VALUES (:a, :b, :c)
 
-    `, [name_ar, name_en]);
+    `, [id, name_ar, name_en]);
 
     return getByRowId<Category>(TABLE_NAME, result.lastRowid!);
   },
 
-  async update(id: number, name_ar: string, name_en: string) {
+  async update(id: string, name_ar: string, name_en: string) {
     if (await this.updateNameExists(id, name_ar, name_en))
       throw new HttpError(HttpCode.CONFLICT, 'nameAlreadyExists');
 

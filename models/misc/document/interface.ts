@@ -1,5 +1,5 @@
 export interface Document {
-  ID: number;
+  ID: string;
 
   NAME_EN?: string; 
   NAME_AR?: string;
