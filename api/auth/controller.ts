@@ -35,7 +35,7 @@ export default {
 
     const token = sign({
       id: user.ID,
-      type: TokenType.API,
+      type: TokenType.SESSION,
       date: Date.now(),
       remember: body.remember
     } as TokenData, config.tokenSecret);
@@ -48,7 +48,7 @@ export default {
   async verifySession(_: Request, res: Response<any, ResLocals>) {
     const newToken = sign({
       id: res.locals.user.ID,
-      type: TokenType.API,
+      type: TokenType.SESSION,
       date: res.locals.tokenData.date,
       remember: res.locals.tokenData.remember
     } as TokenData, config.tokenSecret);
@@ -59,5 +59,11 @@ export default {
       user: res.locals.user,
       token: newToken
     });
+  },
+
+  async logout(_: Request, res: Response<any, ResLocals>) {
+    await authModel.getSession(res.locals.user.ID);
+
+    return true;
   }
 }

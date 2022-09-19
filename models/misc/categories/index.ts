@@ -1,11 +1,9 @@
-import { getByRowId, getChildren } from "../..";
+import { getByRowId, getChildren, TablesNames } from "../..";
 import oracle from "../../../db/oracle"
 import { HttpError } from "../../../misc/errors";
 import { HttpCode } from "../../../misc/http-codes";
 import { Category } from "./interface";
 import Serial from '../../../util/serial';
-
-const TABLE_NAME = 'categories';
 
 export default {
 
@@ -13,7 +11,7 @@ export default {
     return (await oracle.exec<Category>(`
     
       SELECT *
-      FROM ${TABLE_NAME}
+      FROM ${TablesNames.CATEGORIES}
       WHERE id = :a
     
     `, [id])).rows?.[0] || null;
@@ -23,7 +21,7 @@ export default {
     return (await oracle.exec<Category>(`
     
       SELECT *
-      FROM ${TABLE_NAME}
+      FROM ${TablesNames.CATEGORIES}
     
     `)).rows || [];
   },
@@ -32,7 +30,7 @@ export default {
     return (await oracle.exec<{ COUNT: number }>(`
     
       SELECT COUNT(*) as COUNT
-      FROM ${TABLE_NAME}
+      FROM ${TablesNames.CATEGORIES}
       WHERE name_ar = :a OR name_en = :b
     
     `, [name_ar, name_en])).rows?.[0].COUNT! > 0;
@@ -42,7 +40,7 @@ export default {
     return (await oracle.exec<{ COUNT: number }>(`
     
       SELECT COUNT(*) as COUNT
-      FROM ${TABLE_NAME}
+      FROM ${TablesNames.CATEGORIES}
       WHERE (name_ar = :a OR name_en = :b) AND id <> :c
     
     `, [name_ar, name_en, id])).rows?.[0].COUNT! > 0;
@@ -57,17 +55,17 @@ export default {
     if (await this.nameExists(name_ar, name_en))
       throw new HttpError(HttpCode.CONFLICT, "nameAlreadyExists");
 
-    const siblings = !!parent ? [] : await getChildren(TABLE_NAME, parent!);
+    const siblings = !!parent ? [] : await getChildren(TablesNames.CATEGORIES, parent!);
     const id = Serial.gen(parent, siblings);
 
     const result = await oracle.exec(`
     
-      INSERT INTO ${TABLE_NAME} (id, name_ar, name_en)
+      INSERT INTO ${TablesNames.CATEGORIES} (id, name_ar, name_en)
       VALUES (:a, :b, :d)
     
     `, [id, name_ar, name_en]);
 
-    return getByRowId<Category>(TABLE_NAME, result.lastRowid!);
+    return getByRowId<Category>(TablesNames.CATEGORIES, result.lastRowid!);
   },
 
 
@@ -83,13 +81,13 @@ export default {
 
     await oracle.exec(`
     
-      UPDAET ${TABLE_NAME}
-      SET name_ar = :a, name_en = :b, update_date = :c
-      WHERE id = :d
+      UPDAET ${TablesNames.CATEGORIES}
+      SET name_ar = :a, name_en = :b
+      WHERE id = :c
     
-    `, [name_ar, name_en, date, id]);
+    `, [name_ar, name_en, id]);
 
-    return date;
+    return true;
   },
 
 
@@ -99,7 +97,7 @@ export default {
   // ----------------------------------------------------------------------------------------------------------------
   async delete(id: string) {
     await oracle.exec(`
-      DELETE FROM ${TABLE_NAME}
+      DELETE FROM ${TablesNames.CATEGORIES}
       WHERE id = :id
     `, [id]);
 

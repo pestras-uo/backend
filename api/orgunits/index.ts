@@ -9,24 +9,24 @@ import orgunitsMiddlewares from '../../middlewares/orgunits';
 export default Router()
   .get(
     '/',
-    auth(TokenType.API, ['orgunits.get.many']),
+    auth(TokenType.SESSION, ['orgunits.get.many']),
     controller.getMany
   )
   .get(
     '/:id',
-    auth(TokenType.API, ['orgunits.get.one']),
+    auth(TokenType.SESSION, ['orgunits.get.one']),
     controller.getById
   )
   .post(
     '/',
     middlewares.validate(orgunitsValidators.CREATE),
-    auth(TokenType.API, ['orgunits.create']),
+    auth(TokenType.SESSION, ['orgunits.create']),
     controller.create
   )
   .put(
     '/name/:id',
     middlewares.validate(orgunitsValidators.UPDATE_NAME),
-    auth(TokenType.API, ['orgunits.update.name']),
+    auth(TokenType.SESSION, ['orgunits.update.name']),
     orgunitsMiddlewares.exists("params.id"),
     controller.updateName
   );

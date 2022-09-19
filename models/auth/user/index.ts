@@ -2,12 +2,10 @@ import { User, UserDetailsQueryResultItem, UserDetails } from './interface';
 import oracle from '../../../db/oracle';
 import { HttpError } from '../../../misc/errors';
 import { HttpCode } from '../../../misc/http-codes';
-import { getByRowId } from '../..';
+import { getByRowId, TablesNames } from '../..';
 import { omit } from '../../../util/pick-omit';
 import { Group } from '../groups/interface';
 import { randomUUID } from 'crypto';
-
-const TABLE_NAME = 'users';
 
 export default {
 
@@ -18,7 +16,7 @@ export default {
     return (await oracle.exec<{ count: number }>(`
     
       SELECT COUNT(0) as count
-      FROM ${TABLE_NAME}
+      FROM ${TablesNames.USERS}
       WHERE id = :id
     
     `, [id])).rows?.[0].count! > 0;
@@ -28,7 +26,7 @@ export default {
     return (await oracle.exec<{ count: number }>(`
     
       SELECT COUNT(0) as count
-      FROM ${TABLE_NAME}
+      FROM ${TablesNames.USERS}
       WHERE username = :username
     
     `, [username])).rows?.[0].count! > 0;
@@ -47,9 +45,9 @@ export default {
         UG.GROUP_ID GROUP_ID,
         UR.ROLE_ID ROLE_ID
       FROM 
-        USERS U,
-        USER_GROUP UG,
-        USER_ROLE UR
+        ${TablesNames.USERS} U,
+        ${TablesNames.USER_GROUP} UG,
+        ${TablesNames.USER_ROLE} UR
       WHERE
         U.ID = :a
         AND G.ID = UG.GROUP_ID
@@ -80,7 +78,7 @@ export default {
     return (await oracle.exec<User>(`
     
       SELECT *
-      FROM ${TABLE_NAME}
+      FROM ${TablesNames.USERS}
       WHERE username = :username
     
     `, [username])).rows?.[0] || null;
@@ -90,7 +88,7 @@ export default {
     return (await oracle.exec<User>(`
     
       SELECT *
-      FROM ${TABLE_NAME}
+      FROM ${TablesNames.USERS}
       WHERE orgunit_id = :a AND is_active = :b
   
   `, [orgunit_id, is_active])).rows || [];
@@ -100,7 +98,7 @@ export default {
     return (await oracle.exec<User>(`
     
       SELECT *
-      FROM ${TABLE_NAME}
+      FROM ${TablesNames.USERS}
       WHERE is_active = :b
   
   `, [is_active])).rows || [];
@@ -119,12 +117,12 @@ export default {
 
     const result = await oracle.exec(`
     
-      INSERT INTO ${TABLE_NAME} (id, orgunit_id, username)
+      INSERT INTO ${TablesNames.USERS} (id, orgunit_id, username)
       VALUES (:a, :b, :c)
     
     `, [id, orgunit_id, username]);
 
-    return getByRowId<User>(TABLE_NAME, result.lastRowid!);
+    return getByRowId<User>(TablesNames.USERS, result.lastRowid!);
   },
 
 
@@ -140,7 +138,7 @@ export default {
 
     await oracle.exec(`
     
-      UPDATE ${TABLE_NAME}
+      UPDATE ${TablesNames.USERS}
       SET username = :a, update_date = :b
       WHERE id = :c
     
@@ -159,7 +157,7 @@ export default {
 
     await oracle.exec(`
     
-      UPDATE ${TABLE_NAME}
+      UPDATE ${TablesNames.USERS}
       SET avatar = :a, update_date = :b
       WHERE id = :c
   
@@ -173,7 +171,7 @@ export default {
 
     await oracle.exec(`
     
-      UPDATE ${TABLE_NAME}
+      UPDATE ${TablesNames.USERS}
       SET fullname = :a, email = :b, mobile = :c update_date = :d
       WHERE id = :e
   
@@ -191,7 +189,7 @@ export default {
     return (await oracle.exec(`
     
       SELECT *
-      FROM user_role
+      FROM ${TablesNames.USER_ROLE}
       WHERE user_id = :a
     
     `, [user_id])).rows || [];
@@ -200,11 +198,11 @@ export default {
   async assignRole(user_id: string, role_id: string) {
     await oracle.exec(`
     
-      INSERT INTO user_role (user_id, role_id)
+      INSERT INTO ${TablesNames.USER_ROLE} (user_id, role_id)
       VALUES (:a, :b)
       WHERE NOT EXISTS (
         SELECT *
-        FROM user_role
+        FROM ${TablesNames.USER_ROLE}
         WHERE user_id = :a, role_id = :b
       )
 
@@ -216,11 +214,11 @@ export default {
   async assignRoles(user_id: string, roles: number[]) {
     await oracle.execMany(`
     
-      INSERT INTO user_role (user_id, role_id)
+      INSERT INTO ${TablesNames.USER_ROLE} (user_id, role_id)
       VALUES (:a, :b)
       WHERE NOT EXISTS (
         SELECT *
-        FROM user_role
+        FROM ${TablesNames.USER_ROLE}
         WHERE user_id = :a, role_id = :b
       )
 
@@ -232,7 +230,7 @@ export default {
   async removeRole(user_id: string, role_id: string) {
     await oracle.exec(`
     
-      DELETE FROM user_role
+      DELETE FROM ${TablesNames.USER_ROLE}
       WHERE user_id = :a, role_id = :b
 
     `, [user_id, role_id])
@@ -243,7 +241,7 @@ export default {
   async removeAllRoles(user_id: string) {
     await oracle.exec(`
     
-      DELETE FROM user_role
+      DELETE FROM ${TablesNames.USER_ROLE}
       WHERE user_id = :a
 
     `, [user_id]);
@@ -261,7 +259,7 @@ export default {
     return (await oracle.exec<Group>(`
     
       SELECT G.*
-      FROM GROUPS G, USER_GROUP UG
+      FROM ${TablesNames.GROUPS} G, ${TablesNames.USER_GROUP} UG
       WHERE UG.USER_ID = :a AND G.ID = UG.GROUP_ID
     
     `, [user_id])).rows || [];
@@ -271,8 +269,13 @@ export default {
   async assignGroup(user_id: string, group_id: string) {
     await oracle.exec(`
     
-      INSERT INTO user_group (user_id, group_id)
+      INSERT INTO ${TablesNames.USER_GROUP} (user_id, group_id)
       VALUES (:a, :b)
+      WHERE NOT EXISTS (
+        SELECT *
+        FROM ${TablesNames.USER_GROUP}
+        WHERE user_id = :a, group_id = :b
+      )
 
     `, [user_id, group_id])
 
@@ -282,11 +285,11 @@ export default {
   async assignGroups(user_id: string, groups: string[]) {
     await oracle.execMany(`
     
-      INSERT INTO user_group (user_id, group_id)
+      INSERT INTO ${TablesNames.USER_GROUP} (user_id, group_id)
       VALUES (:a, :b)
       WHERE NOT EXISTS (
         SELECT *
-        FROM user_group
+        FROM ${TablesNames.USER_GROUP}
         WHERE user_id = :a, group_id = :b
       )
 
@@ -298,7 +301,7 @@ export default {
   async removeGroup(user_id: string, group_id: string) {
     await oracle.exec(`
     
-      DELETE FROM user_group
+      DELETE FROM ${TablesNames.USER_GROUP}
       WHERE user_id = :a, group_id = :b
 
     `, [user_id, group_id])
@@ -309,7 +312,7 @@ export default {
   async removeAllGroups(user_id: string) {
     await oracle.exec(`
     
-      DELETE FROM user_group
+      DELETE FROM ${TablesNames.USER_GROUP}
       WHERE user_id = :a
 
     `, [user_id]);
@@ -327,7 +330,7 @@ export default {
 
     await oracle.exec(`
     
-      UPDATE ${TABLE_NAME}
+      UPDATE ${TablesNames.USERS}
       SET orgunit_id = :a, update_date = :b
       WHERE id = :c
     
@@ -346,7 +349,7 @@ export default {
 
     await oracle.exec(`
     
-      UPDATE ${TABLE_NAME}
+      UPDATE ${TablesNames.USERS}
       SET is_active = :a, update_date = :b
       WHERE id = :c
     

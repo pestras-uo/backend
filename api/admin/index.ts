@@ -11,35 +11,35 @@ export default Router()
   .post(
     "/create",
     middlewares.validate(AdminValidators.CREATE_USER),
-    auth(TokenType.API, ["users.create"]),
+    auth(TokenType.SESSION, ["users.create"]),
     usersMiddleWares.usernameExists("body.username"),
     controller.createUser
   )
   .put(
     '/update-roles/:id',
     middlewares.validate(AdminValidators.UPDATE_USER_ROLES),
-    auth(TokenType.API, ["users.update.roles"], "id"),
+    auth(TokenType.SESSION, ["users.update.roles"], "id"),
     usersMiddleWares.exists("params.id"),
     controller.updateRoles
   )
   .put(
     '/update-groups/:id',
     middlewares.validate(AdminValidators.UPDATE_USER_ROLES),
-    auth(TokenType.API, ["users.update.groups"], "id"),
+    auth(TokenType.SESSION, ["users.update.groups"], "id"),
     usersMiddleWares.exists("params.id"),
     controller.updateGroups
   )
   .put(
     '/change-orgunit/:id',
     middlewares.validate(AdminValidators.CHANGE_USER_ORG),
-    auth(TokenType.API, ["users.update.orgunit"]),
+    auth(TokenType.SESSION, ["users.update.orgunit"]),
     usersMiddleWares.exists("params.id"),
     orgMiddleWares.exists("body.organization"),
     controller.updateOrgunit
   )
   .put(
     '/activate/:id/:state',
-    auth(TokenType.API, ["users.update.active"], "id"),
+    auth(TokenType.SESSION, ["users.update.active"], "id"),
     usersMiddleWares.exists("params.id"),
     controller.activateUser
   )

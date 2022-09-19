@@ -21,8 +21,10 @@ const config = {
   emailTokenExpiry: +(process.env.EMAIL_TOKEN_EXP || 0) || 1000 * 60 * 60,
   passwordTokenExpiry: +(process.env.RESET_PASS_TOKEN_EXP || 0) || 1000 * 60 * 60,
 
-  dbUsername: process.env.DB_USER,
-  dbPassword: process.env.DB_PASS,
+  dbSystemUser: process.env.DB_SYSTEM_USER,
+  dbSystemPass: process.env.DB_SYSTEM_PASS,
+  dbReadingsUser: process.env.DB_READINGS_USER,
+  dbReadingsPass: process.env.DB_READINGS_PASS,
   dbUrl: process.env.DB_STR,
 
   // email config

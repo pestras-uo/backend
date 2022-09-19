@@ -3,8 +3,7 @@ import { HttpError } from "../../../misc/errors";
 import { HttpCode } from "../../../misc/http-codes";
 import { Group } from "./interface";
 import { randomUUID } from 'crypto';
-
-const TABLE = 'groups';
+import { TablesNames } from "../..";
 
 export default {
 
@@ -14,7 +13,7 @@ export default {
     return (await oracle.exec<Group>(`
 
       SELECT *
-      FROM ${TABLE}
+      FROM ${TablesNames.GROUPS}
       WHERE id = :id
 
     `, [id])).rows?.[0] || null;
@@ -24,7 +23,7 @@ export default {
     return (await oracle.exec<Group>(`
 
       SELECT * 
-      FROM ${TABLE}
+      FROM ${TablesNames.GROUPS}
 
     `)).rows || [];
   },
@@ -39,7 +38,7 @@ export default {
     return (await oracle.exec<{ COUNT: number }>(`
     
       SELECT COUNT(id) as count
-      FROM ${TABLE}
+      FROM ${TablesNames.GROUPS}
       WHERE name = :a
     
     `, [name])).rows?.[0].COUNT! > 0;
@@ -49,7 +48,7 @@ export default {
     return (await oracle.exec<{ COUNT: number }>(`
     
       SELECT COUNT(*) as COUNT
-      FROM ${TABLE}
+      FROM ${TablesNames.GROUPS}
       WHERE id = :a
     
     `, [id])).rows?.[0].COUNT! > 0;
@@ -60,7 +59,7 @@ export default {
     return (await oracle.exec<{ COUNT: number }>(`
     
       SELECT COUNT(*) as COUNT
-      FROM ${TABLE}
+      FROM ${TablesNames.GROUPS}
       WHERE id IN :a
     
     `, [cs_id])).rows?.[0].COUNT === ids.length;
@@ -80,7 +79,7 @@ export default {
 
     await oracle.exec(`
     
-      INSERT INTO ${TABLE} (id, name)
+      INSERT INTO ${TablesNames.GROUPS} (id, name)
       VALUES (:a, :b)
 
     `, [ID, NAME]);
@@ -100,7 +99,7 @@ export default {
 
     await oracle.exec(`
     
-      UPDATE ${TABLE}
+      UPDATE ${TablesNames.GROUPS}
       SET name = :a
       WHERE id = :b
 

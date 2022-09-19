@@ -7,6 +7,5 @@ export interface Auth {
   TOKEN?: string;
   SOCKET?: string;
   
-  CREATE_DATE: Date;
   UPDATE_DATE?: Date;
 }

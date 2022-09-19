@@ -1,4 +1,4 @@
-import { getByRowId, getChildren } from "../..";
+import { getByRowId, getChildren, TablesNames } from "../..";
 import oracle from "../../../db/oracle";
 import { HttpError } from "../../../misc/errors";
 import { HttpCode } from "../../../misc/http-codes";
@@ -9,12 +9,10 @@ import { Category } from "../../misc/categories/interface";
 import { Tag } from "../../misc/tags/interface";
 import { Indicator, IndicatorDetails, IndicatorDetailsQueryResultItem } from "./interface";
 
-const TABLE_NAME = 'indicators';
-
 async function clearArgs(id: string) {
   return oracle.exec(`
   
-    DELETE FROM indicator_arguments
+    DELETE FROM ${TablesNames.INDICATOR_ARGUMENT}
     WHERE indicator_id = :a
   
   `, [id]);
@@ -23,7 +21,7 @@ async function clearArgs(id: string) {
 async function addArgs(id: string, args: { id: string, variable: string }[]) {
   return oracle.execMany(`
   
-    INSERT INTO indicator_arguments (indicator_id, arg_id, variable)
+    INSERT INTO ${TablesNames.INDICATOR_ARGUMENT} (indicator_id, arg_id, variable)
     VALUES (:a, :b, :c)
   
   `, args.map(arg => [id, arg.id, arg.variable]));
@@ -37,7 +35,7 @@ export default {
     return (await oracle.exec<Indicator>(`
 
       SELECT * 
-      FROM ${TABLE_NAME}
+      FROM ${TablesNames.INDICATORS}
       WHERE is_active = ${active}
       OFFSET :a ROWS
       FETCH NEXT :b ROWS ONLY
@@ -53,9 +51,9 @@ export default {
         IG.GROUP_ID GROUP_ID,
         IC.CATEGORY_ID CATEGORY_ID
       FROM
-        INDICATORS I,
-        INDICATOR_GROUP IG,
-        INDICATOR_CATEGORY IC
+        ${TablesNames.INDICATORS} I,
+        ${TablesNames.INDICATOR_GROUP} IG,
+        ${TablesNames.INDICATOR_CATEGORY} IC
       WHERE
         I.ID = :a
         AND I.ID = IG.INDICATOR_ID
@@ -89,7 +87,7 @@ export default {
     return (await oracle.exec<Indicator>(`
 
       SELECT *
-      FROM ${TABLE_NAME}
+      FROM ${TablesNames.INDICATORS}
       WHERE serial = :serial
 
     `, [serial])).rows?.[0] || null;
@@ -99,7 +97,7 @@ export default {
     return (await oracle.exec(`
 
       SELECT *
-      FROM indicators
+      FROM ${TablesNames.INDICATORS}
       WHERE topic_id = :a AND is_active = ${active}
 
     `, [topic_id])).rows || [];
@@ -114,7 +112,7 @@ export default {
     return (await oracle.exec<{ count: number }>(`
  
        SELECT COUNT(id) as count
-       FROM ${TABLE_NAME}
+       FROM ${TablesNames.INDICATORS}
        WHERE id = :id
  
      `, [id])).rows?.[0].count! > 0;
@@ -124,7 +122,7 @@ export default {
     return (await oracle.exec<{ COUNT: number }>(`
  
        SELECT COUNT(name) as count
-       FROM ${TABLE_NAME}
+       FROM ${TablesNames.INDICATORS}
        WHERE name_ar = :name_ar OR name_en = :name_en
  
      `, [name_ar, name_en])).rows?.[0].COUNT! > 0;
@@ -134,7 +132,7 @@ export default {
     return (await oracle.exec<{ count: number }>(`
  
        SELECT COUNT(name) as count
-       FROM ${TABLE_NAME}
+       FROM ${TablesNames.INDICATORS}
        WHERE (name_ar = :name_ar OR name_en = :name_en) AND id <> :id
  
      `, [name_ar, name_en, id])).rows?.[0].count! > 0;
@@ -149,12 +147,12 @@ export default {
     if (await this.nameExists(ind.NAME_AR, ind.NAME_EN))
       throw new HttpError(HttpCode.CONFLICT, "nameAlreadyExists");
 
-    const siblings = !!parent ? [] : await getChildren(TABLE_NAME, parent!);
+    const siblings = !!parent ? [] : await getChildren(TablesNames.INDICATORS, parent!);
     const id = Serial.gen(parent, siblings);
 
     const result = await oracle.exec(`
 
-      INSERT INTO ${TABLE_NAME} (id, orgunit_id, topic_id, name_ar, name_en, desc_en, desc_ar, unit_ar, unit_en)
+      INSERT INTO ${TablesNames.INDICATORS} (id, orgunit_id, topic_id, name_ar, name_en, desc_en, desc_ar, unit_ar, unit_en)
       VALUES (:a, :b, :c, :d, :e, :f, :g, :h, :i)
 
     `, [
@@ -169,7 +167,7 @@ export default {
       ind.UNIT_EN
     ]);
 
-    return getByRowId<Indicator>(TABLE_NAME, result.lastRowid!);
+    return getByRowId<Indicator>(TablesNames.INDICATORS, result.lastRowid!);
   },
 
 
@@ -185,7 +183,7 @@ export default {
 
     await oracle.exec(`
     
-      UPDATE ${TABLE_NAME}
+      UPDATE ${TablesNames.INDICATORS}
       SET name_ar = :a, name_en = :b, desc_ar = :c, desc_en = :d, unit_ar = :e, unit_en = :f, update_date = :g
       WHERE id = :h
 
@@ -213,7 +211,7 @@ export default {
 
     await oracle.exec(`
     
-      UPDATE ${TABLE_NAME}
+      UPDATE ${TablesNames.INDICATORS}
       SET interval = :a, update_date = :b
       WHERE id = :c
     
@@ -232,7 +230,7 @@ export default {
 
     await oracle.exec(`
     
-      UPDATE ${TABLE_NAME}
+      UPDATE ${TablesNames.INDICATORS}
       SET kpi_min = :a, kpi_max = :b, update_date = :c
       WHERE id = :d
     
@@ -255,7 +253,7 @@ export default {
 
     await oracle.exec(`
     
-      UPDATE ${TABLE_NAME}
+      UPDATE ${TablesNames.INDICATORS}
       SET equation = :a, date = :b
       WHERE id = :c
     
@@ -267,14 +265,14 @@ export default {
 
 
 
-  // organziation
+  // orgunit
   // ----------------------------------------------------------------------------------------------------------------
-  async updateOrganziation(indicator_id: string, orgunit_id: string) {
+  async updateOrgunit(indicator_id: string, orgunit_id: string) {
     const date = new Date();
 
     await oracle.exec(`
     
-      UPDATE ${TABLE_NAME}
+      UPDATE ${TablesNames.INDICATORS}
       SET orgunit_id = :a, update_date = :b
       WHERE id = :c
     
@@ -288,30 +286,16 @@ export default {
 
   // activation
   // ----------------------------------------------------------------------------------------------------------------
-  async activate(indicator_id: string) {
+  async activate(indicator_id: string, state = 1) {
     const date = new Date();
 
     await oracle.exec(`
     
-      UPDATE ${TABLE_NAME}
-      SET is_active = 1, update_date = :b
+      UPDATE ${TablesNames.INDICATORS}
+      SET is_active = :a, update_date = :b
       WHERE id = :c
     
-    `, [date, indicator_id]);
-
-    return date;
-  },
-
-  async deactivate(indicator_id: string) {
-    const date = new Date();
-
-    await oracle.exec(`
-    
-      UPDATE ${TABLE_NAME}
-      SET is_active = 0, update_date = :b
-      WHERE id = :c
-    
-    `, [date, indicator_id]);
+    `, [state, date, indicator_id]);
 
     return date;
   },
@@ -325,7 +309,7 @@ export default {
     return (await oracle.exec<Group>(`
     
       SELECT G.*
-      FROM GROUPS G, INDICATOR_GROUP IG
+      FROM ${TablesNames.GROUPS} G, ${TablesNames.INDICATOR_GROUP} IG
       WHERE IG.INDICATOR_ID = :a AND G.ID = IG.GROUP_ID
     
     `, [indicator_id])).rows || [];
@@ -335,7 +319,7 @@ export default {
   async assignGroup(indicator_id: string, group_id: string) {
     await oracle.exec(`
     
-      INSERT INTO indicator_group (indicator_id, group_id)
+      INSERT INTO ${TablesNames.INDICATOR_GROUP} (indicator_id, group_id)
       VALUES (:a, :b)
 
     `, [indicator_id, group_id])
@@ -346,7 +330,7 @@ export default {
   async removeGroup(indicator_id: string, group_id: string) {
     await oracle.exec(`
     
-      DELETE FROM indicator_group
+      DELETE FROM ${TablesNames.INDICATOR_GROUP}
       WHERE indicator_id = :a, group_id = :b
 
     `, [indicator_id, group_id])
@@ -363,7 +347,7 @@ export default {
     return (await oracle.exec<Category>(`
     
       SELECT C.*
-      FROM CATEGORIES C, INDICATOR_CATEGORY IC
+      FROM ${TablesNames.CATEGORIES} C, ${TablesNames.INDICATOR_CATEGORY} IC
       WHERE IC.INDICATOR_ID = :a AND C.ID = IC.CATEGORY_ID
     
     `, [indicator_id])).rows || [];
@@ -372,7 +356,7 @@ export default {
   async addCategory(indicator_id: string, cat_id: string) {
     await oracle.exec(`
     
-      INSERT INTO indicator_category (indicator_id, category_id)
+      INSERT INTO ${TablesNames.INDICATOR_CATEGORY} (indicator_id, category_id)
       VALUES (:a, :b)
     
     `, [indicator_id, cat_id]);
@@ -383,7 +367,7 @@ export default {
   async removeCategory(indicator_id: string, cat_id: string) {
     await oracle.exec(`
     
-      DELETE FROM indicator_category
+      DELETE FROM ${TablesNames.INDICATOR_CATEGORY}
       WHERE indicator_id = :a AND category_id = :b
     
     `, [indicator_id, cat_id]);
@@ -407,9 +391,9 @@ export default {
         V.NAME_AR AS VALUE_AR,
         V.NAME_EN AS VALUE_EN
       FROM 
-        TAGS_KEYS K,
-        TAGS_VALUES V,
-        INDICATOR_TAG IT
+        ${TablesNames.TAGS_KEYS} K,
+        ${TablesNames.TAGS_VALUES} V,
+        ${TablesNames.INDICATOR_TAG} IT
       WHERE
         IT.INDICATOR_ID = :a 
         AND V.ID = IT.TAG_VALUE_ID
@@ -421,7 +405,7 @@ export default {
   async addTag(indicator_id: string, tag_value_id: string) {
     await oracle.exec(`
     
-      INSERT INTO indicator_tag (indicator_id, tag_value_id)
+      INSERT INTO ${TablesNames.INDICATOR_TAG} (indicator_id, tag_value_id)
       VALUES (:a, :b)
     
     `, [indicator_id, tag_value_id]);
@@ -432,7 +416,7 @@ export default {
   async removeTag(indicator_id: string, tag_id: string) {
     await oracle.exec(`
     
-      DELETE FROM indicator_tag
+      DELETE FROM ${TablesNames.INDICATOR_TAG}
       WHERE indicator_id = :a AND tag_id = :b
     
     `, [indicator_id, tag_id]);
@@ -449,7 +433,7 @@ export default {
     return (await oracle.exec<Document>(`
     
       SELECT D.*
-      FROM DOCUMENTS D, INDICATOR_DOCUMENT ID
+      FROM ${TablesNames.DOCUMENTS} D, ${TablesNames.INDICATOR_DOCUMENT} ID
       WHERE ID.INDICATOR_ID = :a AND D.ID = ID.DOCUMENT_ID
     
     `, [indicator_id])).rows || [];
@@ -465,8 +449,8 @@ export default {
     
       SELECT I.* IA.VARIABLE
       FROM
-        INDICAOTRS I,
-        INDICATOR_ARGUMENT IA
+        ${TablesNames.INDICATORS} I,
+        ${TablesNames.INDICATOR_ARGUMENT} IA
       WHERE
         IA.INDICATOR_ID = :a
         AND I.ID = IA.ARG_ID

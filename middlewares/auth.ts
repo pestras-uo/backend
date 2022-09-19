@@ -6,12 +6,12 @@ import RolesManager from "../auth/roles/manager";
 import { HttpError } from "../misc/errors";
 import userModel from '../models/auth/user';
 
-export default function (tokenType = TokenType.API, actions: Action[] = [], affectedIdParam?: string) {
+export default function (tokenType = TokenType.SESSION, actions: Action[] = [], affectedIdParam?: string) {
   return async (req: Request, res: Response, next: NextFunction) => {
 
     let token: string;
 
-    if (tokenType === TokenType.API) {
+    if (tokenType === TokenType.SESSION) {
       let authHeader = req.header("Authorization");
 
       if (!authHeader)

@@ -1,7 +1,6 @@
+import { TablesNames } from "../..";
 import oracle from "../../../db/oracle";
 import { Role } from "./interface";
-
-const TABLE_NAME = 'roles';
 
 export default {
 
@@ -9,7 +8,7 @@ export default {
     return (await oracle.exec<Role>(`
 
       SELECT *
-      FROM ${TABLE_NAME}
+      FROM ${TablesNames.ROLES}
       WHERE id = :id
 
     `, [id])).rows?.[0] || null;
@@ -19,7 +18,7 @@ export default {
     return (await oracle.exec<Role>(`
 
       SELECT * 
-      FROM ${TABLE_NAME}
+      FROM ${TablesNames.ROLES}
 
     `)).rows || [];
   }

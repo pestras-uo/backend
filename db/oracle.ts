@@ -10,14 +10,14 @@ export default {
     console.log("connecting to database...");
 
     try {
-      const pool = await oracledb.createPool({
-        user: config.dbUsername,
-        password: config.dbPassword,
+      await oracledb.createPool({
+        user: config.dbSystemUser,
+        password: config.dbSystemPass,
         connectString: config.dbUrl,
         // edition: 'ORA$BASE', // used for Edition Based Redefintion
         // events: false, // whether to handle Oracle Database FAN and RLB events or support CQN
         // externalAuth: false, // whether connections should be established using External Authentication
-        // homogeneous: true, // all connections in the pool have the same credentials
+        homogeneous: false, // all connections in the pool have the same credentials
         // poolAlias: 'default', // set an alias to allow access to the pool via a name.
         // poolIncrement: 1, // only grow the pool by one connection at a time
         // poolMax: 4, // maximum size of the pool. Increase UV_THREADPOOL_SIZE if you increase poolMax
@@ -41,13 +41,13 @@ export default {
     }
   },
 
-  async exec<T = unknown>(sql: string, bindParams?: oracledb.BindParameters, options?: oracledb.ExecuteOptions) {
+  async exec<T = unknown>(sql: string, bindParams: oracledb.BindParameters = [], options: oracledb.ExecuteOptions = {}) {
     let conn!: oracledb.Connection;
 
     try {
       conn = await oracledb.getPool().getConnection();
 
-      return await conn.execute<T>(sql, bindParams!, options!);
+      return await conn.execute<T>(sql, bindParams, options);
 
     } catch (error: any) {
       throw error;
@@ -56,13 +56,43 @@ export default {
     }
   },
 
-  async execMany<T = unknown>(sql: string, bindParams?: oracledb.BindParameters[], options?: oracledb.ExecuteOptions) {
+  async execMany<T = unknown>(sql: string, bindParams: oracledb.BindParameters[] = [], options: oracledb.ExecuteOptions = {}) {
     let conn!: oracledb.Connection;
 
     try {
       conn = await oracledb.getPool().getConnection();
 
-      return await conn.executeMany<T>(sql, bindParams!, options!);
+      return await conn.executeMany<T>(sql, bindParams, options);
+
+    } catch (error: any) {
+      throw error;
+    } finally {
+      await this.closeConn(conn);
+    }
+  },
+
+  async exec2<T = unknown>(sql: string, bindParams: oracledb.BindParameters = [], options: oracledb.ExecuteOptions = {}) {
+    let conn!: oracledb.Connection;
+
+    try {
+      conn = await oracledb.getPool().getConnection({ user: config.dbReadingsUser, password: config.dbReadingsPass });
+
+      return await conn.execute<T>(sql, bindParams, options);
+
+    } catch (error: any) {
+      throw error;
+    } finally {
+      await this.closeConn(conn);
+    }
+  },
+
+  async execMany2<T = unknown>(sql: string, bindParams: oracledb.BindParameters[] = [], options: oracledb.ExecuteOptions = {}) {
+    let conn!: oracledb.Connection;
+
+    try {
+      conn = await oracledb.getPool().getConnection({ user: config.dbReadingsUser, password: config.dbReadingsPass });
+
+      return await conn.executeMany<T>(sql, bindParams, options);
 
     } catch (error: any) {
       throw error;

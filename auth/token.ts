@@ -7,10 +7,10 @@ import { HttpError } from '../misc/errors';
 import { HttpCode } from '../misc/http-codes';
 
 export enum TokenType {
-  API,
+  SESSION,
   PASSWORD,
   EMAIL,
-  SHARE
+  API
 }
 
 export interface TokenData<T = any> {
@@ -44,7 +44,7 @@ export async function verifyToken(token: string, type: TokenType) {
     throw new HttpError(HttpCode.INVALID_TOKEN, "invalidTokenType");
 
   // Check token expire date
-  if (tokenData.type === TokenType.API) {
+  if (tokenData.type === TokenType.SESSION) {
     if (!(await authModel.hasSession(userId, token)))
       throw new HttpError(HttpCode.INVALID_TOKEN, "outDatedToken");
 
@@ -72,7 +72,7 @@ export async function verifyToken(token: string, type: TokenType) {
     if (Date.now() - tokenData.date > config.passwordTokenExpiry)
       throw new HttpError(HttpCode.INVALID_TOKEN, "tokenExpired");
 
-  } else if (tokenData.type === TokenType.SHARE) {
+  } else if (tokenData.type === TokenType.API) {
     if (tokenData.duration && Date.now() - tokenData.date > tokenData.duration)
       throw new HttpError(HttpCode.INVALID_TOKEN, "tokenExpired");
   }

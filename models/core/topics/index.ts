@@ -1,4 +1,4 @@
-import { getByRowId, getChildren } from "../..";
+import { getByRowId, getChildren, TablesNames } from "../..";
 import oracle from "../../../db/oracle";
 import { HttpError } from "../../../misc/errors";
 import { HttpCode } from "../../../misc/http-codes";
@@ -10,8 +10,6 @@ import { Category } from "../../misc/categories/interface";
 import { Tag } from "../../misc/tags/interface";
 import { omit } from "../../../util/pick-omit";
 
-const TABLE = 'topics';
-
 export default {
 
   // Getters
@@ -20,7 +18,7 @@ export default {
     return (await oracle.exec<Topic>(`
 
       SELECT *
-      FROM ${TABLE}
+      FROM ${TablesNames.TOPICS}
 
     `)).rows || [];
   },
@@ -33,9 +31,9 @@ export default {
         TG.GROUP_ID GROUP_ID,
         TC.GROUP_ID CATEGORY_ID
       FROM
-        TOPICS T,
-        TOPIC_GROUP TG,
-        TOPIC_CATEGORY TG
+        ${TablesNames.TOPICS} T,
+        ${TablesNames.TOPIC_GROUP} TG,
+        ${TablesNames.TOPIC_CATEGORY} TG
       WHERE
         T.ID = :a
         AND T.ID = TG.TOPIC_ID
@@ -74,7 +72,7 @@ export default {
     return (await oracle.exec<{ count: number }>(`
 
       SELECT COUNT(id) as count
-      FROM ${TABLE}
+      FROM ${TablesNames.TOPICS}
       WHERE id = :id
 
     `, [id])).rows?.[0].count! > 0;
@@ -84,7 +82,7 @@ export default {
     return (await oracle.exec<{ COUNT: number }>(`
 
       SELECT COUNT(name) as count
-      FROM ${TABLE}
+      FROM ${TablesNames.TOPICS}
       WHERE name_ar = :name_ar OR name_en = :name_en
 
     `, [name_ar, name_en])).rows?.[0].COUNT! > 0;
@@ -94,7 +92,7 @@ export default {
     return (await oracle.exec<{ count: number }>(`
 
       SELECT COUNT(name) as count
-      FROM ${TABLE}
+      FROM ${TablesNames.TOPICS}
       WHERE (name_ar = :name_ar OR name_en = :name_en) AND id <> :id
 
     `, [name_ar, name_en, id])).rows?.[0].count! > 0;
@@ -109,17 +107,17 @@ export default {
     if (await this.nameExists(name_ar, name_en))
       throw new HttpError(HttpCode.CONFLICT, "nameAlreadyExists");
 
-    const siblings = !!parent ? [] : await getChildren(TABLE, parent!);
+    const siblings = !!parent ? [] : await getChildren(TablesNames.TOPICS, parent!);
     const id = Serial.gen(parent, siblings);
 
     const result = await oracle.exec(`
 
-      INSERT INTO ${TABLE} (id, name_ar, name_en, desc_ar, desc_en)
+      INSERT INTO ${TablesNames.TOPICS} (id, name_ar, name_en, desc_ar, desc_en)
       VALUES (:a, :b, :c, :d, :e)
 
     `, [id, name_ar, name_en, desc_ar, desc_en]);
 
-    return getByRowId<Topic>(TABLE, result.lastRowid!);
+    return getByRowId<Topic>(TablesNames.TOPICS, result.lastRowid!);
   },
 
 
@@ -135,7 +133,7 @@ export default {
 
     await oracle.exec(`
     
-      UPDATE ${TABLE}
+      UPDATE ${TablesNames.TOPICS}
       SET (name_ar = :a, name_en = :b, desc_ar = :c, desc_en = :d update_date = :e)
       WHERE id = :f
     
@@ -153,7 +151,7 @@ export default {
     return (await oracle.exec<Category>(`
     
       SELECT C.*
-      FROM CATEGORIES C, TOPIC_CATEGORY TC
+      FROM ${TablesNames.CATEGORIES} C, ${TablesNames.TOPIC_CATEGORY} TC
       WHERE TC.TOPIC_ID = :a AND C.ID = TC.CATEGORY_ID
     
     `, [topic_id])).rows || [];
@@ -162,7 +160,7 @@ export default {
   async addCategory(topic_id: string, cat_id: string) {
     await oracle.exec(`
     
-      INSERT INTO topic_category (topic_id, category_id)
+      INSERT INTO ${TablesNames.TOPIC_CATEGORY} (topic_id, category_id)
       VALUES (:a, :b)
     
     `, [topic_id, cat_id]);
@@ -173,7 +171,7 @@ export default {
   async removeCategory(topic_id: string, cat_id: string) {
     await oracle.exec(`
     
-      DELETE FROM topic_category
+      DELETE FROM ${TablesNames.TOPIC_CATEGORY}
       WHERE topic_id = :a AND category_id = :b
     
     `, [topic_id, cat_id]);
@@ -197,9 +195,9 @@ export default {
         V.NAME_AR AS VALUE_AR,
         V.NAME_EN AS VALUE_EN
       FROM 
-        TAGS_KEYS K,
-        TAGS_VALUES V,
-        TOPIC_TAG TT
+        ${TablesNames.TAGS_KEYS} K,
+        ${TablesNames.TAGS_VALUES} V,
+        ${TablesNames.TOPIC_TAG} TT
       WHERE
         TT.TOPIC_ID = :a 
         AND V.ID = TT.TAG_VALUE_ID
@@ -211,7 +209,7 @@ export default {
   async addTag(topic_id: string, tag_value_id: string) {
     await oracle.exec(`
     
-      INSERT INTO topic_tag (topic_id, tag_value_id)
+      INSERT INTO ${TablesNames.TOPIC_TAG} (topic_id, tag_value_id)
       VALUES (:a, :b)
     
     `, [topic_id, tag_value_id]);
@@ -222,7 +220,7 @@ export default {
   async removeTag(topic_id: string, tag_id: string) {
     await oracle.exec(`
     
-      DELETE FROM topic_tag
+      DELETE FROM ${TablesNames.TOPIC_TAG}
       WHERE topic_id = :a AND tag_id = :b
     
     `, [topic_id, tag_id]);
@@ -240,7 +238,7 @@ export default {
     return (await oracle.exec<Group>(`
     
       SELECT G.*
-      FROM GROUPS G, TOPIC_GROUP TG
+      FROM ${TablesNames.GROUPS} G, ${TablesNames.TOPIC_GROUP} TG
       WHERE TG.TOPIC_ID = :a AND G.ID = TG.GROUP_ID
     
     `, [topic_id])).rows || [];
@@ -250,7 +248,7 @@ export default {
   async assignGroup(topic_id: string, group_id: string) {
     await oracle.exec(`
     
-      INSERT INTO topic_group (topic_id, group_id)
+      INSERT INTO ${TablesNames.TOPIC_GROUP} (topic_id, group_id)
       VALUES (:a, :b)
 
     `, [topic_id, group_id])
@@ -261,7 +259,7 @@ export default {
   async removeGroup(topic_id: string, group_id: string) {
     await oracle.exec(`
     
-      DELETE FROM topic_group
+      DELETE FROM ${TablesNames.TOPIC_GROUP}
       WHERE topic_id = :a, group_id = :b
 
     `, [topic_id, group_id])
@@ -278,7 +276,7 @@ export default {
     return (await oracle.exec<Document>(`
     
       SELECT D.*
-      FROM DOCUMENTS D, TOPIC_DOCUMENT TD
+      FROM ${TablesNames.DOCUMENTS} D, ${TablesNames.TOPIC_DOCUMENT} TD
       WHERE TD.TOPIC_ID = :a AND D.ID = TD.DOCUMENT_ID
     
     `, [topic_id])).rows || [];

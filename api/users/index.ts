@@ -11,23 +11,23 @@ import { avatarUpload } from '../../middlewares/upload';
 export default Router()
   .get(
     '/', 
-    auth(TokenType.API, ["users.get.all"]), 
+    auth(TokenType.SESSION, ["users.get.all"]), 
     controller.getAll
   )
   .get(
     '/inactive',
-    auth(TokenType.API, ["users.get.inactive"]),
+    auth(TokenType.SESSION, ["users.get.inactive"]),
     controller.getInactive
   )
   .get(
     '/organziation/:id', 
-    auth(TokenType.API, ["users.get.by-orgunit"]),
+    auth(TokenType.SESSION, ["users.get.by-orgunit"]),
     orgMiddlewares.exists("params.id"),
     controller.getByOrgunit
   )
   .get(
     '/:id',
-    auth(TokenType.API, ["users.get.one"]),
+    auth(TokenType.SESSION, ["users.get.one"]),
     controller.get
   )
   .put(

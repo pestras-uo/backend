@@ -13,7 +13,7 @@ const ws = {
       const token = socket.handshake.query.token;
 
       try {
-        socket.data._id = (await verifyToken(<string>token, TokenType.API)).user.ID;
+        socket.data._id = (await verifyToken(<string>token, TokenType.SESSION)).user.ID;
         socket.data.token = token;
         next();
       } catch (error: any) {

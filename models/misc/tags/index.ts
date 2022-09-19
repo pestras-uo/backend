@@ -1,12 +1,9 @@
-import { getByRowId } from "../..";
+import { getByRowId, TablesNames } from "../..";
 import oracle from "../../../db/oracle"
 import { HttpError } from "../../../misc/errors";
 import { HttpCode } from "../../../misc/http-codes";
 import { TagKey, TagValue } from "./interface";
 import { randomUUID } from 'crypto';
-
-const TAGS_KEYS_TABLE_NAME = 'tags_keys';
-const TAGS_VALUES_TABLE_NAME = 'tags_values';
 
 export default {
 
@@ -17,7 +14,7 @@ export default {
     return (await oracle.exec<TagKey>(`
     
       SELECT *
-      FROM ${TAGS_KEYS_TABLE_NAME}
+      FROM ${TablesNames.TAGS_KEYS}
     
     `)).rows || [];
   },
@@ -26,7 +23,7 @@ export default {
     return (await oracle.exec<TagValue>(`
     
       SELECT *
-      FROM ${TAGS_VALUES_TABLE_NAME}
+      FROM ${TablesNames.TAGS_VALUES}
     
     `)).rows || [];
   },
@@ -35,7 +32,7 @@ export default {
     return (await oracle.exec<TagKey>(`
     
       SELECT *
-      FROM ${TAGS_KEYS_TABLE_NAME}
+      FROM ${TablesNames.TAGS_KEYS}
       WHERE id = :id
     
     `, [id])).rows?.[0] || null;
@@ -45,7 +42,7 @@ export default {
     return (await oracle.exec<TagValue>(`
     
       SELECT *
-      FROM ${TAGS_VALUES_TABLE_NAME}
+      FROM ${TablesNames.TAGS_VALUES}
       WHERE id = :id
     
     `, [id])).rows?.[0] || null;
@@ -60,7 +57,7 @@ export default {
     return (await oracle.exec<{ COUNT: number }>(`
     
       SELECT COUNT(*)
-      FROM ${TAGS_KEYS_TABLE_NAME}
+      FROM ${TablesNames.TAGS_KEYS}
       WHERE name_ar = :a OR name_en = :b
     
     `, [name_ar, name_en])).rows?.[0].COUNT! > 0;
@@ -70,7 +67,7 @@ export default {
     return (await oracle.exec<{ COUNT: number }>(`
     
       SELECT COUNT(*)
-      FROM ${TAGS_VALUES_TABLE_NAME}
+      FROM ${TablesNames.TAGS_VALUES}
       WHERE (name_ar = :a OR name_en = :b) AND tag_key_id = :c
     
     `, [name_ar, name_en, key_id])).rows?.[0].COUNT! > 0;
@@ -80,7 +77,7 @@ export default {
     return (await oracle.exec<{ COUNT: number }>(`
     
       SELECT COUNT(*)
-      FROM ${TAGS_KEYS_TABLE_NAME}
+      FROM ${TablesNames.TAGS_KEYS}
       WHERE (name_ar = :a OR name_en = :b) AND id <> :c
     
     `, [name_ar, name_en, id])).rows?.[0].COUNT! > 0;
@@ -90,7 +87,7 @@ export default {
     return (await oracle.exec<{ COUNT: number }>(`
     
       SELECT COUNT(*)
-      FROM ${TAGS_VALUES_TABLE_NAME}
+      FROM ${TablesNames.TAGS_VALUES}
       WHERE (name_ar = :a OR name_en = :b) AND tag_key_id = :c AND id <> :d
     
     `, [name_ar, name_en, key_id, value_id])).rows?.[0].COUNT! > 0;
@@ -108,12 +105,12 @@ export default {
     const id = randomUUID();
     const result = await oracle.exec(`
     
-      INSERT INTO ${TAGS_KEYS_TABLE_NAME} (id, name_ar, name_en)
+      INSERT INTO ${TablesNames.TAGS_KEYS} (id, name_ar, name_en)
       VALUES(:a, :b, :c)
     
     `, [id, name_ar, name_en]);
 
-    return getByRowId<TagKey>(TAGS_KEYS_TABLE_NAME, result.lastRowid!);
+    return getByRowId<TagKey>(TablesNames.TAGS_KEYS, result.lastRowid!);
   },
 
   async createValue(key_id: string, name_ar: string, name_en: string) {
@@ -123,12 +120,12 @@ export default {
     const id = randomUUID();
     const result = await oracle.exec(`
     
-      INSERT INTO ${TAGS_VALUES_TABLE_NAME} (id, taag_key_id, name_ar, name_en)
+      INSERT INTO ${TablesNames.TAGS_VALUES} (id, taag_key_id, name_ar, name_en)
       VALUES(:a, :b, :c, :d)
     
     `, [id, key_id, name_ar, name_en]);
 
-    return getByRowId<TagKey>(TAGS_KEYS_TABLE_NAME, result.lastRowid!);
+    return getByRowId<TagKey>(TablesNames.TAGS_KEYS, result.lastRowid!);
   },
 
 
@@ -144,7 +141,7 @@ export default {
 
     await oracle.exec(`
     
-      UPDATE ${TAGS_KEYS_TABLE_NAME}
+      UPDATE ${TablesNames.TAGS_KEYS}
       SET name_ar = :a, name_en = :b, update_date = :c
       WHERE id = :d
     
@@ -161,7 +158,7 @@ export default {
 
     await oracle.exec(`
     
-      UPDATE ${TAGS_VALUES_TABLE_NAME}
+      UPDATE ${TablesNames.TAGS_VALUES}
       SET value_ar = :a, value_en = :b, update_date = :c
       WHERE id = :d AND tag_key_id = :e
     
@@ -177,7 +174,7 @@ export default {
   // -------------------------------------------------------------------------------
   async deleteKey(id: string) {
     await oracle.exec(`
-      DELETE FROM ${TAGS_KEYS_TABLE_NAME}
+      DELETE FROM ${TablesNames.TAGS_KEYS}
       WHERE id = :id
     `, [id]);
 
@@ -186,7 +183,7 @@ export default {
 
   async deleteValue(id: string) {
     await oracle.exec(`
-      DELETE FROM ${TAGS_VALUES_TABLE_NAME}
+      DELETE FROM ${TablesNames.TAGS_VALUES}
       WHERE id = :id
     `, [id]);
 
