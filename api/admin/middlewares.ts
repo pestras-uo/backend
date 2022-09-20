@@ -10,7 +10,7 @@ export default {
 
     return (req: Request, res: Response, next: NextFunction) => {
       if (validator.validate(req.body))
-        next();
+        return next();
 
       next(new HttpError(HttpCode.BAD_REQUEST, validator.error.message));
     }

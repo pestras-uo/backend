@@ -41,18 +41,18 @@ export async function getByRowId<T>(table: string, rowid: string) {
   return (await oracle.exec<T>(`
   
     SELECT *
-    FROM :table
-    WHERE rowid = :rowid
+    FROM ${table}
+    WHERE rowid = :a
   
-  `, [table, rowid])).rows?.[0];
+  `, [rowid])).rows?.[0];
 }
 
 export async function getChildren(table: string, serial: string) {
-  const result = await oracle.exec<{ SERIAL: string }>(`
+  const result = await oracle.exec<{ ID: string }>(`
 
-    SELECT serial
+    SELECT id
     FROM ${table}
-    WHERE serial LIKE '${serial}%'
+    WHERE id LIKE '${serial}%'
 
   `);
 
@@ -61,6 +61,6 @@ export async function getChildren(table: string, serial: string) {
 
   return result
     .rows
-    .filter(row => row.SERIAL === serial)
-    .map(row => Serial.last(row.SERIAL));
+    .filter(row => row.ID === serial)
+    .map(row => Serial.last(row.ID));
 }

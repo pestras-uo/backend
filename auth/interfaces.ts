@@ -3,6 +3,9 @@ import { TokenData } from "./token";
 
 export interface ResLocals {
   user: UserDetails;
-  token: string;
-  tokenData: TokenData;
+  session: {
+    TOKEN: string,
+    TOKEN_CREATE_DATE: Date,
+    TOKEN_EXP_DATE: Date
+  }
 }

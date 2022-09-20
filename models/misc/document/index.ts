@@ -26,24 +26,17 @@ export default {
   // create methods
   // ----------------------------------------------------------------------------------------------------------------
 
-  async create(doc: Document) {
+  async create(path: string, name_ar: string, name_en: string) {
     const id = randomUUID();
-    const result = await oracle.exec(`
-      INSERT INTO documnets (id, path, mime_type, name_ar, name_en, desc_ar, desc_en)
-      VALUES (:a, :b, :c, :d, :e, :f, :g)
-    `, [
-      id,
-      doc.PATH,
-      doc.MIME_TYPE,
-      doc.NAME_AR,
-      doc.NAME_EN,
-      doc.DESC_AR,
-      doc.DESC_EN
-    ]);
+    
+    await oracle.exec(`
 
-    const d = await getByRowId<Document>(TablesNames.DOCUMENTS, result.lastRowid!);
+      INSERT INTO ${TablesNames.DOCUMENTS} (id, path, name_ar, name_en)
+      VALUES (:a, :b, :c, :d)
 
-    return d;
+    `, [id, path, name_ar, name_en]);
+
+    return id;
   },
 
 

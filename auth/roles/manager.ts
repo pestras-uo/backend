@@ -16,7 +16,9 @@ export default {
         const length = actionParts.length > roleActionParts.length ? actionParts.length : roleActionParts.length;
 
         for (let i = 0; i < length; i++) {
-          if (roleActionParts[i] !== "*" && roleActionParts[i] === actionParts[i])
+          if (roleActionParts[i] === "*")
+            return true;
+          if (roleActionParts[i] !== actionParts[i])
             return false;
         }
       }
@@ -29,20 +31,13 @@ export default {
     return roles.reduce((top, curr) => curr < top ? curr : top, roles[0]);
   },
 
-  authorize(user: UserDetails, rolesOrActions: (number | Action)[], affected?: UserDetails) {
-    if (affected && this.getTopRole(user.ROLES) <= this.getTopRole(affected.ROLES))
+  authorize(user: UserDetails, actions: Action[], affected?: UserDetails) {
+    if (affected && this.getTopRole(user.ROLES) >= this.getTopRole(affected.ROLES))
       return false;
 
-    for (const roleOrAction of rolesOrActions) {
-      if (typeof roleOrAction === "number") {
-        if (this.hasRoleId(user, roleOrAction))
-          return true;
-
-      } else {
-        if (this.hasAction(user, roleOrAction))
-          return true
-      }
-    }
+    for (const action of actions)
+      if (this.hasAction(user, action))
+        return true;
 
     return false;
   }

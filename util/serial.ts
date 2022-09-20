@@ -1,8 +1,8 @@
 export default {
 
-  separator: '-',
+  separator: '_',
 
-  regex: /^\d{4}(-\d{4})*$/,
+  regex: /^\d{4}(_\d{4})*$/,
 
   isValid(serial: string) {
     return this.regex.test(serial)
@@ -65,10 +65,10 @@ export default {
         chars[Math.round(Math.random() * 35)],
         chars[Math.round(Math.random() * 35)],
         chars[Math.round(Math.random() * 35)]
-      ].join();
+      ].join("");
 
       if (!exclude.includes(newSerial))
-        return !!parentSerial ? `${parentSerial}:${newSerial}` : newSerial;
+        return !!parentSerial ? `${parentSerial}${this.separator}${newSerial}` : newSerial;
     }
   }
 }

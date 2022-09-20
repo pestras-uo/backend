@@ -24,7 +24,7 @@ export default Router()
     controller.create
   )
   .put(
-    '/name/:id',
+    '/:id',
     middlewares.validate(orgunitsValidators.UPDATE_NAME),
     auth(TokenType.SESSION, ['orgunits.update.name']),
     orgunitsMiddlewares.exists("params.id"),

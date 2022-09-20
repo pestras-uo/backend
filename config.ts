@@ -16,10 +16,8 @@ const config = {
 
   // session token
   tokenSecret: process.env.TOKEN_SECRET || "jiv8942yg4iu32j904g2v2249",
-  apiTokenExpiry: +(process.env.API_TOKEN_EXP || 0) || 1000 * 60 * 60 * 24,
-  rememberApiTokenExpiry: +(process.env.REMEMBER_API_TOKEN_EXP || 0) || 1000 * 60 * 60 * 24 * 60,
-  emailTokenExpiry: +(process.env.EMAIL_TOKEN_EXP || 0) || 1000 * 60 * 60,
-  passwordTokenExpiry: +(process.env.RESET_PASS_TOKEN_EXP || 0) || 1000 * 60 * 60,
+  sessionTokenExpiry: +(process.env.SESSION_TOKEN_EXP || 0) || 1000 * 60 * 60 * 24,
+  rememberSessionTokenExpiry: +(process.env.REMEMBER_SESSION_TOKEN_EXP || 0) || 1000 * 60 * 60 * 24 * 30,
 
   dbSystemUser: process.env.DB_SYSTEM_USER,
   dbSystemPass: process.env.DB_SYSTEM_PASS,
@@ -29,11 +27,10 @@ const config = {
 
   // email config
   frontEndUrl: process.env.FRONTEND_URL,
-  sendGridApiKey: process.env.SEND_GRID_API_KEY,
 
   // upload files config
-  maxDocumentUploadSize: +(process.env.MAX_UPLOAD_SIZE || 0) || (1024 * 1024),
-  maxAvatarUploadSize: +(process.env.MAX_UPLOAD_SIZE || 0) || 1024
+  maxDocumentUploadSize: +(process.env.MAX_DOC_UPLOAD_SIZE || 0) || (1024 * 1024),
+  maxAvatarUploadSize: +(process.env.MAX_AVA_UPLOAD_SIZE || 0) || (1024 * 100)
 } as const;
 
 export default config;

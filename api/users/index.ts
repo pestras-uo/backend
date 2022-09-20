@@ -20,7 +20,7 @@ export default Router()
     controller.getInactive
   )
   .get(
-    '/organziation/:id', 
+    '/orgunit/:id', 
     auth(TokenType.SESSION, ["users.get.by-orgunit"]),
     orgMiddlewares.exists("params.id"),
     controller.getByOrgunit
@@ -31,17 +31,17 @@ export default Router()
     controller.get
   )
   .put(
-    '/change-username',
+    '/username',
     middlewares.validate(UserValidators.CHANGE_USERNAME),
     auth(),
     usersMiddlewares.usernameExists("body.username"),
-    controller.changeUsername
+    controller.updateUsername
   )
   .put(
-    '/change-password',
+    '/password',
     middlewares.validate(UserValidators.CHANGE_PASSWORD),
     auth(),
-    controller.changePassword
+    controller.updatePassword
   )
   .put(
     '/profile',

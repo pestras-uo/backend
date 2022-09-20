@@ -1,12 +1,27 @@
 import multer from 'multer';
 import path from 'path';
+import fs from 'fs';
 import config from '../config';
 import { randomUUID } from 'crypto';
 import { extension } from 'mime-types';
+import { Request } from 'express';
 
-const documentsStorage = multer.diskStorage({
-  destination: function (_, __, cb) {
-    cb(null, path.join(process.cwd(), 'public', 'upload', 'documents'));
+const docsStorage = multer.diskStorage({
+  destination: function (req: Request, __, cb) {
+    const dir = path.join(process.cwd(), 'public', 'uploads', 'system', req.params.id);
+    fs.mkdirSync(dir, { recursive: true });
+    cb(null, dir);
+  },
+  filename: function (_, file, cb) {
+    cb(null, randomUUID() + "." + (extension(file.mimetype) || 'txt'));
+  }
+});
+
+const readingsDocsStorage = multer.diskStorage({
+  destination: function (req: Request, __, cb) {
+    const dir = path.join(process.cwd(), 'public', 'uploads', 'readings', req.params.id);
+    fs.mkdirSync(dir, { recursive: true });
+    cb(null, dir);
   },
   filename: function (_, file, cb) {
     cb(null, randomUUID() + "." + (extension(file.mimetype) || 'txt'));
@@ -15,7 +30,7 @@ const documentsStorage = multer.diskStorage({
 
 const avatarStorage = multer.diskStorage({
   destination: function (_, __, cb) {
-    cb(null, path.join(process.cwd(), 'public', 'upload', 'avatars'));
+    cb(null, path.join(process.cwd(), 'public', 'uploads', 'avatars'));
   },
   filename: function (_, file, cb) {
     if (['jpeg', 'jpg'].includes(extension(file.mimetype) as string))
@@ -23,7 +38,8 @@ const avatarStorage = multer.diskStorage({
   }
 });
 
-const documentUpload = multer({ storage: documentsStorage, limits: { fileSize: config.maxDocumentUploadSize } })
-const avatarUpload = multer({ storage: avatarStorage, limits: { fileSize: config.maxAvatarUploadSize } })
+const sysDocUpload = multer({ storage: docsStorage, limits: { fileSize: config.maxDocumentUploadSize } });
+const ReadingDocUpload = multer({ storage: readingsDocsStorage, limits: { fileSize: config.maxDocumentUploadSize } });
+const avatarUpload = multer({ storage: avatarStorage, limits: { fileSize: config.maxAvatarUploadSize } });
 
-export { documentUpload, avatarUpload };
+export { sysDocUpload, ReadingDocUpload, avatarUpload };

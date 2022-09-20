@@ -18,7 +18,7 @@ function sse(req: Request, res: Response<any, ResLocals>) {
   connected.set(res.locals.user.ID, res);
 
   req.on('close', () => {
-    console.log("sse connection closed:", res.locals.token);
+    console.log("sse connection closed:", res.locals?.session?.TOKEN);
     connected.delete(res.locals.user.ID);
   });
 }

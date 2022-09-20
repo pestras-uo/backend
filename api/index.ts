@@ -1,12 +1,12 @@
 import { Router } from 'express';
 
-import authApi from './auth';
+import sessionApi from './session';
 import adminApi from './admin';
 import usersApi from './users';
 import orgunits from './orgunits';
 
 export default Router()
-  .use('/auth', authApi)
+  .use('/session', sessionApi)
   .use('/admin', adminApi)
   .use('/users', usersApi)
   .use('/orgunits', orgunits);

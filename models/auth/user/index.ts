@@ -13,23 +13,23 @@ export default {
   // util methods
   // ----------------------------------------------------------------------------------------------------------------
   async exists(id: string) {
-    return (await oracle.exec<{ count: number }>(`
+    return (await oracle.exec<{ COUNT: number }>(`
     
-      SELECT COUNT(0) as count
+      SELECT COUNT(0) as COUNT
       FROM ${TablesNames.USERS}
       WHERE id = :id
     
-    `, [id])).rows?.[0].count! > 0;
+    `, [id])).rows?.[0].COUNT! > 0;
   },
 
   async usernameExists(username: string) {
-    return (await oracle.exec<{ count: number }>(`
+    return (await oracle.exec<{ COUNT: number }>(`
     
-      SELECT COUNT(0) as count
+      SELECT COUNT(0) as COUNT
       FROM ${TablesNames.USERS}
       WHERE username = :username
     
-    `, [username])).rows?.[0].count! > 0;
+    `, [username])).rows?.[0].COUNT! > 0;
   },
 
 
@@ -45,13 +45,13 @@ export default {
         UG.GROUP_ID GROUP_ID,
         UR.ROLE_ID ROLE_ID
       FROM 
-        ${TablesNames.USERS} U,
-        ${TablesNames.USER_GROUP} UG,
-        ${TablesNames.USER_ROLE} UR
+        ${TablesNames.USERS} U
+      LEFT JOIN
+        ${TablesNames.USER_GROUP} UG ON UG.USER_ID = U.ID
+      LEFT JOIN
+        ${TablesNames.USER_ROLE} UR ON UR.USER_ID = U.ID
       WHERE
         U.ID = :a
-        AND G.ID = UG.GROUP_ID
-        AND U.ID = UR.USER_ID
     
     `, [id])).rows || [];
 
@@ -64,24 +64,51 @@ export default {
     const roles = new Set<number>();
 
     for (const rec of result) {
-      groups.add(rec.GROUP_ID);
-      roles.add(rec.ROLE_ID);
+      !!rec.GROUP_ID && groups.add(rec.GROUP_ID);
+      typeof rec.ROLE_ID === 'number' && roles.add(rec.ROLE_ID);
     }
 
     user.GROUPS = Array.from(groups);
     user.ROLES = Array.from(roles);
-    
+
     return user;
   },
 
   async getByUsername(username: string) {
-    return (await oracle.exec<User>(`
+    const result = (await oracle.exec<UserDetailsQueryResultItem>(`
     
-      SELECT *
-      FROM ${TablesNames.USERS}
-      WHERE username = :username
+      SELECT 
+        U.*,
+        UG.GROUP_ID GROUP_ID,
+        UR.ROLE_ID ROLE_ID
+      FROM 
+        ${TablesNames.USERS} U
+      LEFT JOIN
+        ${TablesNames.USER_GROUP} UG ON UG.USER_ID = U.ID
+      LEFT JOIN
+        ${TablesNames.USER_ROLE} UR ON UR.USER_ID = U.ID
+      WHERE
+        U.USERNAME = :a
     
-    `, [username])).rows?.[0] || null;
+    `, [username])).rows || [];
+
+    if (result.length === 0)
+      return null;
+
+    const user = omit<UserDetails, UserDetailsQueryResultItem>(result[0], ['GROUP_ID', 'ROLE_ID']);
+
+    const groups = new Set<string>();
+    const roles = new Set<number>();
+
+    for (const rec of result) {
+      !!rec.GROUP_ID && groups.add(rec.GROUP_ID);
+      typeof rec.ROLE_ID === 'number' && roles.add(rec.ROLE_ID);
+    }
+
+    user.GROUPS = Array.from(groups);
+    user.ROLES = Array.from(roles);
+
+    return user;
   },
 
   async getByOrgunit(orgunit_id: string, is_active = 1) {
@@ -169,13 +196,15 @@ export default {
   async updateProfile(user_id: string, fullname: string, email: string, mobile: string) {
     const date = new Date();
 
+    console.log([fullname, email, mobile, date, user_id]);
+
     await oracle.exec(`
     
       UPDATE ${TablesNames.USERS}
-      SET fullname = :a, email = :b, mobile = :c update_date = :d
+      SET fullname = :a, email = :b, mobile = :c, update_date = :d
       WHERE id = :e
   
-  `, [fullname, email, mobile, date, user_id])
+  `, [fullname, email, mobile, date, user_id]);
 
     return date;
   },
@@ -200,11 +229,6 @@ export default {
     
       INSERT INTO ${TablesNames.USER_ROLE} (user_id, role_id)
       VALUES (:a, :b)
-      WHERE NOT EXISTS (
-        SELECT *
-        FROM ${TablesNames.USER_ROLE}
-        WHERE user_id = :a, role_id = :b
-      )
 
     `, [user_id, role_id])
 
@@ -212,15 +236,13 @@ export default {
   },
 
   async assignRoles(user_id: string, roles: number[]) {
+    if (roles.length === 0)
+      return true;
+
     await oracle.execMany(`
     
       INSERT INTO ${TablesNames.USER_ROLE} (user_id, role_id)
       VALUES (:a, :b)
-      WHERE NOT EXISTS (
-        SELECT *
-        FROM ${TablesNames.USER_ROLE}
-        WHERE user_id = :a, role_id = :b
-      )
 
     `, roles.map(r => [user_id, r]));
 
@@ -271,11 +293,6 @@ export default {
     
       INSERT INTO ${TablesNames.USER_GROUP} (user_id, group_id)
       VALUES (:a, :b)
-      WHERE NOT EXISTS (
-        SELECT *
-        FROM ${TablesNames.USER_GROUP}
-        WHERE user_id = :a, group_id = :b
-      )
 
     `, [user_id, group_id])
 
@@ -283,15 +300,13 @@ export default {
   },
 
   async assignGroups(user_id: string, groups: string[]) {
+    if (groups.length === 0)
+      return true;
+
     await oracle.execMany(`
     
       INSERT INTO ${TablesNames.USER_GROUP} (user_id, group_id)
       VALUES (:a, :b)
-      WHERE NOT EXISTS (
-        SELECT *
-        FROM ${TablesNames.USER_GROUP}
-        WHERE user_id = :a, group_id = :b
-      )
 
     `, groups.map(r => [user_id, r]));
 

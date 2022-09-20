@@ -15,26 +15,37 @@ export default {
   async createUser(req: Request<any, any, CreateUserBody>, res: Response<any, ResLocals>, next: NextFunction) {
     const body = req.body;
 
-    if (manager.getTopRole(res.locals.user.ROLES) <= manager.getTopRole(body.roles))
+    if (manager.getTopRole(res.locals.user.ROLES) >= manager.getTopRole(body.roles))
       return next(new HttpError(HttpCode.UNAUTHORIZED, "unauthorizedRole"));
 
     const [password, salt] = await crypt.hash(req.body.password);
-    const user = await usersModel.create(req.body.orgunit, req.body.username);
 
-    if (!user)
-      return next(new HttpError(HttpCode.UNKNOWN_ERROR, "errorCreatingUser"));
+    try {
+      const user = await usersModel.create(req.body.orgunit, req.body.username);
 
-    await authModel.create(user?.ID!, password, salt);
-    await usersModel.assignRoles(user.ID, req.body.roles);
+      if (!user)
+        return next(new HttpError(HttpCode.UNKNOWN_ERROR, "errorCreatingUser"));
 
-    return res.json(true);
+      await authModel.create(user?.ID!, password, salt);
+      await usersModel.assignRoles(user.ID, req.body.roles);
+
+      return res.json(user);
+
+    } catch (error) {
+      return next(error);
+    }
   },
 
-  async activateUser(req: Request<{ id: string, state: string }>, res: Response) {
+  async activateUser(req: Request<{ id: string, state: string }>, res: Response, next: NextFunction) {
     const user_id = req.params.id;
     const state = +req.params.state;
 
-    await usersModel.activate(user_id, state);
+    try {
+      await usersModel.activate(user_id, state);
+
+    } catch (error) {
+      return next(error);
+    }
 
     res.json(true);
   },
@@ -43,11 +54,17 @@ export default {
     const roles = req.body.roles;
     const user_id = req.params.id;
 
-    if (manager.getTopRole(res.locals.user.ROLES) <= manager.getTopRole(roles))
+    console.log(res.locals.user.ROLES, roles);
+    if (manager.getTopRole(res.locals.user.ROLES) >= manager.getTopRole(roles))
       return next(new HttpError(HttpCode.UNAUTHORIZED, "unauthorizedRole"));
 
-    await usersModel.removeAllRoles(user_id);
-    const date = await usersModel.assignRoles(user_id, roles);
+    try {
+      await usersModel.removeAllRoles(user_id);
+      await usersModel.assignRoles(user_id, roles);
+
+    } catch (error) {
+      return next(error);
+    }
 
     pubSub.emit("sse.message", {
       toId: user_id,
@@ -57,15 +74,20 @@ export default {
       }
     });
 
-    res.json(date);
+    res.json(true);
   },
 
   async updateGroups(req: Request<{ id: string }, any, UpdateGroupsBody>, res: Response<any, ResLocals>, next: NextFunction) {
     const groups = req.body.groups;
     const user_id = req.params.id;
 
-    await usersModel.removeAllGroups(user_id);
-    const date = await usersModel.assignGroups(user_id, groups);
+    try {
+      await usersModel.removeAllGroups(user_id);
+      await usersModel.assignGroups(user_id, groups);
+      
+    } catch (error) {
+      return next(error);
+    }
 
     pubSub.emit("sse.message", {
       toId: user_id,
@@ -75,15 +97,20 @@ export default {
       }
     });
 
-    res.json(date);
+    res.json(true);
   },
 
   async updateOrgunit(req: Request<{ id: string }, any, ChangeOrgunit>, res: Response, next: NextFunction) {
     const orgId = req.body.orgunit;
     const user_id = req.params.id;
 
-    const date = await usersModel.updateOrgunit(user_id, orgId);
+    try {
+      const date = await usersModel.updateOrgunit(user_id, orgId);
+      
+      res.json(date);
 
-    res.json(date);
+    } catch (error) {
+      return next(error);
+    }
   }
 }

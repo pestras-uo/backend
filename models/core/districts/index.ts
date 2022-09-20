@@ -8,7 +8,7 @@ import { randomUUID } from 'crypto';
 
 export default {
   async getAll() {
-    return (await oracle.exec<District>(`
+    return (await oracle.exec2<District>(`
     
       SELECT *
       FROM ${TablesNames.DISTRICTS}
@@ -17,7 +17,7 @@ export default {
   },
 
   async get(id: string) {
-    return (await oracle.exec<District>(`
+    return (await oracle.exec2<District>(`
     
       SELECT *
       FROM ${TablesNames.DISTRICTS}
@@ -27,7 +27,7 @@ export default {
   },
 
   async nameExists(name_ar: string, name_en: string) {
-    return (await oracle.exec<{ COUNT: number }>(`
+    return (await oracle.exec2<{ COUNT: number }>(`
     
       SELECT COUNT(*)
       FROM ${TablesNames.DISTRICTS}
@@ -37,7 +37,7 @@ export default {
   },
 
   async updateNameExists(id: string, name_ar: string, name_en: string) {
-    return (await oracle.exec<{ COUNT: number }>(`
+    return (await oracle.exec2<{ COUNT: number }>(`
     
       SELECT COUNT(*)
       FROM ${TablesNames.DISTRICTS}
@@ -52,7 +52,7 @@ export default {
 
     const id = randomUUID();
 
-    const result = await oracle.exec(`
+    const result = await oracle.exec2(`
     
       INSERT INTO ${TablesNames.DISTRICTS} (id, name_ar, name_en)
       VALUES (:a, :b, :c)
@@ -66,7 +66,7 @@ export default {
     if (await this.updateNameExists(id, name_ar, name_en))
       throw new HttpError(HttpCode.CONFLICT, 'nameAlreadyExists');
 
-    await oracle.exec(`
+    await oracle.exec2(`
     
       UPDATE ${TablesNames.DISTRICTS}
       SET name_ar = :a, name_en = :b

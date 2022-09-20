@@ -2,7 +2,7 @@ import { Validall } from "@pestras/validall";
 import { RolesList } from "../../auth/roles";
 
 const passwordRegex = /^[a-zA-Z0-9!@#$%^&*-_=+.|<>:;'"()]{8,64}$/;
-const usernameRegex = /^[a-zA-Z0-9_-.]{8,64}$/;
+const usernameRegex = /^[a-zA-Z0-9_\-.]{4,64}$/;
 
 enum AdminValidators {
   CREATE_USER = "createUser",

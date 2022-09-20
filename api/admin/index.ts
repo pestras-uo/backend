@@ -24,17 +24,17 @@ export default Router()
   )
   .put(
     '/update-groups/:id',
-    middlewares.validate(AdminValidators.UPDATE_USER_ROLES),
+    middlewares.validate(AdminValidators.UPDATE_USER_GROUPS),
     auth(TokenType.SESSION, ["users.update.groups"], "id"),
     usersMiddleWares.exists("params.id"),
     controller.updateGroups
   )
   .put(
-    '/change-orgunit/:id',
+    '/update-orgunit/:id',
     middlewares.validate(AdminValidators.CHANGE_USER_ORG),
     auth(TokenType.SESSION, ["users.update.orgunit"]),
     usersMiddleWares.exists("params.id"),
-    orgMiddleWares.exists("body.organization"),
+    orgMiddleWares.exists("body.orgunit"),
     controller.updateOrgunit
   )
   .put(

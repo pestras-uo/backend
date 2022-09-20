@@ -34,19 +34,19 @@ export default {
   // Util
   // ----------------------------------------------------------------------------
   async exists(id: string) {
-   return (await oracle.exec<{ count: number }>(`
+   return (await oracle.exec<{ COUNT: number }>(`
 
-      SELECT COUNT(id) as count
+      SELECT COUNT(id) as COUNT
       FROM ${TablesNames.ORGUNITS}
       WHERE id = :id
 
-    `, [id])).rows?.[0].count! > 0;
+    `, [id])).rows?.[0].COUNT! > 0;
   },
 
   async nameExists(name_ar: string, name_en: string) {
    return (await oracle.exec<{ COUNT: number }>(`
 
-      SELECT COUNT(name) as count
+      SELECT COUNT(*) as COUNT
       FROM ${TablesNames.ORGUNITS}
       WHERE name_ar = :name_ar OR name_en = :name_en
 
@@ -54,13 +54,13 @@ export default {
   },
 
   async updatedNameExists(id: string, name_ar: string, name_en: string) {
-   return (await oracle.exec<{ count: number }>(`
+   return (await oracle.exec<{ COUNT: number }>(`
 
-      SELECT COUNT(name) as count
+      SELECT COUNT(*) as COUNT
       FROM ${TablesNames.ORGUNITS}
       WHERE (name_ar = :name_ar OR name_en = :name_en) AND id <> :id
 
-    `, [name_ar, name_en, id])).rows?.[0].count! > 0;
+    `, [name_ar, name_en, id])).rows?.[0].COUNT! > 0;
   },
 
 

@@ -3,11 +3,8 @@ export interface Document {
 
   NAME_EN?: string; 
   NAME_AR?: string;
-  DESC_AR?: string;
-  DESC_EN?: string;
 
-  PATH: string, 
-  MIME_TYPE: string
+  PATH: string;
   
   CREATE_DATE: Date;
 }

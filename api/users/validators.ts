@@ -1,7 +1,7 @@
 import { Validall } from "@pestras/validall";
 
 const passwordRegex = /^[a-zA-Z0-9!@#$%^&*-_=+.|<>:;'"()]{8,64}$/;
-const usernameRegex = /^[a-zA-Z0-9_-.]{8,64}$/;
+const usernameRegex = /^[a-zA-Z0-9_\-.]{4,64}$/;
 
 enum UserValidators {
   CHANGE_USERNAME = "changeUsername",
@@ -20,7 +20,7 @@ new Validall(UserValidators.CHANGE_PASSWORD, {
 });
 
 new Validall(UserValidators.UPDATE_PROFILE, {
-  fullname: { $type: 'string', $is: 'name', $required: true, $message: 'firstnameIsRequired' },
+  fullname: { $type: 'string', $required: true, $message: 'fullnameIsRequired' },
   mobile: { $type: "string", $default: "" },
   email: { $type: "string", $is: 'email', $default: "" }
 });

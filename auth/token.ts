@@ -8,18 +8,18 @@ import { HttpCode } from '../misc/http-codes';
 
 export enum TokenType {
   SESSION,
-  PASSWORD,
-  EMAIL,
   API
+}
+
+export interface TokenMeta {
+  TOKEN: string;
+  TOKEN_CREATE_DATE: Date;
+  TOKEN_EXP_DATE: Date;
 }
 
 export interface TokenData<T = any> {
   id: string;
   type: TokenType;
-  date: number;
-  remember?: boolean;
-  duration?: number;
-  payload?: T;
 }
 
 export async function verifyToken(token: string, type: TokenType) {
@@ -37,50 +37,61 @@ export async function verifyToken(token: string, type: TokenType) {
   if (!tokenData.id)
     throw new HttpError(HttpCode.INVALID_TOKEN, "invalidTokenData");
 
-  const userId = tokenData.id;
-
   // confirm token has the matched type
   if (tokenData.type !== type)
     throw new HttpError(HttpCode.INVALID_TOKEN, "invalidTokenType");
 
   // Check token expire date
   if (tokenData.type === TokenType.SESSION) {
-    if (!(await authModel.hasSession(userId, token)))
-      throw new HttpError(HttpCode.INVALID_TOKEN, "outDatedToken");
-
-    let expired = false;
-
-    if (tokenData.remember) {
-      if (Date.now() - tokenData.date > config.rememberApiTokenExpiry)
-        expired = true;
-
-    } else {
-      if (Date.now() - tokenData.date > config.apiTokenExpiry)
-        expired = true;
-    }
-
-    if (expired) {
-      await authModel.endSession(userId);
-      throw new HttpError(HttpCode.INVALID_TOKEN, "tokenExpired");
-    }
-
-  } else if (tokenData.type === TokenType.EMAIL) {
-    if (Date.now() - tokenData.date > config.emailTokenExpiry)
-      throw new HttpError(HttpCode.INVALID_TOKEN, "tokenExpired");
-
-  } else if (tokenData.type === TokenType.PASSWORD) {
-    if (Date.now() - tokenData.date > config.passwordTokenExpiry)
-      throw new HttpError(HttpCode.INVALID_TOKEN, "tokenExpired");
+    return validateSessionToken(tokenData.id, token);
 
   } else if (tokenData.type === TokenType.API) {
-    if (tokenData.duration && Date.now() - tokenData.date > tokenData.duration)
-      throw new HttpError(HttpCode.INVALID_TOKEN, "tokenExpired");
+    // TODO: validate api token
+    return validateApiAccess(tokenData.id);
+  }
+}
+
+
+
+
+// validate session
+// ----------------------------------------------------------------------------------------------------------
+async function validateSessionToken(user_id: string, token: string) {
+  if (!(await authModel.hasSession(user_id, token)))
+    throw new HttpError(HttpCode.INVALID_TOKEN, "outDatedToken");
+
+  const session = await authModel.getSessionByToken(user_id, token);
+
+  if (!session)
+    throw new HttpError(HttpCode.INVALID_TOKEN, "tokenExpired");
+
+  if (session.TOKEN_EXP_DATE?.getTime()! < Date.now()) {
+    console.log('expired');
+    await authModel.endSession(user_id);
+    throw new HttpError(HttpCode.INVALID_TOKEN, "tokenExpired");
   }
 
-  const user = await usersModel.get(userId);
+  const user = await usersModel.get(user_id);
 
   if (!user)
-    throw new HttpError(HttpCode.UNAUTHORIZED, "userNotFound");
+    throw new HttpError(HttpCode.UNAUTHORIZED, "tokenExpired");
 
-  return { user, tokenData };
+  return {
+    user, 
+    session: {
+      TOKEN: token,
+      TOKEN_CREATE_DATE: session.TOKEN_CREATE_DATE,
+      TOKEN_EXP_DATE: session.TOKEN_EXP_DATE
+    } as TokenMeta
+  };
 }
+
+
+
+
+// validate api access
+// ----------------------------------------------------------------------------------------------------------
+async function validateApiAccess(api_id: string) {
+  return null;
+}
+

@@ -19,14 +19,21 @@ export default {
     let user: User | null;
     let userAuth: Auth | null;
 
-    user = await usersModel.getByUsername(body.username);
+    try {
+      user = await usersModel.getByUsername(body.username);
+    } catch (error) {
+      return next(error);
+    }
 
     if (!user)
       return next(new HttpError(HttpCode.NOT_FOUND, "userNotFound"));
 
-    userAuth = await authModel.getPassword(user.ID);
+    try {
+      userAuth = await authModel.getPassword(user.ID);
+    } catch (error) {
+      return next(error);
+    }
 
-    // Todo: delete user
     if (!userAuth)
       return next(new HttpError(HttpCode.NOT_FOUND, "userAuthNotFound"));
 
@@ -35,25 +42,33 @@ export default {
 
     const token = sign({
       id: user.ID,
-      type: TokenType.SESSION,
-      date: Date.now(),
-      remember: body.remember
+      type: TokenType.SESSION
     } as TokenData, config.tokenSecret);
 
-    await authModel.setToken(user.ID, token);
+    try {
+      await authModel.setToken(user.ID, token, body.remember ? config.rememberSessionTokenExpiry : config.sessionTokenExpiry);
+    } catch (error) {
+      return next(error);
+    }
 
     res.json({ user, token });
   },
 
-  async verifySession(_: Request, res: Response<any, ResLocals>) {
+  async verifySession(_: Request, res: Response<any, ResLocals>, next: NextFunction) {
     const newToken = sign({
       id: res.locals.user.ID,
-      type: TokenType.SESSION,
-      date: res.locals.tokenData.date,
-      remember: res.locals.tokenData.remember
+      type: TokenType.SESSION
     } as TokenData, config.tokenSecret);
 
-    await authModel.setToken(res.locals.user.ID, newToken);
+    try {
+      await authModel.setToken(
+        res.locals.user.ID,
+        newToken,
+        res.locals.session.TOKEN_EXP_DATE.getTime() - res.locals.session.TOKEN_CREATE_DATE.getTime()
+      );
+    } catch (error) {
+      return next(error);
+    }
 
     return res.json({
       user: res.locals.user,
@@ -61,9 +76,13 @@ export default {
     });
   },
 
-  async logout(_: Request, res: Response<any, ResLocals>) {
-    await authModel.getSession(res.locals.user.ID);
+  async logout(_: Request, res: Response<any, ResLocals>, next: NextFunction) {
+    try {
+      await authModel.endSession(res.locals.user.ID);      
+    } catch (error) {
+      return next(error);
+    }
 
-    return true;
+    res.json(true);
   }
 }

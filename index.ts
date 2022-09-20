@@ -32,7 +32,7 @@ import api from "./api";
   app.use(cors());
   app.use(helmet());
 
-  app.use('/public', express.static(path.join(__dirname, 'public')));
+  app.use('/public', express.static(path.join(process.cwd(), 'public')));
 
   app.use(express.urlencoded({ extended: false }));
   app.use(express.json());
@@ -41,9 +41,10 @@ import api from "./api";
   app.use('/api', api);
 
   app.use((err: HttpError, req: Request, res: Response, next: NextFunction) => {
-    if (!err.code || err.code >= 500)
+    if (!err.code || err.code >= 500) {
       console.error(err.message);
       console.error(err.stack);
+    }
 
     res
       .status(err.code || HttpCode.UNKNOWN_ERROR)
