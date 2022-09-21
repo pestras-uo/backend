@@ -2,4 +2,6 @@ node_modules
 _build
 .env
 ecosystem.config.js
-public
+public/uploads/avatars/*
+public/uploads/readings/*
+public/uploads/system/*
