@@ -57,8 +57,7 @@ import api from "./api";
             : err.message
       );
   });
-
-  server.listen()
+  
   server.listen(config.port as number, '127.0.0.1', () => console.log('listening on port: ', config.port));
 
 })();
