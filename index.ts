@@ -39,6 +39,7 @@ import api from "./api";
 
   app.use('/events', sse);
   app.use('/api', api);
+  app.use('/', (_, res) => res.send('OK'));
 
   app.use((err: HttpError, req: Request, res: Response, next: NextFunction) => {
     if (!err.code || err.code >= 500) {
@@ -57,6 +58,7 @@ import api from "./api";
       );
   });
 
-  server.listen(config.port, () => console.log('listening on port: ', config.port));
+  server.listen()
+  server.listen(config.port as number, '127.0.0.1', () => console.log('listening on port: ', config.port));
 
 })();
