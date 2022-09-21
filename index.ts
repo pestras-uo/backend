@@ -39,7 +39,7 @@ import api from "./api";
 
   app.use('/events', sse);
   app.use('/api', api);
-  app.use('/', (_, res) => res.send('OK'));
+  app.use('/health', (_, res) => res.send('OK'));
 
   app.use((err: HttpError, req: Request, res: Response, next: NextFunction) => {
     if (!err.code || err.code >= 500) {
