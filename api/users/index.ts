@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import auth from '../../middlewares/auth';
 import controller from './controller';
-import middlewares from './middlewares';
+import validate from '../../middlewares/validate';
 import usersMiddlewares from '../../middlewares/users';
 import orgMiddlewares from '../../middlewares/orgunits';
 import { TokenType } from '../../auth/token';
@@ -32,20 +32,20 @@ export default Router()
   )
   .put(
     '/username',
-    middlewares.validate(UserValidators.CHANGE_USERNAME),
+    validate(UserValidators.CHANGE_USERNAME),
     auth(),
     usersMiddlewares.usernameExists("body.username"),
     controller.updateUsername
   )
   .put(
     '/password',
-    middlewares.validate(UserValidators.CHANGE_PASSWORD),
+    validate(UserValidators.CHANGE_PASSWORD),
     auth(),
     controller.updatePassword
   )
   .put(
     '/profile',
-    middlewares.validate(UserValidators.UPDATE_PROFILE),
+    validate(UserValidators.UPDATE_PROFILE),
     auth(),
     avatarUpload.single('avatar'),
     controller.updateProfile

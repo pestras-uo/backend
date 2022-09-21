@@ -34,14 +34,24 @@ export default {
 
   // util
   // ----------------------------------------------------------------------------------------------------------------
-  async nameExists(name: string) {
+  async nameExists(name_ar: string, name_en: string) {
     return (await oracle.exec<{ COUNT: number }>(`
     
       SELECT COUNT(id) as count
       FROM ${TablesNames.GROUPS}
-      WHERE name = :a
+      WHERE name_ar = :a OR name_en = :b 
     
-    `, [name])).rows?.[0].COUNT! > 0;
+    `, [name_ar, name_en])).rows?.[0].COUNT! > 0;
+  },
+
+  async updateNameExists(id: string, name_ar: string, name_en: string) {
+    return (await oracle.exec<{ COUNT: number }>(`
+    
+      SELECT COUNT(id) as count
+      FROM ${TablesNames.GROUPS}
+      WHERE (name_ar = :a OR name_en = :b) AND id <> :c
+    
+    `, [name_ar, name_en, id])).rows?.[0].COUNT! > 0;
   },
 
   async idExists(id: string) {
@@ -71,20 +81,20 @@ export default {
 
   // create
   // ----------------------------------------------------------------------------------------------------------------
-  async create(NAME: string) {
-    if (await this.nameExists(NAME))
+  async create(name_ar: string, name_en: string) {
+    if (await this.nameExists(name_ar, name_en))
       throw new HttpError(HttpCode.CONFLICT, "nameAlreadyExists");
 
-    const ID = randomUUID();
+    const id = randomUUID();
 
     await oracle.exec(`
     
-      INSERT INTO ${TablesNames.GROUPS} (id, name)
-      VALUES (:a, :b)
+      INSERT INTO ${TablesNames.GROUPS} (id, name_ar, name_en)
+      VALUES (:a, :b, :c)
 
-    `, [ID, NAME]);
+    `, [id, name_ar, name_en]);
 
-    return { ID, NAME } as Group;
+    return { ID: id, NAME_AR: name_ar, NAME_EN: name_en } as Group;
   },
 
 
@@ -93,17 +103,17 @@ export default {
 
   // update
   // ----------------------------------------------------------------------------------------------------------------
-  async update(id: string, name: string) {
-    if (await this.nameExists(name))
+  async update(id: string, name_ar: string, name_en: string) {
+    if (await this.updateNameExists(id, name_ar, name_en))
       throw new HttpError(HttpCode.CONFLICT, "nameAlreadyExists");
 
     await oracle.exec(`
     
       UPDATE ${TablesNames.GROUPS}
-      SET name = :a
-      WHERE id = :b
+      SET name_ar = :a, name_en = :b
+      WHERE id = :c
 
-    `, [name, id]);
+    `, [name_ar, name_en, id]);
 
     return true;
   }

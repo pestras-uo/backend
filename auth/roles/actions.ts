@@ -19,6 +19,14 @@ export const Actions = [
   "users.update.active",
 
 
+  // Groups
+  "groups.*",
+  "groups.get.*",
+  "groups.get.all",
+  "groups.get.one",
+  "groups.create",
+  "groups.update",
+
   // Documents
   "documents.*",
   "documents.create",

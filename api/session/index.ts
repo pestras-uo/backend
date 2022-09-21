@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import auth from '../../middlewares/auth';
 import controller from './controller';
-import middleWares from './middlewares';
+import validate from '../../middlewares/validate';
 import validators from './validators';
 
 export default Router()
@@ -12,7 +12,7 @@ export default Router()
   )
   .post(
     '/login',
-    middleWares.validate(validators.LOGIN),
+    validate(validators.LOGIN),
     controller.login
   )
   .post(

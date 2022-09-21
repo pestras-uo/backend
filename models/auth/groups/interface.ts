@@ -1,4 +1,5 @@
 export interface Group {
   ID: string;  
-  NAME: string;
+  NAME_AR: string;
+  NAME_EN: string;
 }
