@@ -3,7 +3,7 @@ import config from "../config";
 
 oracledb.outFormat = oracledb.OUT_FORMAT_OBJECT;
 oracledb.autoCommit = true;
-oracledb.initOracleClient({ libDir: 'c:\\oracle\\instantclient_21_6' });
+oracledb.initOracleClient({ libDir: config.dbLibDir });
 
 export default {
   async connect() {
