@@ -5,10 +5,14 @@ import adminApi from './admin';
 import usersApi from './users';
 import groupsApi from './groups';
 import orgunits from './orgunits';
+import topics from './topics';
+import categories from './categories';
 
 export default Router()
   .use('/session', sessionApi)
   .use('/admin', adminApi)
   .use('/users', usersApi)
   .use('/groups', groupsApi)
-  .use('/orgunits', orgunits);
+  .use('/orgunits', orgunits)
+  .use('/categories', categories)
+  .use('/topics', topics);

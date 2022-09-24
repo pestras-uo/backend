@@ -41,7 +41,14 @@ export const Actions = [
   "orgunits.create",
   "orgunits.update.*",
   "orgunits.update.name",
-  "orgunits.update.tags"
+  "orgunits.update.tags",
+
+  // Categories
+  "categories.*",
+  "categories.get.all",
+  "categories.get.one",
+  "categories.create",
+  "categories.update",
 
 ] as const;
 

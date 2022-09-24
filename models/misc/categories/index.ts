@@ -7,6 +7,8 @@ import Serial from '../../../util/serial';
 
 export default {
 
+  // getters
+  // ------------------------------------------------------------------------
   async get(id: string) {
     return (await oracle.exec<Category>(`
     
@@ -24,6 +26,21 @@ export default {
       FROM ${TablesNames.CATEGORIES}
     
     `)).rows || [];
+  },
+
+
+
+
+  // util
+  // ------------------------------------------------------------------------
+  async exists(id: string) {
+    return (await oracle.exec<{ COUNT: number }>(`
+    
+      SELECT COUNT(*) as COUNT
+      FROM ${TablesNames.CATEGORIES}
+      WHERE id = :a
+    
+    `, [id])).rows?.[0].COUNT! > 0;
   },
 
   async nameExists(name_ar: string, name_en: string) {

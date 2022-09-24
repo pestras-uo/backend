@@ -1,8 +1,8 @@
 import { NextFunction, Request, Response } from "express";
+import getValue from '../util/valueFromPath';
+import categoriesModel from '../models/misc/categories';
 import { HttpError } from "../misc/errors";
 import { HttpCode } from "../misc/http-codes";
-import orgunitsModel from '../models/core/orgunits';
-import getValue from '../util/valueFromPath';
 
 export default {
   exists(path: string) {
@@ -14,8 +14,8 @@ export default {
         return next(new HttpError(HttpCode.BAD_REQUEST, "invalidIdParam"));
 
       try {
-        if (!(await orgunitsModel.exists(id)))
-          return next(new HttpError(HttpCode.NOT_FOUND, "orgunitNotFound"));
+        if (!(await categoriesModel.exists(id)))
+          return next(new HttpError(HttpCode.NOT_FOUND, "categoryNotFound"));
 
       } catch (error) {
         return next(error);
