@@ -50,6 +50,18 @@ export const Actions = [
   "categories.create",
   "categories.update",
 
+  // tags
+  "tags.*",
+  "tags.get.*",
+  "tags.get.keys",
+  "tags.get.values",
+  "tags.create.*",
+  "tags.create.key",
+  "tags.create.value",
+  "tags.update.*",
+  "tags.update.key",
+  "tags.update.value"
+
 ] as const;
 
 export type Action = typeof Actions[number];

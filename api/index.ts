@@ -7,6 +7,7 @@ import groupsApi from './groups';
 import orgunits from './orgunits';
 import topics from './topics';
 import categories from './categories';
+import tags from './tags';
 
 export default Router()
   .use('/session', sessionApi)
@@ -15,4 +16,5 @@ export default Router()
   .use('/groups', groupsApi)
   .use('/orgunits', orgunits)
   .use('/categories', categories)
+  .use('/tags', tags)
   .use('/topics', topics);

@@ -2,19 +2,19 @@ export interface TagKey {
   ID: string;
 
   NAME_AR: string;
-  NAME_EN: string; 
+  NAME_EN: string;
 }
 
 export interface TagValue {
   ID: string;
-  TAG_ID: string;
+  KEY_ID: string;
 
   NAME_AR: string;
   NAME_EN: string;
 }
 
-export interface Tag {
-  KEY_ID: string;
+export interface TagQueryResult {
+  ID: string;
   VALUE_ID: string;
 
   KEY_AR: string;
@@ -23,3 +23,18 @@ export interface Tag {
   VALUE_AR: string;
   VALUE_EN: string;
 }
+
+export interface Tag {
+  ID: string;
+
+  NAME_AR: string;
+  NAME_EN: string;
+
+  VALUES: {
+    ID: string;
+
+    NAME_AR: string;
+    NAME_EN: string;
+  }[]
+}
+

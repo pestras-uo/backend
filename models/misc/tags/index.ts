@@ -2,7 +2,7 @@ import { getByRowId, TablesNames } from "../..";
 import oracle from "../../../db/oracle"
 import { HttpError } from "../../../misc/errors";
 import { HttpCode } from "../../../misc/http-codes";
-import { TagKey, TagValue } from "./interface";
+import { TagQueryResult, TagKey, TagValue, Tag } from "./interface";
 import { randomUUID } from 'crypto';
 
 export default {
@@ -53,7 +53,27 @@ export default {
 
   // Util
   // -------------------------------------------------------------------------------
-  async keysExists(name_ar: string, name_en: string) {
+  async keyExists(id: string) {
+    return (await oracle.exec<{ COUNT: number }>(`
+    
+      SELECT COUNT(*)
+      FROM ${TablesNames.TAGS_KEYS}
+      WHERE id = :a
+  
+  `, [id])).rows?.[0].COUNT! > 0;
+  },
+
+  async valueExists(id: string) {
+    return (await oracle.exec<{ COUNT: number }>(`
+    
+      SELECT COUNT(*)
+      FROM ${TablesNames.TAGS_VALUES}
+      WHERE id = :a
+  
+  `, [id])).rows?.[0].COUNT! > 0;
+  },
+
+  async keyNameExists(name_ar: string, name_en: string) {
     return (await oracle.exec<{ COUNT: number }>(`
     
       SELECT COUNT(*)
@@ -63,7 +83,7 @@ export default {
     `, [name_ar, name_en])).rows?.[0].COUNT! > 0;
   },
 
-  async valueExists(key_id: string, name_ar: string, name_en: string) {
+  async valueNameExists(key_id: string, name_ar: string, name_en: string) {
     return (await oracle.exec<{ COUNT: number }>(`
     
       SELECT COUNT(*)
@@ -73,7 +93,7 @@ export default {
     `, [name_ar, name_en, key_id])).rows?.[0].COUNT! > 0;
   },
 
-  async updateKeyExists(id: string, name_ar: string, name_en: string) {
+  async updateKeyNameExists(id: string, name_ar: string, name_en: string) {
     return (await oracle.exec<{ COUNT: number }>(`
     
       SELECT COUNT(*)
@@ -83,7 +103,7 @@ export default {
     `, [name_ar, name_en, id])).rows?.[0].COUNT! > 0;
   },
 
-  async updateValueExists(key_id: string, value_id: string, name_ar: string, name_en: string) {
+  async updateValueNameExists(key_id: string, value_id: string, name_ar: string, name_en: string) {
     return (await oracle.exec<{ COUNT: number }>(`
     
       SELECT COUNT(*)
@@ -99,7 +119,7 @@ export default {
   // create
   // -------------------------------------------------------------------------------
   async createKey(name_ar: string, name_en: string) {
-    if (await this.keysExists(name_ar, name_en))
+    if (await this.keyNameExists(name_ar, name_en))
       throw new HttpError(HttpCode.CONFLICT, "tagKeyAlreadyExists");
 
     const id = randomUUID();
@@ -114,7 +134,7 @@ export default {
   },
 
   async createValue(key_id: string, name_ar: string, name_en: string) {
-    if (await this.valueExists(key_id, name_ar, name_en))
+    if (await this.valueNameExists(key_id, name_ar, name_en))
       throw new HttpError(HttpCode.CONFLICT, "tagValueAlreadyExists");
 
     const id = randomUUID();
@@ -125,7 +145,7 @@ export default {
     
     `, [id, key_id, name_ar, name_en]);
 
-    return getByRowId<TagKey>(TablesNames.TAGS_KEYS, result.lastRowid!);
+    return getByRowId<TagValue>(TablesNames.TAGS_KEYS, result.lastRowid!);
   },
 
 
@@ -133,8 +153,8 @@ export default {
 
   // update
   // -------------------------------------------------------------------------------
-  async updateKeys(id: string, name_ar: string, name_en: string) {
-    if (await this.updateKeyExists(id, name_ar, name_en))
+  async updateKey(id: string, name_ar: string, name_en: string) {
+    if (await this.updateKeyNameExists(id, name_ar, name_en))
       throw new HttpError(HttpCode.CONFLICT, "nameAlreadyExists");
 
     const date = new Date();
@@ -150,8 +170,8 @@ export default {
     return date;
   },
 
-  async updateValues(key_id: string, value_id: string, name_ar: string, name_en: string) {
-    if (await this.updateValueExists(key_id, value_id, name_ar, name_en))
+  async updateValue(key_id: string, value_id: string, name_ar: string, name_en: string) {
+    if (await this.updateValueNameExists(key_id, value_id, name_ar, name_en))
       throw new HttpError(HttpCode.CONFLICT, "nameAlreadyExists");
 
     const date = new Date();

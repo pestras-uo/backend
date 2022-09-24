@@ -7,7 +7,7 @@ import { Topic, TopicDetails, TopicDetailsQueryResultItem } from "./interface";
 import { Document } from '../../misc/document/interface';
 import { Group } from "../../auth/groups/interface";
 import { Category } from "../../misc/categories/interface";
-import { Tag } from "../../misc/tags/interface";
+import { TagQueryResult } from "../../misc/tags/interface";
 import { omit } from "../../../util/pick-omit";
 
 export default {
@@ -185,7 +185,7 @@ export default {
   // tags
   // ----------------------------------------------------------------------------
   async getTags(topic_id: string) {
-    return (await oracle.exec<Tag>(`
+    return (await oracle.exec<TagQueryResult>(`
     
       SELECT
         K.ID as KEY_ID,

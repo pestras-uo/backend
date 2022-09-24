@@ -6,7 +6,7 @@ import { omit } from "../../../util/pick-omit";
 import Serial from "../../../util/serial";
 import { Group } from "../../auth/groups/interface";
 import { Category } from "../../misc/categories/interface";
-import { Tag } from "../../misc/tags/interface";
+import { TagQueryResult } from "../../misc/tags/interface";
 import { Indicator, IndicatorDetails, IndicatorDetailsQueryResultItem } from "./interface";
 
 async function clearArgs(id: string) {
@@ -381,7 +381,7 @@ export default {
   // tags
   // ----------------------------------------------------------------------------
   async getTags(indicator_id: string) {
-    return (await oracle.exec<Tag>(`
+    return (await oracle.exec<TagQueryResult>(`
     
       SELECT
         K.ID as KEY_ID,
