@@ -24,17 +24,11 @@ export interface TagQueryResult {
   VALUE_EN: string;
 }
 
-export interface Tag {
-  ID: string;
+export interface TagMap extends TagKey {
+  VALUES: Map<string, TagKey>;
+}
 
-  NAME_AR: string;
-  NAME_EN: string;
-
-  VALUES: {
-    ID: string;
-
-    NAME_AR: string;
-    NAME_EN: string;
-  }[]
+export interface Tag extends TagKey {
+  VALUES: TagKey[];
 }
 

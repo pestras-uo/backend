@@ -8,6 +8,11 @@ import tagsMiddleWares from '../../middlewares/tags';
 
 export default Router()
   .get(
+    '/',
+    auth(TokenType.SESSION, ['tags.get.all']),
+    controller.getall
+  )
+  .get(
     '/keys',
     auth(TokenType.SESSION, ['tags.get.keys']),
     controller.getKeys

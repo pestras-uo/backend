@@ -53,6 +53,7 @@ export const Actions = [
   // tags
   "tags.*",
   "tags.get.*",
+  "tags.get.all",
   "tags.get.keys",
   "tags.get.values",
   "tags.create.*",
@@ -67,6 +68,7 @@ export const Actions = [
   "topics.get.*",
   "topics.get.all",
   "topics.get.one",
+  "topics.get.tags",
   "topics.create",
   "topics.update.*",
   "topics.update",

@@ -18,6 +18,12 @@ export default Router()
     topicsMiddleWares.exists("req.params"),
     controller.get
   )
+  .get(
+    '/:id/tags',
+    auth(TokenType.SESSION, ["topics.get.tags"]),
+    topicsMiddleWares.exists("req.params"),
+    controller.getTags
+  )
   .post(
     '/',
     validate(TopicsValidators.CREATE),
@@ -32,28 +38,28 @@ export default Router()
     controller.update
   )
   .put(
-    '/groups/:id',
+    '/:id/groups',
     validate(TopicsValidators.UPDATE_GROUPS),
     auth(TokenType.SESSION, ["topics.update.groups"]),
     topicsMiddleWares.exists("req.params"),
     controller.updateGroups
   )
   .put(
-    '/categories/:id',
+    '/:id/categories',
     validate(TopicsValidators.UPDATE_CATEGORIES),
     auth(TokenType.SESSION, ["topics.update.categories"]),
     topicsMiddleWares.exists("req.params"),
     controller.updateCategories
   )
   .put(
-    '/documents/:id',
+    '/:id/documents',
     validate(TopicsValidators.ADD_DOCUMENT),
     auth(TokenType.SESSION, ["topics.update.documents"]),
     topicsMiddleWares.exists("req.params"),
     controller.addDocument
   )
   .delete(
-    '/documents/:id/:doc_id',
+    '/:id/documents/:doc_id',
     validate(TopicsValidators.ADD_DOCUMENT),
     auth(TokenType.SESSION, ["topics.update.documents"]),
     controller.removeDocument

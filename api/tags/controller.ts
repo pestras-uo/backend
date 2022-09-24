@@ -6,6 +6,14 @@ export default {
 
   // getters
   // ----------------------------------------------------------------------
+  async getall(_: Request, res: Response, next: NextFunction) {
+    try {
+      res.json(await tagsModel.getAll());
+    } catch (error) {
+      next(error);
+    }
+  },
+
   async getKeys(_: Request, res: Response, next: NextFunction) {
     try {
       res.json(await tagsModel.getKeys());

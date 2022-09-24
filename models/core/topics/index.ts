@@ -7,7 +7,7 @@ import { Topic, TopicDetails, TopicDetailsQueryResultItem } from "./interface";
 import { Document } from '../../misc/document/interface';
 import { Group } from "../../auth/groups/interface";
 import { Category } from "../../misc/categories/interface";
-import { TagQueryResult } from "../../misc/tags/interface";
+import { Tag, TagMap, TagQueryResult } from "../../misc/tags/interface";
 import { omit } from "../../../util/pick-omit";
 
 export default {
@@ -185,25 +185,60 @@ export default {
   // tags
   // ----------------------------------------------------------------------------
   async getTags(topic_id: string) {
-    return (await oracle.exec<TagQueryResult>(`
-    
+    const result = (await oracle.exec<TagQueryResult>(`
+
       SELECT
-        K.ID as KEY_ID,
-        V.ID as VALUE_ID,
-        K.NAME_AR AS KEY_AR,
-        K.NAME_EN AS KEY_EN,
-        V.NAME_AR AS VALUE_AR,
-        V.NAME_EN AS VALUE_EN
-      FROM 
-        ${TablesNames.TAGS_KEYS} K,
-        ${TablesNames.TAGS_VALUES} V,
-        ${TablesNames.TOPIC_TAG} TT
+        K.ID ID,
+        K.NAME_AR KEY_AR,
+        K.NAME_EN KEY_EN,
+        V.ID VALUE_ID,
+        V.NAME_AR VALUE_AR,
+        V.NAME_EN VALUE_EN
+      FROM
+        ${TablesNames.TOPICS} T
+      LEFT JOIN
+        ${TablesNames.TOPIC_TAG} TT ON T.ID = TT.TOPIC_ID
+      LEFT JOIN
+        ${TablesNames.TAGS_VALUES} V ON V.ID = TT.TAG_VALUE_ID
+      LEFT JOIN
+        ${TablesNames.TAGS_KEYS} K ON K.ID = V.KEY_ID
       WHERE
-        TT.TOPIC_ID = :a 
-        AND V.ID = TT.TAG_VALUE_ID
-        AND K.ID = V.TAG_KEY_ID
+        T.ID = :a
     
     `, [topic_id])).rows || [];
+
+    const tags = new Map<string, TagMap>;
+
+    for (const doc of result) {
+      let tag = tags.get(doc.ID);
+
+      if (!tag) {
+        tag = {
+          ID: doc.ID,
+          NAME_AR: doc.KEY_AR,
+          NAME_EN: doc.KEY_EN,
+          VALUES: new Map()
+        };
+
+        tag.VALUES.set(doc.VALUE_ID, {
+          ID: doc.VALUE_ID,
+          NAME_AR: doc.VALUE_AR,
+          NAME_EN: doc.VALUE_EN
+        });
+
+      } else {
+        if (!tag.VALUES.has(doc.VALUE_ID))
+          tag.VALUES.set(doc.VALUE_ID, {
+            ID: doc.VALUE_ID,
+            NAME_AR: doc.VALUE_AR,
+            NAME_EN: doc.VALUE_EN
+          });
+      }
+    }
+
+    return Array.from(tags.values()).map(tag => {
+      return { ...tag, VALUES: Array.from(tag.VALUES.values()) };
+    }) as Tag[];
   },
 
   async addTag(topic_id: string, tag_value_id: string) {

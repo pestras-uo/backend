@@ -16,21 +16,21 @@ export default Router()
     controller.createUser
   )
   .put(
-    '/update-roles/:id',
+    '/:id/roles',
     validate(schemas.UPDATE_USER_ROLES),
     auth(TokenType.SESSION, ["users.update.roles"], "id"),
     usersMiddleWares.exists("params.id"),
     controller.updateRoles
   )
   .put(
-    '/update-groups/:id',
+    '/:id/groups',
     validate(schemas.UPDATE_USER_GROUPS),
     auth(TokenType.SESSION, ["users.update.groups"], "id"),
     usersMiddleWares.exists("params.id"),
     controller.updateGroups
   )
   .put(
-    '/update-orgunit/:id',
+    '/:id/orgunit',
     validate(schemas.CHANGE_USER_ORG),
     auth(TokenType.SESSION, ["users.update.orgunit"]),
     usersMiddleWares.exists("params.id"),
@@ -38,7 +38,7 @@ export default Router()
     controller.updateOrgunit
   )
   .put(
-    '/activate/:id/:state',
+    '/:id/activate/:state',
     auth(TokenType.SESSION, ["users.update.active"], "id"),
     usersMiddleWares.exists("params.id"),
     controller.activateUser

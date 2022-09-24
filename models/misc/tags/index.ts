@@ -2,7 +2,7 @@ import { getByRowId, TablesNames } from "../..";
 import oracle from "../../../db/oracle"
 import { HttpError } from "../../../misc/errors";
 import { HttpCode } from "../../../misc/http-codes";
-import { TagQueryResult, TagKey, TagValue, Tag } from "./interface";
+import { Tag, TagKey, TagMap, TagQueryResult, TagValue } from "./interface";
 import { randomUUID } from 'crypto';
 
 export default {
@@ -10,6 +10,61 @@ export default {
 
   // Getters
   // -------------------------------------------------------------------------------
+  async getAll() {
+    const result = (await oracle.exec<TagQueryResult>(`
+
+    SELECT
+      K.ID ID,
+      K.NAME_AR KEY_AR,
+      K.NAME_EN KEY_EN,
+      V.ID VALUE_ID,
+      V.NAME_AR VALUE_AR,
+      V.NAME_EN VALUE_EN
+    FROM
+      ${TablesNames.TOPICS} T
+    LEFT JOIN
+      ${TablesNames.TOPIC_TAG} TT ON T.ID = TT.TOPIC_ID
+    LEFT JOIN
+      ${TablesNames.TAGS_VALUES} V ON V.ID = TT.TAG_VALUE_ID
+    LEFT JOIN
+      ${TablesNames.TAGS_KEYS} K ON K.ID = V.KEY_ID
+  
+  `)).rows || [];
+
+    const tags = new Map<string, TagMap>;
+
+    for (const doc of result) {
+      let tag = tags.get(doc.ID);
+
+      if (!tag) {
+        tag = {
+          ID: doc.ID,
+          NAME_AR: doc.KEY_AR,
+          NAME_EN: doc.KEY_EN,
+          VALUES: new Map()
+        };
+
+        tag.VALUES.set(doc.VALUE_ID, {
+          ID: doc.VALUE_ID,
+          NAME_AR: doc.VALUE_AR,
+          NAME_EN: doc.VALUE_EN
+        });
+
+      } else {
+        if (!tag.VALUES.has(doc.VALUE_ID))
+          tag.VALUES.set(doc.VALUE_ID, {
+            ID: doc.VALUE_ID,
+            NAME_AR: doc.VALUE_AR,
+            NAME_EN: doc.VALUE_EN
+          });
+      }
+    }
+
+    return Array.from(tags.values()).map(tag => {
+      return { ...tag, VALUES: Array.from(tag.VALUES.values()) };
+    }) as Tag[];
+  },
+
   async getKeys() {
     return (await oracle.exec<TagKey>(`
     

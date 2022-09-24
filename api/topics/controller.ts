@@ -23,6 +23,14 @@ export default {
     }
   },
 
+  async getTags(req: Request<{ id: string }>, res: Response, next: NextFunction) {
+    try {
+      res.json(await topicsModel.getTags(req.params.id));
+    } catch (error) {
+      next(error);
+    }
+  },
+
 
 
   
