@@ -8,7 +8,7 @@ import { Request } from 'express';
 
 const docsStorage = multer.diskStorage({
   destination: function (req: Request, __, cb) {
-    const dir = path.join(process.cwd(), 'public', 'uploads', 'system', req.params.id);
+    const dir = path.join(config.uploadsDir, 'system', req.params.id);
     fs.mkdirSync(dir, { recursive: true });
     cb(null, dir);
   },
@@ -19,7 +19,7 @@ const docsStorage = multer.diskStorage({
 
 const readingsDocsStorage = multer.diskStorage({
   destination: function (req: Request, __, cb) {
-    const dir = path.join(process.cwd(), 'public', 'uploads', 'readings', req.params.id);
+    const dir = path.join(config.uploadsDir, 'readings', req.params.id);
     fs.mkdirSync(dir, { recursive: true });
     cb(null, dir);
   },
@@ -30,7 +30,7 @@ const readingsDocsStorage = multer.diskStorage({
 
 const avatarStorage = multer.diskStorage({
   destination: function (_, __, cb) {
-    cb(null, path.join(process.cwd(), 'public', 'uploads', 'avatars'));
+    cb(null, path.join(config.uploadsDir, 'avatars'));
   },
   filename: function (_, file, cb) {
     if (['jpeg', 'jpg'].includes(extension(file.mimetype) as string))

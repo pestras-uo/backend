@@ -104,7 +104,7 @@ export default {
 
   async updateAvatar(req: Request, res: Response<any, ResLocals>, next: NextFunction) {
     try {
-      const path = '/public/uploads/avatars/' + req.file?.filename;
+      const path = '/uploads/avatars/' + req.file?.filename;
 
       await usersModel.updateAvatar(res.locals.user.ID, path);
 

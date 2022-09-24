@@ -1,3 +1,5 @@
+import path from 'path';
+
 const config = {
   // env
   mode: process.env.NODE_ENV || "development",
@@ -20,6 +22,7 @@ const config = {
   dbUrl: process.env.DB_STR,
 
   // upload files config
+  uploadsDir: process.env.UPLOADS_DIR || path.join(process.cwd(), 'uploads'),
   maxDocumentUploadSize: +(process.env.MAX_DOC_UPLOAD_SIZE || 0) || (1024 * 1024),
   maxAvatarUploadSize: +(process.env.MAX_AVA_UPLOAD_SIZE || 0) || (1024 * 256)
 } as const;

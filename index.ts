@@ -31,8 +31,8 @@ import api from "./api";
   app.use(morgan('combined'));
   app.use(cors());
   app.use(helmet());
-
-  app.use('/public', express.static(path.join(process.cwd(), 'public')));
+  
+  app.use('/uploads', express.static(path.join(config.uploadsDir)));
 
   app.use(express.urlencoded({ extended: false }));
   app.use(express.json());
