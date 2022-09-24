@@ -13,32 +13,32 @@ export default Router()
     controller.getKeys
   )
   .get(
-    '/',
+    '/values',
     auth(TokenType.SESSION, ['tags.get.values']),
     controller.getValues
   )
   .post(
-    '/',
+    '/keys',
     validate(TagsValidators.CREATE_KEY),
     auth(TokenType.SESSION, ['tags.create.key']),
     controller.createKey
   )
   .post(
-    '/:id',
+    '/values/:key_id',
     validate(TagsValidators.CREATE_VALUE),
     auth(TokenType.SESSION, ['tags.create.value']),
-    tagsMiddleWares.keyExists('params.id'),
+    tagsMiddleWares.keyExists('params.key_id'),
     controller.createValue
   )
   .put(
-    '/:id',
+    '/keys/:id',
     validate(TagsValidators.UPDATE_KEY),
     auth(TokenType.SESSION, ['tags.update.key']),
     tagsMiddleWares.keyExists('params.id'),
     controller.updateKey
   )
   .put(
-    '/:key_id/:id',
+    '/values/:key_id/:id',
     validate(TagsValidators.UPDATE_KEY),
     auth(TokenType.SESSION, ['tags.update.value']),
     tagsMiddleWares.keyExists('params.key_id'),

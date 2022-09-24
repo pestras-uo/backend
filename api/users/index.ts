@@ -5,7 +5,7 @@ import validate from '../../middlewares/validate';
 import usersMiddlewares from '../../middlewares/users';
 import orgMiddlewares from '../../middlewares/orgunits';
 import { TokenType } from '../../auth/token';
-import UserValidators from './validators';
+import { UserValidators } from './validators';
 import { avatarUpload } from '../../middlewares/upload';
 
 export default Router()

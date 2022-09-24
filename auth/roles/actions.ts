@@ -60,7 +60,19 @@ export const Actions = [
   "tags.create.value",
   "tags.update.*",
   "tags.update.key",
-  "tags.update.value"
+  "tags.update.value",
+
+  // topics
+  "topics.*",
+  "topics.get.*",
+  "topics.get.all",
+  "topics.get.one",
+  "topics.create",
+  "topics.update.*",
+  "topics.update",
+  "topics.update.groups",
+  "topics.update.categories",
+  "topics.update.documents"
 
 ] as const;
 

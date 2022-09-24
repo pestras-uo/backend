@@ -3,7 +3,7 @@ import { Validall } from "@pestras/validall";
 const passwordRegex = /^[a-zA-Z0-9!@#$%^&*-_=+.|<>:;'"()]{8,64}$/;
 const usernameRegex = /^[a-zA-Z0-9_\-.]{4,64}$/;
 
-enum UserValidators {
+export enum UserValidators {
   CHANGE_USERNAME = "changeUsername",
   CHANGE_PASSWORD = "changePassword",
   UPDATE_PROFILE = "updateProfile",
@@ -24,5 +24,3 @@ new Validall(UserValidators.UPDATE_PROFILE, {
   mobile: { $type: "string", $default: "" },
   email: { $type: "string", $is: 'email', $default: "" }
 });
-
-export default UserValidators;

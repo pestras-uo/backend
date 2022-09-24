@@ -35,9 +35,9 @@ export default {
     }
   },
 
-  async createValue(req: Request<{ id: string }, any, CreateTagValueBody>, res: Response, next: NextFunction) {
+  async createValue(req: Request<{ key_id: string }, any, CreateTagValueBody>, res: Response, next: NextFunction) {
     try {
-      res.json(await tagsModel.createValue(req.params.id, req.body.name_ar, req.body.name_en))
+      res.json(await tagsModel.createValue(req.params.key_id, req.body.name_ar, req.body.name_en))
     } catch (error) {
       next(error);
     }

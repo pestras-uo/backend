@@ -32,12 +32,12 @@ export default {
         TC.GROUP_ID CATEGORY_ID
       FROM
         ${TablesNames.TOPICS} T,
-        ${TablesNames.TOPIC_GROUP} TG,
-        ${TablesNames.TOPIC_CATEGORY} TG
+      LEFT JOIN
+        ${TablesNames.TOPIC_GROUP} TG ON TG.TOPIC_ID = T.ID
+      LEFT JOIN
+        ${TablesNames.TOPIC_CATEGORY} TG ON TC.TOPIC_ID = T.ID
       WHERE
         T.ID = :a
-        AND T.ID = TG.TOPIC_ID
-        AND T.ID = TC.TOPIC_ID
 
     `, [id])).rows || [];
 
@@ -125,7 +125,7 @@ export default {
 
   // update
   // ----------------------------------------------------------------------------
-  async updateName(id: string, name_ar: string, name_en: string, desc_ar?: string, desc_en?: string) {
+  async update(id: string, name_ar: string, name_en: string, desc_ar?: string, desc_en?: string) {
     if (await this.updatedNameExists(id, name_ar, name_en))
       throw new HttpError(HttpCode.CONFLICT, "nameAlreadyExists");
 
@@ -157,24 +157,24 @@ export default {
     `, [topic_id])).rows || [];
   },
 
-  async addCategory(topic_id: string, cat_id: string) {
+  async addCategories(topic_id: string, categories: string[]) {
     await oracle.exec(`
     
       INSERT INTO ${TablesNames.TOPIC_CATEGORY} (topic_id, category_id)
       VALUES (:a, :b)
     
-    `, [topic_id, cat_id]);
+    `, categories.map(c => [topic_id, c]));
 
     return true;
   },
 
-  async removeCategory(topic_id: string, cat_id: string) {
+  async removeCategories(topic_id: string) {
     await oracle.exec(`
     
       DELETE FROM ${TablesNames.TOPIC_CATEGORY}
-      WHERE topic_id = :a AND category_id = :b
+      WHERE topic_id = :a
     
-    `, [topic_id, cat_id]);
+    `, [topic_id]);
 
     return true;
   },
@@ -245,24 +245,24 @@ export default {
   },
 
 
-  async assignGroup(topic_id: string, group_id: string) {
-    await oracle.exec(`
+  async assignGroups(topic_id: string, groups: string[]) {
+    await oracle.execMany(`
     
       INSERT INTO ${TablesNames.TOPIC_GROUP} (topic_id, group_id)
       VALUES (:a, :b)
 
-    `, [topic_id, group_id])
+    `, groups.map(g => [topic_id, g]));
 
     return true;
   },
 
-  async removeGroup(topic_id: string, group_id: string) {
+  async removeGroups(topic_id: string) {
     await oracle.exec(`
     
       DELETE FROM ${TablesNames.TOPIC_GROUP}
-      WHERE topic_id = :a, group_id = :b
+      WHERE topic_id = :a
 
-    `, [topic_id, group_id])
+    `, [topic_id])
 
     return true;
   },
@@ -280,5 +280,27 @@ export default {
       WHERE TD.TOPIC_ID = :a AND D.ID = TD.DOCUMENT_ID
     
     `, [topic_id])).rows || [];
+  },
+
+  async addDocument(topic_id: string, doc_id: string) {
+    await oracle.exec(`
+    
+      INSERT INTO ${TablesNames.TOPIC_DOCUMENT} (topic_id, document_id)
+      SET (:a, :b)
+    
+    `, [topic_id, doc_id]);
+
+    return true;
+  },
+
+  async deleteDocument(topic_id: string, doc_id: string) {
+    await oracle.exec(`
+    
+      DELETE FROM ${TablesNames.TOPIC_DOCUMENT}
+      WHERE topic_id = :a document_id = :b
+    
+    `, [topic_id, doc_id]);
+
+    return true;
   }
 }
