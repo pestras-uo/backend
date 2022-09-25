@@ -76,8 +76,7 @@ export default {
   // ------------------------------------------------------------------------------
   async updateGroups(req: Request<{ id: string }, any, UpdateTopicGroups>, res: Response, next: NextFunction) {
     try {
-      await topicsModel.removeGroups(req.params.id);
-      res.json(topicsModel.assignGroups(req.params.id, req.body.groups));
+      res.json(await topicsModel.replaceGroups(req.params.id, req.body.groups));
 
     } catch (error) {
       next(error);
@@ -91,8 +90,7 @@ export default {
   // ------------------------------------------------------------------------------
   async updateCategories(req: Request<{ id: string }, any, UpdateTopicCategories>, res: Response, next: NextFunction) {
     try {
-      await topicsModel.removeCategories(req.params.id);
-      res.json(topicsModel.addCategories(req.params.id, req.body.categories));
+      res.json(await topicsModel.replaceCategories(req.params.id, req.body.categories));
 
     } catch (error) {
       next(error);

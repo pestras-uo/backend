@@ -1,4 +1,4 @@
-import { getByRowId, getChildren, TablesNames } from "../..";
+import { getChildren, TablesNames } from "../..";
 import oracle from "../../../db/oracle"
 import { HttpError } from "../../../misc/errors";
 import { HttpCode } from "../../../misc/http-codes";
@@ -10,7 +10,7 @@ export default {
   // getters
   // ------------------------------------------------------------------------
   async get(id: string) {
-    return (await oracle.exec<Category>(`
+    return (await oracle.op().read<Category>(`
     
       SELECT *
       FROM ${TablesNames.CATEGORIES}
@@ -20,7 +20,7 @@ export default {
   },
 
   async getAll() {
-    return (await oracle.exec<Category>(`
+    return (await oracle.op().read<Category>(`
     
       SELECT *
       FROM ${TablesNames.CATEGORIES}
@@ -34,7 +34,7 @@ export default {
   // util
   // ------------------------------------------------------------------------
   async exists(id: string) {
-    return (await oracle.exec<{ COUNT: number }>(`
+    return (await oracle.op().read<{ COUNT: number }>(`
     
       SELECT COUNT(*) as COUNT
       FROM ${TablesNames.CATEGORIES}
@@ -44,7 +44,7 @@ export default {
   },
 
   async nameExists(name_ar: string, name_en: string) {
-    return (await oracle.exec<{ COUNT: number }>(`
+    return (await oracle.op().read<{ COUNT: number }>(`
     
       SELECT COUNT(*) as COUNT
       FROM ${TablesNames.CATEGORIES}
@@ -54,7 +54,7 @@ export default {
   },
 
   async updateNameExists(id: string, name_ar: string, name_en: string) {
-    return (await oracle.exec<{ COUNT: number }>(`
+    return (await oracle.op().read<{ COUNT: number }>(`
     
       SELECT COUNT(*) as COUNT
       FROM ${TablesNames.CATEGORIES}
@@ -75,14 +75,16 @@ export default {
     const siblings = !!parent ? [] : await getChildren(TablesNames.CATEGORIES, parent!);
     const id = Serial.gen(parent, siblings);
 
-    const result = await oracle.exec(`
-    
-      INSERT INTO ${TablesNames.CATEGORIES} (id, name_ar, name_en)
-      VALUES (:a, :b, :d)
-    
-    `, [id, name_ar, name_en]);
+    await oracle.op()
+      .write(`
+      
+        INSERT INTO ${TablesNames.CATEGORIES} (id, name_ar, name_en)
+        VALUES (:a, :b, :d)
+      
+      `, [id, name_ar, name_en])
+      .commit();
 
-    return getByRowId<Category>(TablesNames.CATEGORIES, result.lastRowid!);
+    return { ID: id, NAME_AR: name_ar, NAME_EN: name_en } as Category;
   },
 
 
@@ -94,15 +96,15 @@ export default {
     if (await this.updateNameExists(id, name_ar, name_en))
       throw new HttpError(HttpCode.CONFLICT, "nameAlreadyExists");
 
-    const date = new Date();
-
-    await oracle.exec(`
-    
-      UPDAET ${TablesNames.CATEGORIES}
-      SET name_ar = :a, name_en = :b
-      WHERE id = :c
-    
-    `, [name_ar, name_en, id]);
+    await oracle.op()
+      .write(`
+      
+        UPDAET ${TablesNames.CATEGORIES}
+        SET name_ar = :a, name_en = :b
+        WHERE id = :c
+      
+      `, [name_ar, name_en, id])
+      .commit();
 
     return true;
   },
@@ -113,10 +115,12 @@ export default {
   // delete methods
   // ----------------------------------------------------------------------------------------------------------------
   async delete(id: string) {
-    await oracle.exec(`
-      DELETE FROM ${TablesNames.CATEGORIES}
-      WHERE id = :id
-    `, [id]);
+    await oracle.op()
+      .write(`
+        DELETE FROM ${TablesNames.CATEGORIES}
+        WHERE id = :id
+      `, [id])
+      .commit();
 
     return true;
   }

@@ -1,4 +1,3 @@
-import { getByRowId } from "../..";
 import oracle from "../../../db/oracle";
 import { HttpError } from "../../../misc/errors";
 import { HttpCode } from "../../../misc/http-codes";
@@ -12,7 +11,7 @@ export default {
   // getters
   // --------------------------------------------------------------------------------------
   async getByIndicator(indicator_id: string, offset = 0, limit = 100) {
-    return (await oracle.exec<IndicatorReading>(`
+    return (await oracle.op().read<IndicatorReading>(`
     
       SELECT *
       FROM ${TABLE}
@@ -24,7 +23,7 @@ export default {
   },
 
   async get(id: string) {
-    return (await oracle.exec<IndicatorReading>(`
+    return (await oracle.op().read<IndicatorReading>(`
     
       SELECT *
       FROM ${TABLE}
@@ -39,17 +38,18 @@ export default {
   // Create
   // --------------------------------------------------------------------------------------
   async create(ind_id: string, dis_id: string, value: number, date: Date, note_ar = "", note_en = "") {
-
     const id = randomUUID();
-    const result = await oracle.exec(`
-    
-      INSERT INTO ${TABLE} (id, indicator_id, district_id, value, note_ar, note_en, reading_date)
-      VALUES (:a, :b, :c, :d, :e, :f, :g)
-    
-    `, [id, ind_id, dis_id, value, note_ar, note_en, date]);
 
-    return getByRowId(TABLE, result.lastRowid!);
+    await oracle.op()
+      .write(`
+      
+        INSERT INTO ${TABLE} (id, indicator_id, district_id, value, note_ar, note_en, reading_date)
+        VALUES (:a, :b, :c, :d, :e, :f, :g)
+      
+      `, [id, ind_id, dis_id, value, note_ar, note_en, date])
+      .commit();
 
+    return this.get(id);
   },
 
 
@@ -76,13 +76,15 @@ export default {
         : reading.CREATE_DATE.toISOString()
     });
 
-    await oracle.exec(`
-    
-      UPDATE ${TABLE}
-      SET value = :a, note_ar = :b, note_en = :c, reading_date = :d, update_date = :e, history = :f
-      WHERE id = :g
-    
-    `, [value, note_ar, note_en, reading_date, date, JSON.stringify(history), id]);
+    await oracle.op()
+      .write(`
+      
+        UPDATE ${TABLE}
+        SET value = :a, note_ar = :b, note_en = :c, reading_date = :d, update_date = :e, history = :f
+        WHERE id = :g
+      
+      `, [value, note_ar, note_en, reading_date, date, JSON.stringify(history), id])
+      .commit();
 
     return date;
   },
@@ -95,13 +97,15 @@ export default {
   async approve(id: string, state = 1) {
     const date = new Date();
 
-    await oracle.exec(`
+    await oracle.op()
+      .write(`
 
-      UPDATE ${TABLE}
-      SET is_approved = :a, approve_date = :b
-      WHERE id = :c
-    
-    `, [state, state ? date : null, id]);
+        UPDATE ${TABLE}
+        SET is_approved = :a, approve_date = :b
+        WHERE id = :c
+      
+      `, [state, state ? date : null, id])
+      .commit();
 
     return date;
   },
@@ -112,12 +116,14 @@ export default {
   // delete
   // --------------------------------------------------------------------------------------
   async delete(id: string) {
-    await oracle.exec(`
-    
-      DELETE FROM ${TABLE}
-      WHERE id = :a
+    await oracle.op()
+      .write(`
+      
+        DELETE FROM ${TABLE}
+        WHERE id = :a
 
-    `, [id]);
+      `, [id])
+      .commit();
 
     return true;
   },
@@ -128,7 +134,7 @@ export default {
   // documents
   // ----------------------------------------------------------------------------------------------------------------
   async getDocuments(reading_id: string) {
-    return (await oracle.exec<Document>(`
+    return (await oracle.op().read<Document>(`
     
       SELECT D.*
       FROM DOCUMENTS D, READING_DOCUMENT RD

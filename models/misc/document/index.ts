@@ -1,4 +1,4 @@
-import { getByRowId, TablesNames } from '../..';
+import { TablesNames } from '../..';
 import oracle from '../../../db/oracle';
 import { Document } from "./interface";
 import { randomUUID } from 'crypto';
@@ -11,7 +11,7 @@ export default {
   // get methods
   // ----------------------------------------------------------------------------------------------------------------
   async get(id: string) {
-    const result = await oracle.exec<Document>(`
+    const result = await oracle.op().read<Document>(`
       SELECT *
       FROM ${TablesNames.DOCUMENTS}
       WHERE id = :id
@@ -29,12 +29,14 @@ export default {
   async create(path: string, name_ar: string, name_en: string) {
     const id = randomUUID();
     
-    await oracle.exec(`
+    await oracle.op()
+      .write(`
 
-      INSERT INTO ${TablesNames.DOCUMENTS} (id, path, name_ar, name_en)
-      VALUES (:a, :b, :c, :d)
+        INSERT INTO ${TablesNames.DOCUMENTS} (id, path, name_ar, name_en)
+        VALUES (:a, :b, :c, :d)
 
-    `, [id, path, name_ar, name_en]);
+      `, [id, path, name_ar, name_en])
+      .commit();
 
     return id;
   },
@@ -45,10 +47,12 @@ export default {
   // delete methods
   // ----------------------------------------------------------------------------------------------------------------
   async delete(id: string) {
-    await oracle.exec(`
-      DELETE FROM ${TablesNames.DOCUMENTS}
-      WHERE id = :id
-    `, [id]);
+    await oracle.op()
+      .write(`
+        DELETE FROM ${TablesNames.DOCUMENTS}
+        WHERE id = :id
+      `, [id])
+      .commit();
 
     return true;
   }

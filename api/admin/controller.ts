@@ -1,11 +1,9 @@
 import { NextFunction, Request, Response } from "express";
-import crypt from "../../auth/crypt";
 import { ResLocals } from "../../auth/interfaces";
 import manager from "../../auth/roles/manager";
 import { HttpError } from "../../misc/errors";
 import { HttpCode } from "../../misc/http-codes";
 import { ChangeOrgunit, CreateUserBody, UpdateGroupsBody, UpdateRolesBody } from "./interfaces";
-import authModel from '../../models/auth/auth';
 import usersModel from '../../models/auth/user';
 import pubSub from "../../misc/pub-sub";
 
@@ -18,16 +16,16 @@ export default {
     if (manager.getTopRole(res.locals.user.ROLES) >= manager.getTopRole(body.roles))
       return next(new HttpError(HttpCode.UNAUTHORIZED, "unauthorizedRole"));
 
-    const [password, salt] = await crypt.hash(req.body.password);
-
     try {
-      const user = await usersModel.create(req.body.orgunit, req.body.username);
+      const user = await usersModel.create(
+        req.body.orgunit,
+        req.body.username,
+        req.body.roles, 
+        req.body.password
+      );
 
       if (!user)
         return next(new HttpError(HttpCode.UNKNOWN_ERROR, "errorCreatingUser"));
-
-      await authModel.create(user?.ID!, password, salt);
-      await usersModel.assignRoles(user.ID, req.body.roles);
 
       return res.json(user);
 
@@ -53,14 +51,12 @@ export default {
   async updateRoles(req: Request<{ id: string }, any, UpdateRolesBody>, res: Response<any, ResLocals>, next: NextFunction) {
     const roles = req.body.roles;
     const user_id = req.params.id;
-
-    console.log(res.locals.user.ROLES, roles);
+    
     if (manager.getTopRole(res.locals.user.ROLES) >= manager.getTopRole(roles))
       return next(new HttpError(HttpCode.UNAUTHORIZED, "unauthorizedRole"));
 
     try {
-      await usersModel.removeAllRoles(user_id);
-      await usersModel.assignRoles(user_id, roles);
+      await usersModel.replaceRoles(user_id, roles);
 
     } catch (error) {
       return next(error);
@@ -82,8 +78,7 @@ export default {
     const user_id = req.params.id;
 
     try {
-      await usersModel.removeAllGroups(user_id);
-      await usersModel.assignGroups(user_id, groups);
+      await usersModel.replaceGroups(user_id, groups);
       
     } catch (error) {
       return next(error);

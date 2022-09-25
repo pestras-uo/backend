@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { TokenType } from "../../auth/token";
 import auth from "../../middlewares/auth";
+import groupsMiddleWares from "../../middlewares/groups";
 import validate from "../../middlewares/validate";
 import controller from "./controller";
 import { GroupsValidators } from "./validators";
@@ -26,5 +27,6 @@ export default Router()
     '/:id',
     validate(GroupsValidators.UPDATE),
     auth(TokenType.SESSION, ['groups.update']),
+    groupsMiddleWares.exists('params.id'),
     controller.update
   )

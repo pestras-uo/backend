@@ -1,4 +1,4 @@
-import { getByRowId, getChildren, TablesNames } from "../..";
+import { getChildren, TablesNames } from "../..";
 import oracle from "../../../db/oracle";
 import { HttpError } from "../../../misc/errors";
 import { HttpCode } from "../../../misc/http-codes";
@@ -15,7 +15,7 @@ export default {
   // Getters
   // ----------------------------------------------------------------------------
   async getAll() {
-    return (await oracle.exec<Topic>(`
+    return (await oracle.op().read<Topic>(`
 
       SELECT *
       FROM ${TablesNames.TOPICS}
@@ -24,7 +24,7 @@ export default {
   },
 
   async get(id: string) {
-    const result = (await oracle.exec<TopicDetailsQueryResultItem>(`
+    const result = (await oracle.op().read<TopicDetailsQueryResultItem>(`
 
       SELECT
         T.*,
@@ -69,7 +69,7 @@ export default {
   // Util
   // ----------------------------------------------------------------------------
   async exists(id: string) {
-    return (await oracle.exec<{ count: number }>(`
+    return (await oracle.op().read<{ count: number }>(`
 
       SELECT COUNT(id) as count
       FROM ${TablesNames.TOPICS}
@@ -79,7 +79,7 @@ export default {
   },
 
   async nameExists(name_ar: string, name_en: string) {
-    return (await oracle.exec<{ COUNT: number }>(`
+    return (await oracle.op().read<{ COUNT: number }>(`
 
       SELECT COUNT(name) as count
       FROM ${TablesNames.TOPICS}
@@ -89,7 +89,7 @@ export default {
   },
 
   async updatedNameExists(id: string, name_ar: string, name_en: string) {
-    return (await oracle.exec<{ count: number }>(`
+    return (await oracle.op().read<{ count: number }>(`
 
       SELECT COUNT(name) as count
       FROM ${TablesNames.TOPICS}
@@ -103,21 +103,35 @@ export default {
 
   // create
   // ----------------------------------------------------------------------------
-  async create(name_ar: string, name_en: string, parent?: string, desc_ar?: string, desc_en?: string) {
+  async create(name_ar: string, name_en: string, parent?: string, desc_ar?: string, desc_en?: string, groups: string[] = [], categories: string[] = []) {
     if (await this.nameExists(name_ar, name_en))
       throw new HttpError(HttpCode.CONFLICT, "nameAlreadyExists");
 
     const siblings = !!parent ? [] : await getChildren(TablesNames.TOPICS, parent!);
     const id = Serial.gen(parent, siblings);
 
-    const result = await oracle.exec(`
+    await oracle.op()
+      .write(`
 
-      INSERT INTO ${TablesNames.TOPICS} (id, name_ar, name_en, desc_ar, desc_en)
-      VALUES (:a, :b, :c, :d, :e)
+        INSERT INTO ${TablesNames.TOPICS} (id, name_ar, name_en, desc_ar, desc_en)
+        VALUES (:a, :b, :c, :d, :e)
 
-    `, [id, name_ar, name_en, desc_ar, desc_en]);
+      `, [id, name_ar, name_en, desc_ar, desc_en])
+      .writeMany(`
+      
+        INSERT INTO ${TablesNames.TOPIC_GROUP} (topic_id, group_id)
+        VALUES (:a, :b)
+      
+      `, groups.map(g => [id, g]))
+      .writeMany(`
+      
+        INSERT INTO ${TablesNames.TOPIC_CATEGORY} (topic_id, category_id)
+        VALUES (:a, :b)
+      
+      `, categories.map(c => [id, c]))
+      .commit();
 
-    return getByRowId<Topic>(TablesNames.TOPICS, result.lastRowid!);
+    return this.get(id);
   },
 
 
@@ -131,13 +145,15 @@ export default {
 
     const date = new Date();
 
-    await oracle.exec(`
-    
-      UPDATE ${TablesNames.TOPICS}
-      SET (name_ar = :a, name_en = :b, desc_ar = :c, desc_en = :d update_date = :e)
-      WHERE id = :f
-    
-    `, [name_ar, name_en, desc_ar, desc_en, date, id]);
+    await oracle.op()
+      .write(`
+      
+        UPDATE ${TablesNames.TOPICS}
+        SET (name_ar = :a, name_en = :b, desc_ar = :c, desc_en = :d update_date = :e)
+        WHERE id = :f
+      
+      `, [name_ar, name_en, desc_ar, desc_en, date, id])
+      .commit();
 
     return date;
   },
@@ -148,7 +164,7 @@ export default {
   // category
   // ----------------------------------------------------------------------------
   async getCategories(topic_id: string) {
-    return (await oracle.exec<Category>(`
+    return (await oracle.op().read<Category>(`
     
       SELECT C.*
       FROM ${TablesNames.CATEGORIES} C, ${TablesNames.TOPIC_CATEGORY} TC
@@ -157,24 +173,21 @@ export default {
     `, [topic_id])).rows || [];
   },
 
-  async addCategories(topic_id: string, categories: string[]) {
-    await oracle.exec(`
-    
-      INSERT INTO ${TablesNames.TOPIC_CATEGORY} (topic_id, category_id)
-      VALUES (:a, :b)
-    
-    `, categories.map(c => [topic_id, c]));
-
-    return true;
-  },
-
-  async removeCategories(topic_id: string) {
-    await oracle.exec(`
-    
-      DELETE FROM ${TablesNames.TOPIC_CATEGORY}
-      WHERE topic_id = :a
-    
-    `, [topic_id]);
+  async replaceCategories(topic_id: string, categories: string[]) {
+    await oracle.op()
+      .write(`
+      
+        DELETE FROM ${TablesNames.TOPIC_CATEGORY}
+        WHERE topic_id = :a
+      
+      `, [topic_id])
+      .writeMany(`
+      
+        INSERT INTO ${TablesNames.TOPIC_CATEGORY} (topic_id, category_id)
+        VALUES (:a, :b)
+      
+      `, categories.map(c => [topic_id, c]))
+      .commit();
 
     return true;
   },
@@ -185,7 +198,7 @@ export default {
   // tags
   // ----------------------------------------------------------------------------
   async getTags(topic_id: string) {
-    const result = (await oracle.exec<TagQueryResult>(`
+    const result = (await oracle.op().read<TagQueryResult>(`
 
       SELECT
         K.ID ID,
@@ -241,24 +254,21 @@ export default {
     }) as Tag[];
   },
 
-  async addTag(topic_id: string, tag_value_id: string) {
-    await oracle.exec(`
-    
-      INSERT INTO ${TablesNames.TOPIC_TAG} (topic_id, tag_value_id)
-      VALUES (:a, :b)
-    
-    `, [topic_id, tag_value_id]);
-
-    return true;
-  },
-
-  async removeTag(topic_id: string, tag_id: string) {
-    await oracle.exec(`
-    
-      DELETE FROM ${TablesNames.TOPIC_TAG}
-      WHERE topic_id = :a AND tag_id = :b
-    
-    `, [topic_id, tag_id]);
+  async replaceTags(topic_id: string, tags: string[]) {
+    await oracle.op()
+      .write(`
+      
+        DELETE FROM ${TablesNames.TOPIC_TAG}
+        WHERE topic_id = :a
+      
+      `, [topic_id])
+      .writeMany(`
+      
+        INSERT INTO ${TablesNames.TOPIC_TAG} (topic_id, tag_value_id)
+        VALUES (:a, :b)
+      
+      `, tags.map(t => [topic_id, t]))
+      .commit();
 
     return true;
   },
@@ -270,7 +280,7 @@ export default {
   // groups
   // ----------------------------------------------------------------------------------------------------------------
   async getGroups(topic_id: string) {
-    return (await oracle.exec<Group>(`
+    return (await oracle.op().read<Group>(`
     
       SELECT G.*
       FROM ${TablesNames.GROUPS} G, ${TablesNames.TOPIC_GROUP} TG
@@ -279,25 +289,21 @@ export default {
     `, [topic_id])).rows || [];
   },
 
+  async replaceGroups(topic_id: string, groups: string[]) {
+    await oracle.op()
+      .write(`
+      
+        DELETE FROM ${TablesNames.TOPIC_GROUP}
+        WHERE topic_id = :a
 
-  async assignGroups(topic_id: string, groups: string[]) {
-    await oracle.execMany(`
-    
-      INSERT INTO ${TablesNames.TOPIC_GROUP} (topic_id, group_id)
-      VALUES (:a, :b)
-
-    `, groups.map(g => [topic_id, g]));
-
-    return true;
-  },
-
-  async removeGroups(topic_id: string) {
-    await oracle.exec(`
-    
-      DELETE FROM ${TablesNames.TOPIC_GROUP}
-      WHERE topic_id = :a
-
-    `, [topic_id])
+      `, [topic_id])
+      .writeMany(`
+      
+        INSERT INTO ${TablesNames.TOPIC_GROUP} (topic_id, group_id)
+        VALUES (:a, :b)
+      
+      `, groups.map(g => [topic_id, g]))
+      .commit();
 
     return true;
   },
@@ -308,7 +314,7 @@ export default {
   // documents
   // ----------------------------------------------------------------------------------------------------------------
   async getDocuments(topic_id: string) {
-    return (await oracle.exec<Document>(`
+    return (await oracle.op().read<Document>(`
     
       SELECT D.*
       FROM ${TablesNames.DOCUMENTS} D, ${TablesNames.TOPIC_DOCUMENT} TD
@@ -318,23 +324,27 @@ export default {
   },
 
   async addDocument(topic_id: string, doc_id: string) {
-    await oracle.exec(`
-    
-      INSERT INTO ${TablesNames.TOPIC_DOCUMENT} (topic_id, document_id)
-      SET (:a, :b)
-    
-    `, [topic_id, doc_id]);
+    await oracle.op()
+      .write(`
+      
+        INSERT INTO ${TablesNames.TOPIC_DOCUMENT} (topic_id, document_id)
+        SET (:a, :b)
+      
+      `, [topic_id, doc_id])
+      .commit();
 
     return true;
   },
 
   async deleteDocument(topic_id: string, doc_id: string) {
-    await oracle.exec(`
-    
-      DELETE FROM ${TablesNames.TOPIC_DOCUMENT}
-      WHERE topic_id = :a document_id = :b
-    
-    `, [topic_id, doc_id]);
+    await oracle.op()
+      .write(`
+      
+        DELETE FROM ${TablesNames.TOPIC_DOCUMENT}
+        WHERE topic_id = :a document_id = :b
+      
+      `, [topic_id, doc_id])
+      .commit();
 
     return true;
   }

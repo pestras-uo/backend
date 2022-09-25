@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import controller from './controller.';
+import controller from './controller';
 import validate from '../../middlewares/validate';
 import usersMiddleWares from '../../middlewares/users';
 import auth from '../../middlewares/auth';
@@ -12,7 +12,6 @@ export default Router()
     "/create",
     validate(schemas.CREATE_USER),
     auth(TokenType.SESSION, ["users.create"]),
-    usersMiddleWares.usernameExists("body.username"),
     controller.createUser
   )
   .put(

@@ -4,6 +4,8 @@ export interface CreateTopicBody {
   desc_ar?: string;
   desc_en?: string;
   parent?: string;
+  groups?: string[];
+  categories?: string[];
 }
 
 export interface UpdateTopicBody {

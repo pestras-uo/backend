@@ -37,18 +37,8 @@ export enum TablesNames {
   READING_DOCUMENT = "reading_document"
 }
 
-export async function getByRowId<T>(table: string, rowid: string) {
-  return (await oracle.exec<T>(`
-  
-    SELECT *
-    FROM ${table}
-    WHERE rowid = :a
-  
-  `, [rowid])).rows?.[0];
-}
-
 export async function getChildren(table: string, serial: string) {
-  const result = await oracle.exec<{ ID: string }>(`
+  const result = await oracle.op().read<{ ID: string }>(`
 
     SELECT id
     FROM ${table}

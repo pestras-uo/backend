@@ -3,14 +3,14 @@ import { HttpError } from "../../../misc/errors";
 import { HttpCode } from "../../../misc/http-codes";
 import { Orgunit } from "./interface";
 import Serial from '../../../util/serial';
-import { getByRowId, getChildren, TablesNames } from "../..";
+import { getChildren, TablesNames } from "../..";
 
 export default {
 
   // Getters
   // ----------------------------------------------------------------------------
   async getAll() {
-    return (await oracle.exec<Orgunit>(`
+    return (await oracle.op().read<Orgunit>(`
 
       SELECT * 
       FROM ${TablesNames.ORGUNITS}
@@ -19,7 +19,7 @@ export default {
   },
 
   async get(id: string) {
-    return (await oracle.exec<Orgunit>(`
+    return (await oracle.op().read<Orgunit>(`
 
       SELECT *
       FROM ${TablesNames.ORGUNITS}
@@ -34,7 +34,7 @@ export default {
   // Util
   // ----------------------------------------------------------------------------
   async exists(id: string) {
-   return (await oracle.exec<{ COUNT: number }>(`
+   return (await oracle.op().read<{ COUNT: number }>(`
 
       SELECT COUNT(id) as COUNT
       FROM ${TablesNames.ORGUNITS}
@@ -44,7 +44,7 @@ export default {
   },
 
   async nameExists(name_ar: string, name_en: string) {
-   return (await oracle.exec<{ COUNT: number }>(`
+   return (await oracle.op().read<{ COUNT: number }>(`
 
       SELECT COUNT(*) as COUNT
       FROM ${TablesNames.ORGUNITS}
@@ -54,7 +54,7 @@ export default {
   },
 
   async updatedNameExists(id: string, name_ar: string, name_en: string) {
-   return (await oracle.exec<{ COUNT: number }>(`
+   return (await oracle.op().read<{ COUNT: number }>(`
 
       SELECT COUNT(*) as COUNT
       FROM ${TablesNames.ORGUNITS}
@@ -75,18 +75,16 @@ export default {
     const siblings = !!parent ? [] : await getChildren(TablesNames.ORGUNITS, parent!);
     const id = Serial.gen(parent, siblings);
 
-    const result = await oracle.exec(`
+    await oracle.op()
+      .write(`
 
-      INSERT INTO ${TablesNames.ORGUNITS} (id, name_ar, name_en)
-      VALUES (:a, :b, :c)
+        INSERT INTO ${TablesNames.ORGUNITS} (id, name_ar, name_en)
+        VALUES (:a, :b, :c)
 
-    `, [
-      id,
-      name_ar,
-      name_en
-    ]);
+      `, [id, name_ar, name_en])
+      .commit();
 
-    return getByRowId<Orgunit>(TablesNames.ORGUNITS, result.lastRowid!);
+    return this.get(id);
   },
 
 
@@ -100,13 +98,15 @@ export default {
 
     const date = new Date();
 
-    await oracle.exec(`
-    
-      UPDATE ${TablesNames.ORGUNITS}
-      SET name_ar = :a, name_en = :b, update_date = :c
-      WHERE id = :d
-    
-    `, [name_ar, name_en, date, id]);
+    await oracle.op()
+      .write(`
+      
+        UPDATE ${TablesNames.ORGUNITS}
+        SET name_ar = :a, name_en = :b, update_date = :c
+        WHERE id = :d
+      
+      `, [name_ar, name_en, date, id])
+      .commit();
 
     return date;
   }

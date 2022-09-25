@@ -13,7 +13,9 @@ new Validall(TopicsValidators.CREATE, {
   name_en: { $type: 'string', $required: true, $message: 'nameEnIsRequired' },
   desc_ar: { $type: 'string', $default: '', $message: 'invalidDescAr' },
   desc_en: { $type: 'string', $default: '', $message: 'invalidDescEn' },
-  parent: { $type: 'string', $default: '', $message: 'invalidParentId' }
+  parent: { $type: 'string', $default: '', $message: 'invalidParentId' },
+  groups: { $default: [], $each: { $type: 'string', $message: 'invalidGroupId' } },
+  categories: { $default: [], $each: { $type: 'string', $message: 'invalidCategoriesId' } }
 });
 
 new Validall(TopicsValidators.UPDATE, {

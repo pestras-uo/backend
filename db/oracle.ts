@@ -1,18 +1,35 @@
-import oracledb from 'oracledb';
+import oracledb, { autoCommit } from 'oracledb';
 import config from "../config";
 
 oracledb.outFormat = oracledb.OUT_FORMAT_OBJECT;
 oracledb.autoCommit = true;
 oracledb.initOracleClient({ libDir: config.dbLibDir });
 
-export default {
+export enum DBSchemas {
+  SYSTEM,
+  READINGS
+}
+
+const schemaCred = [
+  {
+    // system
+    user: config.dbSystemUser,
+    pass: config.dbSystemPass,
+  },
+  {
+    // readings
+    user: config.dbReadingsUser,
+    pass: config.dbReadingsPass,
+  }
+];
+
+const oracle = {
   async connect() {
     console.log("connecting to database...");
 
     try {
       await oracledb.createPool({
-        user: config.dbSystemUser,
-        password: config.dbSystemPass,
+        ...schemaCred[0],
         connectString: config.dbUrl,
         // edition: 'ORA$BASE', // used for Edition Based Redefintion
         // events: false, // whether to handle Oracle Database FAN and RLB events or support CQN
@@ -41,74 +58,8 @@ export default {
     }
   },
 
-  async exec<T = unknown>(sql: string, bindParams: oracledb.BindParameters = [], options: oracledb.ExecuteOptions = {}) {
-    let conn!: oracledb.Connection;
-
-    try {
-      conn = await oracledb.getPool().getConnection();
-
-      return await conn.execute<T>(sql, bindParams, options);
-
-    } catch (error: any) {
-      throw error;
-    } finally {
-      await this.closeConn(conn);
-    }
-  },
-
-  async execMany<T = unknown>(sql: string, bindParams: oracledb.BindParameters[] = [], options: oracledb.ExecuteOptions = {}) {
-    let conn!: oracledb.Connection;
-
-    try {
-      conn = await oracledb.getPool().getConnection();
-
-      return await conn.executeMany<T>(sql, bindParams, options);
-
-    } catch (error: any) {
-      throw error;
-    } finally {
-      await this.closeConn(conn);
-    }
-  },
-
-  async exec2<T = unknown>(sql: string, bindParams: oracledb.BindParameters = [], options: oracledb.ExecuteOptions = {}) {
-    let conn!: oracledb.Connection;
-
-    try {
-      conn = await oracledb.getPool().getConnection({ user: config.dbReadingsUser, password: config.dbReadingsPass });
-
-      return await conn.execute<T>(sql, bindParams, options);
-
-    } catch (error: any) {
-      throw error;
-    } finally {
-      await this.closeConn(conn);
-    }
-  },
-
-  async execMany2<T = unknown>(sql: string, bindParams: oracledb.BindParameters[] = [], options: oracledb.ExecuteOptions = {}) {
-    let conn!: oracledb.Connection;
-
-    try {
-      conn = await oracledb.getPool().getConnection({ user: config.dbReadingsUser, password: config.dbReadingsPass });
-
-      return await conn.executeMany<T>(sql, bindParams, options);
-
-    } catch (error: any) {
-      throw error;
-    } finally {
-      await this.closeConn(conn);
-    }
-  },
-
-  async closeConn(conn: oracledb.Connection) {
-    if (conn) {
-      try {
-        await conn.close();
-      } catch (error) {
-        console.error(error);
-      }
-    }
+  op(schema: DBSchemas = DBSchemas.SYSTEM) {
+    return new Operation(schema);
   }
 }
 
@@ -132,3 +83,74 @@ async function closePool() {
 process
   .once('SIGTERM', closePool)
   .once('SIGINT', closePool);
+
+class Operation {
+  private _operations: {
+    sql: string,
+    bindParams: oracledb.BindParameters | oracledb.BindParameters[],
+    options?: oracledb.ExecuteOptions,
+    many?: boolean
+  }[] = [];
+
+  constructor(private _schema: DBSchemas = DBSchemas.SYSTEM) { }
+
+  private async _closeConn(conn: oracledb.Connection) {
+    if (conn) {
+      try {
+        await conn.close();
+      } catch (error) {
+        console.error(error);
+      }
+    }
+  }
+
+  async read<T = any>(sql: string, bindParams: oracledb.BindParameters = [], options: oracledb.ExecuteOptions = {}) {
+    let conn!: oracledb.Connection;
+
+    try {
+      conn = await oracledb.getPool().getConnection(schemaCred[this._schema]);
+      return conn.execute<T>(sql, bindParams, options);
+
+    } catch (error) {
+      throw error;
+
+    } finally {
+      await this._closeConn(conn);
+    }
+  }
+
+  write(sql: string, bindParams: oracledb.BindParameters = [], options: oracledb.ExecuteOptions = {}) {
+    this._operations.push({ sql, bindParams, options });
+    return this;
+  }
+
+  writeMany(sql: string, bindParams: oracledb.BindParameters = [], options: oracledb.ExecuteOptions = {}) {
+    this._operations.push({ sql, bindParams, options, many: true });
+    return this;
+  }
+
+  async commit() {
+    let conn!: oracledb.Connection;
+
+    try {
+      conn = await oracledb.getPool().getConnection(schemaCred[this._schema]);
+
+      for (const op of this._operations) {
+        if (op.many)
+          await conn.executeMany(op.sql, (op.bindParams as oracledb.BindParameters[]) || [], { ...(op.options || {}), autoCommit: false });
+        else
+          await conn.execute(op.sql, (op.bindParams as oracledb.BindParameters) || [], { ...(op.options || {}), autoCommit: false });
+      }
+
+      return conn.commit();
+
+    } catch (error: any) {
+      throw error;
+
+    } finally {
+      await this._closeConn(conn);
+    }
+  }
+}
+
+export default oracle;

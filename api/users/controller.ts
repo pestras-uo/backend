@@ -67,11 +67,7 @@ export default {
 
 
     try {
-      const [password, salt] = await crypt.hash(req.body.newPassword);
-
-      await authModel.updatePassword(res.locals.user.ID, password, salt);
-
-      res.json(true);
+      res.json(await authModel.updatePassword(res.locals.user.ID, req.body.newPassword));
 
     } catch (error) {
       next(error);

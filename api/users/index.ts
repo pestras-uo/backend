@@ -34,7 +34,6 @@ export default Router()
     '/username',
     validate(UserValidators.CHANGE_USERNAME),
     auth(),
-    usersMiddlewares.usernameExists("body.username"),
     controller.updateUsername
   )
   .put(

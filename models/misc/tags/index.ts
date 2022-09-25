@@ -1,4 +1,4 @@
-import { getByRowId, TablesNames } from "../..";
+import { TablesNames } from "../..";
 import oracle from "../../../db/oracle"
 import { HttpError } from "../../../misc/errors";
 import { HttpCode } from "../../../misc/http-codes";
@@ -11,7 +11,7 @@ export default {
   // Getters
   // -------------------------------------------------------------------------------
   async getAll() {
-    const result = (await oracle.exec<TagQueryResult>(`
+    const result = (await oracle.op().read<TagQueryResult>(`
 
     SELECT
       K.ID ID,
@@ -66,7 +66,7 @@ export default {
   },
 
   async getKeys() {
-    return (await oracle.exec<TagKey>(`
+    return (await oracle.op().read<TagKey>(`
     
       SELECT *
       FROM ${TablesNames.TAGS_KEYS}
@@ -75,7 +75,7 @@ export default {
   },
 
   async getValues() {
-    return (await oracle.exec<TagValue>(`
+    return (await oracle.op().read<TagValue>(`
     
       SELECT *
       FROM ${TablesNames.TAGS_VALUES}
@@ -84,7 +84,7 @@ export default {
   },
 
   async getKey(id: string) {
-    return (await oracle.exec<TagKey>(`
+    return (await oracle.op().read<TagKey>(`
     
       SELECT *
       FROM ${TablesNames.TAGS_KEYS}
@@ -94,7 +94,7 @@ export default {
   },
 
   async getValue(id: string) {
-    return (await oracle.exec<TagValue>(`
+    return (await oracle.op().read<TagValue>(`
     
       SELECT *
       FROM ${TablesNames.TAGS_VALUES}
@@ -109,7 +109,7 @@ export default {
   // Util
   // -------------------------------------------------------------------------------
   async keyExists(id: string) {
-    return (await oracle.exec<{ COUNT: number }>(`
+    return (await oracle.op().read<{ COUNT: number }>(`
     
       SELECT COUNT(*)
       FROM ${TablesNames.TAGS_KEYS}
@@ -119,7 +119,7 @@ export default {
   },
 
   async valueExists(id: string) {
-    return (await oracle.exec<{ COUNT: number }>(`
+    return (await oracle.op().read<{ COUNT: number }>(`
     
       SELECT COUNT(*)
       FROM ${TablesNames.TAGS_VALUES}
@@ -129,7 +129,7 @@ export default {
   },
 
   async keyNameExists(name_ar: string, name_en: string) {
-    return (await oracle.exec<{ COUNT: number }>(`
+    return (await oracle.op().read<{ COUNT: number }>(`
     
       SELECT COUNT(*)
       FROM ${TablesNames.TAGS_KEYS}
@@ -139,7 +139,7 @@ export default {
   },
 
   async valueNameExists(key_id: string, name_ar: string, name_en: string) {
-    return (await oracle.exec<{ COUNT: number }>(`
+    return (await oracle.op().read<{ COUNT: number }>(`
     
       SELECT COUNT(*)
       FROM ${TablesNames.TAGS_VALUES}
@@ -149,7 +149,7 @@ export default {
   },
 
   async updateKeyNameExists(id: string, name_ar: string, name_en: string) {
-    return (await oracle.exec<{ COUNT: number }>(`
+    return (await oracle.op().read<{ COUNT: number }>(`
     
       SELECT COUNT(*)
       FROM ${TablesNames.TAGS_KEYS}
@@ -159,7 +159,7 @@ export default {
   },
 
   async updateValueNameExists(key_id: string, value_id: string, name_ar: string, name_en: string) {
-    return (await oracle.exec<{ COUNT: number }>(`
+    return (await oracle.op().read<{ COUNT: number }>(`
     
       SELECT COUNT(*)
       FROM ${TablesNames.TAGS_VALUES}
@@ -178,14 +178,16 @@ export default {
       throw new HttpError(HttpCode.CONFLICT, "tagKeyAlreadyExists");
 
     const id = randomUUID();
-    const result = await oracle.exec(`
-    
-      INSERT INTO ${TablesNames.TAGS_KEYS} (id, name_ar, name_en)
-      VALUES(:a, :b, :c)
-    
-    `, [id, name_ar, name_en]);
+    await oracle.op()
+      .write(`
+      
+        INSERT INTO ${TablesNames.TAGS_KEYS} (id, name_ar, name_en)
+        VALUES(:a, :b, :c)
+      
+      `, [id, name_ar, name_en])
+      .commit();
 
-    return getByRowId<TagKey>(TablesNames.TAGS_KEYS, result.lastRowid!);
+    return { ID: id, NAME_AR: name_ar, NAME_EN: name_en } as TagKey;
   },
 
   async createValue(key_id: string, name_ar: string, name_en: string) {
@@ -193,14 +195,17 @@ export default {
       throw new HttpError(HttpCode.CONFLICT, "tagValueAlreadyExists");
 
     const id = randomUUID();
-    const result = await oracle.exec(`
-    
-      INSERT INTO ${TablesNames.TAGS_VALUES} (id, taag_key_id, name_ar, name_en)
-      VALUES(:a, :b, :c, :d)
-    
-    `, [id, key_id, name_ar, name_en]);
 
-    return getByRowId<TagValue>(TablesNames.TAGS_KEYS, result.lastRowid!);
+    await oracle.op()
+      .write(`
+      
+        INSERT INTO ${TablesNames.TAGS_VALUES} (id, taag_key_id, name_ar, name_en)
+        VALUES(:a, :b, :c, :d)
+      
+      `, [id, key_id, name_ar, name_en])
+      .commit();
+
+    return { ID: id, NAME_AR: name_ar, NAME_EN: name_en } as TagValue;
   },
 
 
@@ -212,34 +217,34 @@ export default {
     if (await this.updateKeyNameExists(id, name_ar, name_en))
       throw new HttpError(HttpCode.CONFLICT, "nameAlreadyExists");
 
-    const date = new Date();
+    await oracle.op()
+      .write(`
+      
+        UPDATE ${TablesNames.TAGS_KEYS}
+        SET name_ar = :a, name_en = :b
+        WHERE id = :c
+      
+      `, [name_ar, name_en, id])
+      .commit();
 
-    await oracle.exec(`
-    
-      UPDATE ${TablesNames.TAGS_KEYS}
-      SET name_ar = :a, name_en = :b, update_date = :c
-      WHERE id = :d
-    
-    `, [name_ar, name_en, date, id]);
-
-    return date;
+    return true;
   },
 
   async updateValue(key_id: string, value_id: string, name_ar: string, name_en: string) {
     if (await this.updateValueNameExists(key_id, value_id, name_ar, name_en))
       throw new HttpError(HttpCode.CONFLICT, "nameAlreadyExists");
 
-    const date = new Date();
+    await oracle.op()
+      .write(`
+      
+        UPDATE ${TablesNames.TAGS_VALUES}
+        SET value_ar = :a, value_en = :b
+        WHERE id = :c AND tag_key_id = :d
+      
+      `, [name_ar, name_en, value_id, key_id])
+      .commit();
 
-    await oracle.exec(`
-    
-      UPDATE ${TablesNames.TAGS_VALUES}
-      SET value_ar = :a, value_en = :b, update_date = :c
-      WHERE id = :d AND tag_key_id = :e
-    
-    `, [name_ar, name_en, date, value_id, key_id]);
-
-    return date;
+    return true;
   },
 
 
@@ -248,19 +253,23 @@ export default {
   // update
   // -------------------------------------------------------------------------------
   async deleteKey(id: string) {
-    await oracle.exec(`
-      DELETE FROM ${TablesNames.TAGS_KEYS}
-      WHERE id = :id
-    `, [id]);
+    await oracle.op()
+      .write(`
+        DELETE FROM ${TablesNames.TAGS_KEYS}
+        WHERE id = :id
+      `, [id])
+      .commit();
 
     return true;
   },
 
   async deleteValue(id: string) {
-    await oracle.exec(`
-      DELETE FROM ${TablesNames.TAGS_VALUES}
-      WHERE id = :id
-    `, [id]);
+    await oracle.op()
+      .write(`
+        DELETE FROM ${TablesNames.TAGS_VALUES}
+        WHERE id = :id
+      `, [id])
+      .commit();
 
     return true;
   }

@@ -10,7 +10,7 @@ export default {
   // getters
   // ----------------------------------------------------------------------------------------------------------------
   async get(id: string) {
-    return (await oracle.exec<Group>(`
+    return (await oracle.op().read<Group>(`
 
       SELECT *
       FROM ${TablesNames.GROUPS}
@@ -20,7 +20,7 @@ export default {
   },
 
   async getAll() {
-    return (await oracle.exec<Group>(`
+    return (await oracle.op().read<Group>(`
 
       SELECT * 
       FROM ${TablesNames.GROUPS}
@@ -35,7 +35,7 @@ export default {
   // util
   // ----------------------------------------------------------------------------------------------------------------
   async nameExists(name_ar: string, name_en: string) {
-    return (await oracle.exec<{ COUNT: number }>(`
+    return (await oracle.op().read<{ COUNT: number }>(`
     
       SELECT COUNT(id) as count
       FROM ${TablesNames.GROUPS}
@@ -45,7 +45,7 @@ export default {
   },
 
   async updateNameExists(id: string, name_ar: string, name_en: string) {
-    return (await oracle.exec<{ COUNT: number }>(`
+    return (await oracle.op().read<{ COUNT: number }>(`
     
       SELECT COUNT(id) as count
       FROM ${TablesNames.GROUPS}
@@ -54,8 +54,8 @@ export default {
     `, [name_ar, name_en, id])).rows?.[0].COUNT! > 0;
   },
 
-  async idExists(id: string) {
-    return (await oracle.exec<{ COUNT: number }>(`
+  async exists(id: string) {
+    return (await oracle.op().read<{ COUNT: number }>(`
     
       SELECT COUNT(*) as COUNT
       FROM ${TablesNames.GROUPS}
@@ -66,7 +66,7 @@ export default {
 
   async idsExists(ids: string[]) {
     const cs_id = ids.reduce((str: string, id: string) => str ? `${str}, ${id}` : str, '');
-    return (await oracle.exec<{ COUNT: number }>(`
+    return (await oracle.op().read<{ COUNT: number }>(`
     
       SELECT COUNT(*) as COUNT
       FROM ${TablesNames.GROUPS}
@@ -87,12 +87,14 @@ export default {
 
     const id = randomUUID();
 
-    await oracle.exec(`
+    await oracle.op()
+      .write(`
     
-      INSERT INTO ${TablesNames.GROUPS} (id, name_ar, name_en)
-      VALUES (:a, :b, :c)
+        INSERT INTO ${TablesNames.GROUPS} (id, name_ar, name_en)
+        VALUES (:a, :b, :c)
 
-    `, [id, name_ar, name_en]);
+      `, [id, name_ar, name_en])
+      .commit();
 
     return { ID: id, NAME_AR: name_ar, NAME_EN: name_en } as Group;
   },
@@ -107,13 +109,15 @@ export default {
     if (await this.updateNameExists(id, name_ar, name_en))
       throw new HttpError(HttpCode.CONFLICT, "nameAlreadyExists");
 
-    await oracle.exec(`
+    await oracle.op()
+      .write(`
     
-      UPDATE ${TablesNames.GROUPS}
-      SET name_ar = :a, name_en = :b
-      WHERE id = :c
+        UPDATE ${TablesNames.GROUPS}
+        SET name_ar = :a, name_en = :b
+        WHERE id = :c
 
-    `, [name_ar, name_en, id]);
+      `, [name_ar, name_en, id])
+      .commit();
 
     return true;
   }

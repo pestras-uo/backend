@@ -17,19 +17,5 @@ export default {
 
       next();
     }
-  },
-
-  usernameExists(path: string) {
-    return async (req: Request, res: Response, next: NextFunction) => {
-      const username = getValue(req, path);
-
-      if (!username)
-        return next(new HttpError(HttpCode.BAD_REQUEST, "usernameNotFound"));
-
-      if (await usersModel.usernameExists(username))
-        return next(new HttpError(HttpCode.CONFLICT, "usernameAlreadyExists"));
-
-      next();
-    }
-  },
+  }
 }

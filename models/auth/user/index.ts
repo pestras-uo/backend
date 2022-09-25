@@ -2,10 +2,11 @@ import { User, UserDetailsQueryResultItem, UserDetails } from './interface';
 import oracle from '../../../db/oracle';
 import { HttpError } from '../../../misc/errors';
 import { HttpCode } from '../../../misc/http-codes';
-import { getByRowId, TablesNames } from '../..';
+import { TablesNames } from '../..';
 import { omit } from '../../../util/pick-omit';
 import { Group } from '../groups/interface';
 import { randomUUID } from 'crypto';
+import crypt from '../../../auth/crypt';
 
 export default {
 
@@ -13,7 +14,7 @@ export default {
   // util methods
   // ----------------------------------------------------------------------------------------------------------------
   async exists(id: string) {
-    return (await oracle.exec<{ COUNT: number }>(`
+    return (await oracle.op().read<{ COUNT: number }>(`
     
       SELECT COUNT(0) as COUNT
       FROM ${TablesNames.USERS}
@@ -23,7 +24,7 @@ export default {
   },
 
   async usernameExists(username: string) {
-    return (await oracle.exec<{ COUNT: number }>(`
+    return (await oracle.op().read<{ COUNT: number }>(`
     
       SELECT COUNT(0) as COUNT
       FROM ${TablesNames.USERS}
@@ -38,7 +39,7 @@ export default {
   // getters
   // ----------------------------------------------------------------------------------------------------------------
   async get(id: string) {
-    const result = (await oracle.exec<UserDetailsQueryResultItem>(`
+    const result = (await oracle.op().read<UserDetailsQueryResultItem>(`
     
       SELECT 
         U.*,
@@ -75,7 +76,7 @@ export default {
   },
 
   async getByUsername(username: string) {
-    const result = (await oracle.exec<UserDetailsQueryResultItem>(`
+    const result = (await oracle.op().read<UserDetailsQueryResultItem>(`
     
       SELECT 
         U.*,
@@ -112,7 +113,7 @@ export default {
   },
 
   async getByOrgunit(orgunit_id: string, is_active = 1) {
-    return (await oracle.exec<User>(`
+    return (await oracle.op().read<User>(`
     
       SELECT *
       FROM ${TablesNames.USERS}
@@ -122,7 +123,7 @@ export default {
   },
 
   async getAll(is_active = 1) {
-    return (await oracle.exec<User>(`
+    return (await oracle.op().read<User>(`
     
       SELECT *
       FROM ${TablesNames.USERS}
@@ -136,20 +137,35 @@ export default {
 
   // create
   // ----------------------------------------------------------------------------------------------------------------
-  async create(orgunit_id: string, username: string) {
+  async create(orgunit_id: string, username: string, roles: number[], password: string) {
     if (await this.usernameExists(username))
       throw new HttpError(HttpCode.CONFLICT, "usernameAlreadyExists");
 
     const id = randomUUID();
+    const [hashed, salt] = await crypt.hash(password);
 
-    const result = await oracle.exec(`
+    await oracle.op()
+      .write(`
     
-      INSERT INTO ${TablesNames.USERS} (id, orgunit_id, username)
-      VALUES (:a, :b, :c)
-    
-    `, [id, orgunit_id, username]);
+        INSERT INTO ${TablesNames.USERS} (id, orgunit_id, username)
+        VALUES (:a, :b, :c)
+      
+      `, [id, orgunit_id, username])
+      .write(`
+      
+        INSERT INTO ${TablesNames.AUTH} (user_id, password, salt)
+        VALUES (:a, :b, :c)
+      
+      `, [id, hashed, salt])
+      .writeMany(`
+      
+        INSERT INTO ${TablesNames.USER_ROLE} (user_id, role_id)
+        VALUES (:a, :b)
+      
+      `, roles.map(r => [id, r]))
+      .commit();
 
-    return getByRowId<User>(TablesNames.USERS, result.lastRowid!);
+    return this.get(id);
   },
 
 
@@ -163,13 +179,15 @@ export default {
     if (await this.usernameExists(username))
       throw new HttpError(HttpCode.CONFLICT, "usernameAlreadyExists");
 
-    await oracle.exec(`
-    
-      UPDATE ${TablesNames.USERS}
-      SET username = :a, update_date = :b
-      WHERE id = :c
-    
-    `, [username, date, user_id])
+    await oracle.op()
+      .write(`
+      
+        UPDATE ${TablesNames.USERS}
+        SET username = :a, update_date = :b
+        WHERE id = :c
+      
+      `, [username, date, user_id])
+      .commit();
 
     return date;
   },
@@ -182,13 +200,15 @@ export default {
   async updateAvatar(user_id: string, avatar: string) {
     const date = new Date();
 
-    await oracle.exec(`
+    await oracle.op()
+      .write(`
     
-      UPDATE ${TablesNames.USERS}
-      SET avatar = :a, update_date = :b
-      WHERE id = :c
-  
-  `, [avatar, date, user_id])
+        UPDATE ${TablesNames.USERS}
+        SET avatar = :a, update_date = :b
+        WHERE id = :c
+    
+      `, [avatar, date, user_id])
+      .commit();
 
     return date;
   },
@@ -196,15 +216,15 @@ export default {
   async updateProfile(user_id: string, fullname: string, email: string, mobile: string) {
     const date = new Date();
 
-    console.log([fullname, email, mobile, date, user_id]);
-
-    await oracle.exec(`
+    await oracle.op()
+      .write(`
     
-      UPDATE ${TablesNames.USERS}
-      SET fullname = :a, email = :b, mobile = :c, update_date = :d
-      WHERE id = :e
-  
-  `, [fullname, email, mobile, date, user_id]);
+        UPDATE ${TablesNames.USERS}
+        SET fullname = :a, email = :b, mobile = :c, update_date = :d
+        WHERE id = :e
+    
+      `, [fullname, email, mobile, date, user_id])
+      .commit();
 
     return date;
   },
@@ -215,7 +235,7 @@ export default {
   // roles
   // ----------------------------------------------------------------------------------------------------------------
   async getRoles(user_id: string) {
-    return (await oracle.exec(`
+    return (await oracle.op().read(`
     
       SELECT *
       FROM ${TablesNames.USER_ROLE}
@@ -224,51 +244,23 @@ export default {
     `, [user_id])).rows || [];
   },
 
-  async assignRole(user_id: string, role_id: string) {
-    await oracle.exec(`
-    
-      INSERT INTO ${TablesNames.USER_ROLE} (user_id, role_id)
-      VALUES (:a, :b)
-
-    `, [user_id, role_id])
-
-    return true;
-  },
-
-  async assignRoles(user_id: string, roles: number[]) {
-    if (roles.length === 0)
-      return true;
-
-    await oracle.execMany(`
-    
-      INSERT INTO ${TablesNames.USER_ROLE} (user_id, role_id)
-      VALUES (:a, :b)
-
-    `, roles.map(r => [user_id, r]));
-
-    return true;
-  },
-
-  async removeRole(user_id: string, role_id: string) {
-    await oracle.exec(`
-    
-      DELETE FROM ${TablesNames.USER_ROLE}
-      WHERE user_id = :a, role_id = :b
-
-    `, [user_id, role_id])
-
-    return true;
-  },
-
-  async removeAllRoles(user_id: string) {
-    await oracle.exec(`
-    
-      DELETE FROM ${TablesNames.USER_ROLE}
-      WHERE user_id = :a
-
-    `, [user_id]);
-
-    return true;
+  async replaceRoles(user_id: string, roles: number[]) {
+    await oracle.op()
+      .write(`
+        
+          DELETE FROM ${TablesNames.USER_ROLE}
+          WHERE user_id = :a
+        
+        `,
+        [user_id]
+      )
+      .writeMany(`
+      
+        INSERT INTO ${TablesNames.USER_ROLE} (user_id, role_id)
+        VALUES (:a, :b)
+      
+      `, roles.map(r => [user_id, r]))
+      .commit();
   },
 
 
@@ -278,7 +270,7 @@ export default {
   // groups
   // ----------------------------------------------------------------------------------------------------------------
   async getGroups(user_id: string) {
-    return (await oracle.exec<Group>(`
+    return (await oracle.op().read<Group>(`
     
       SELECT G.*
       FROM ${TablesNames.GROUPS} G, ${TablesNames.USER_GROUP} UG
@@ -287,50 +279,21 @@ export default {
     `, [user_id])).rows || [];
   },
 
-
-  async assignGroup(user_id: string, group_id: string) {
-    await oracle.exec(`
+  async replaceGroups(user_id: string, groups: string[]) {
+    await oracle.op()
+      .write(`
     
-      INSERT INTO ${TablesNames.USER_GROUP} (user_id, group_id)
-      VALUES (:a, :b)
+        DELETE FROM ${TablesNames.USER_GROUP}
+        WHERE user_id = :a
 
-    `, [user_id, group_id])
-
-    return true;
-  },
-
-  async assignGroups(user_id: string, groups: string[]) {
-    if (groups.length === 0)
-      return true;
-
-    await oracle.execMany(`
-    
-      INSERT INTO ${TablesNames.USER_GROUP} (user_id, group_id)
-      VALUES (:a, :b)
-
-    `, groups.map(r => [user_id, r]));
-
-    return true;
-  },
-
-  async removeGroup(user_id: string, group_id: string) {
-    await oracle.exec(`
-    
-      DELETE FROM ${TablesNames.USER_GROUP}
-      WHERE user_id = :a, group_id = :b
-
-    `, [user_id, group_id])
-
-    return true;
-  },
-
-  async removeAllGroups(user_id: string) {
-    await oracle.exec(`
-    
-      DELETE FROM ${TablesNames.USER_GROUP}
-      WHERE user_id = :a
-
-    `, [user_id]);
+      `, [user_id])
+      .writeMany(`
+      
+        INSERT INTO ${TablesNames.USER_GROUP} (user_id, group_id)
+        VALUES (:a, :b)
+      
+      `, groups.map(r => [user_id, r]))
+      .commit();
 
     return true;
   },
@@ -343,13 +306,15 @@ export default {
   async updateOrgunit(user_id: string, orgunit_id: string) {
     const date = new Date();
 
-    await oracle.exec(`
+    await oracle.op()
+      .write(`
     
-      UPDATE ${TablesNames.USERS}
-      SET orgunit_id = :a, update_date = :b
-      WHERE id = :c
-    
-    `, [orgunit_id, date, user_id])
+        UPDATE ${TablesNames.USERS}
+        SET orgunit_id = :a, update_date = :b
+        WHERE id = :c
+      
+      `, [orgunit_id, date, user_id])
+      .commit();
 
     return date;
   },
@@ -362,13 +327,15 @@ export default {
   async activate(user_id: string, state = 1) {
     const date = new Date();
 
-    await oracle.exec(`
-    
-      UPDATE ${TablesNames.USERS}
-      SET is_active = :a, update_date = :b
-      WHERE id = :c
-    
-    `, [state, date, user_id])
+    await oracle.op()
+      .write(`
+      
+        UPDATE ${TablesNames.USERS}
+        SET is_active = :a, update_date = :b
+        WHERE id = :c
+      
+      `, [state, date, user_id])
+      .commit();
 
     return date;
   }
