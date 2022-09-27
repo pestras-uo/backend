@@ -4,8 +4,7 @@ export enum IndicatorConfigValidators {
   CREATE = 'createIndicatorConfig',
   UPDATE_INTERVALS = 'updateIndicatorInterval',
   UPDATE_KPIS = 'updateIndicatorKPIs',
-  UPDATE_EQUATION = 'updateIndicatorEquation',
-  UPDATE_ARGUMENTS = 'updateIndicatorArguments'
+  UPDATE_EQUATION = 'updateIndicatorEquation'
 }
 
 const INDICATOR_ARGS_SCHEMA = 'indicatorArgumentsSchema';
@@ -42,7 +41,7 @@ new Validall(IndicatorConfigValidators.UPDATE_KPIS, {
   kpi_max: { $type: 'number', $nullable: true, $message: 'invalidKpiMax' }
 });
 
-new Validall(IndicatorConfigValidators.UPDATE_KPIS, {
+new Validall(IndicatorConfigValidators.UPDATE_EQUATION, {
   equation: { $type: 'string', $default: '', $message: 'invalidEquation' },
   args: { $ref: INDICATOR_ARGS_SCHEMA }
 });
