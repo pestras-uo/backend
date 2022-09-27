@@ -96,6 +96,15 @@ export const Actions = [
   "indicators.update.tags",
   "indicators.update.documents",
 
+  // indicator config
+  "indicators.config.*",
+  "indicators.config.get",
+  "indicators.config.create",
+  "indicators.config.update.*",
+  "indicators.config.update.intervals",
+  "indicators.config.update.kpis",
+  "indicators.config.update.equation",
+
 ] as const;
 
 export type Action = typeof Actions[number];

@@ -9,6 +9,7 @@ import topics from './topics';
 import categories from './categories';
 import tags from './tags';
 import indicators from './indicators';
+import indicatorConfig from './indicator-config';
 
 export default Router()
   .use('/session', sessionApi)
@@ -19,4 +20,5 @@ export default Router()
   .use('/categories', categories)
   .use('/tags', tags)
   .use('/topics', topics)
-  .use('/indicators', indicators);
+  .use('/indicators', indicators)
+  .use('/indicators-config', indicatorConfig);

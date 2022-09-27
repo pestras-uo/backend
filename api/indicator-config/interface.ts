@@ -1,7 +1,7 @@
-export interface CreateIndicatorConfig {
+export interface CreateIndicatorConfigBody {
   indicator_id: string;
 
-  intervals?: number;
+  intervals?: 1 | 3 | 6 | 12;
   kpi_min?: number;
   kpi_max?: number;
 
@@ -14,7 +14,7 @@ export interface CreateIndicatorConfig {
 }
 
 export interface UpdateIndicatorIntervalBody {
-  interval: number;
+  intervals: number;
 }
 
 export interface UpdateIndicatorKPIsBody {
@@ -24,9 +24,5 @@ export interface UpdateIndicatorKPIsBody {
 
 export interface UpdateIndicatorEquationBody {
   equation: string;
-  args: { id: string; variable: string; column: string }[];
-}
-
-export interface UpdateIndicatorArgumentsBody {
   args: { id: string; variable: string; column: string }[];
 }

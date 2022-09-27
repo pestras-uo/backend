@@ -59,7 +59,7 @@ export default {
 
     const op = oracle.op();
 
-    await op
+    op
       .write(`
       
         INSERT INTO ${TablesNames.INDICATOR_CONFIG} (
@@ -96,7 +96,7 @@ export default {
         
         `, args.map(arg => [config.INDICATOR_ID, arg.id, arg.variable, arg.column]));
 
-    op.commit();
+    await op.commit();
 
     if (!config.READINGS_VIEW_NAME)
       await oracle.op(DBSchemas.READINGS)
@@ -219,34 +219,5 @@ export default {
         IA.INDICATOR_ID = :a
   
     `, [indicator_id])).rows || [];
-  },
-
-  async replaceArguments(ind_id: string, args: { id: string, variable: string, column: string }[] = []) {
-    if (!(await this.exists(ind_id)))
-      throw new HttpError(HttpCode.NOT_FOUND, 'indicatorNotFound');
-
-    const date = new Date();
-    const op = oracle.op();
-
-    op
-      .write(`
-        
-      DELETE FROM ${TablesNames.INDICATOR_ARGUMENT}
-      WHERE indicator_id = :a
-    
-    `, [ind_id]);;
-
-    if (args.length > 0)
-      op
-        .writeMany(`
-      
-          INSERT INTO ${TablesNames.INDICATOR_ARGUMENT} (indicator_id, arg_id, variable, column_name)
-          VALUES (:a, :b, :c, :d)
-        
-        `, args.map(arg => [ind_id, arg.id, arg.variable, arg.column]));
-
-    await op.commit();
-
-    return date;
   }
 }
