@@ -1,44 +1,39 @@
 import { Router } from 'express';
 import controller from './controller';
 import validate from '../../middlewares/validate';
-import usersMiddleWares from '../../middlewares/users';
 import auth from '../../middlewares/auth';
-import { TokenType } from '../../auth/token';
-import orgMiddleWares from '../../middlewares/orgunits';
 import schemas from './validators';
+import exists from '../../middlewares/exists';
+import { TablesNames } from '../../models';
 
 export default Router()
   .post(
     "/create",
     validate(schemas.CREATE_USER),
-    auth(TokenType.SESSION, ["users.create"]),
+    auth(["users.create"]),
     controller.createUser
   )
   .put(
     '/:id/roles',
     validate(schemas.UPDATE_USER_ROLES),
-    auth(TokenType.SESSION, ["users.update.roles"], "id"),
-    usersMiddleWares.exists("params.id"),
+    auth(["users.update.roles"]),
     controller.updateRoles
   )
   .put(
     '/:id/groups',
     validate(schemas.UPDATE_USER_GROUPS),
-    auth(TokenType.SESSION, ["users.update.groups"], "id"),
-    usersMiddleWares.exists("params.id"),
+    auth(["users.update.groups"]),
     controller.updateGroups
   )
   .put(
     '/:id/orgunit',
     validate(schemas.CHANGE_USER_ORG),
-    auth(TokenType.SESSION, ["users.update.orgunit"]),
-    usersMiddleWares.exists("params.id"),
-    orgMiddleWares.exists("body.orgunit"),
+    auth(["users.update.orgunit"]),
+    exists(TablesNames.ORGUNITS, "body.orgunit"),
     controller.updateOrgunit
   )
   .put(
     '/:id/activate/:state',
-    auth(TokenType.SESSION, ["users.update.active"], "id"),
-    usersMiddleWares.exists("params.id"),
+    auth(["users.update.active"]),
     controller.activateUser
   )

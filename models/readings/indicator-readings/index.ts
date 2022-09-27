@@ -1,4 +1,4 @@
-import oracle from "../../../db/oracle";
+import oracle, { DBSchemas } from "../../../db/oracle";
 import { HttpError } from "../../../misc/errors";
 import { HttpCode } from "../../../misc/http-codes";
 import { IndicatorReading, ReadingHistoryItem } from "./interface";
@@ -11,10 +11,10 @@ export default {
   // getters
   // --------------------------------------------------------------------------------------
   async getByIndicator(indicator_id: string, offset = 0, limit = 100) {
-    return (await oracle.op().read<IndicatorReading>(`
+    return (await oracle.op(DBSchemas.READINGS).read<IndicatorReading>(`
     
       SELECT *
-      FROM ${TABLE}
+      FROM 
       WHERE indicator_id = :a
       OFFSET :b ROWS
       FETCH NEXT :c ROWS ONLY
@@ -66,15 +66,14 @@ export default {
 
     const history: ReadingHistoryItem[] = reading.HISTORY ? JSON.parse(reading.HISTORY) : [];
 
-    history.push({ 
-      VALUE: reading.VALUE,
-      NOTE_AR: note_ar,
-      NOTE_EN: note_en,
-      READING_DATE: reading_date.toISOString(),
-      UPDATE_DATE: reading.UPDATE_DATE
-        ? reading.UPDATE_DATE.toISOString() 
-        : reading.CREATE_DATE.toISOString()
-    });
+    // history.push({
+    //   NOTE_AR: note_ar,
+    //   NOTE_EN: note_en,
+    //   READING_DATE: reading_date.toISOString(),
+    //   UPDATE_DATE: reading.UPDATE_DATE
+    //     ? reading.UPDATE_DATE.toISOString() 
+    //     : reading.CREATE_DATE.toISOString()
+    // });
 
     await oracle.op()
       .write(`

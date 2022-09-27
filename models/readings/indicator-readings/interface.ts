@@ -4,8 +4,6 @@ export interface IndicatorReading {
 
   INDICATOR_ID: string;
 
-  VALUE: number;
-
   NOTE_AR?: string;
   NOTE_EN?: string;
 
@@ -20,7 +18,10 @@ export interface IndicatorReading {
 }
 
 export interface ReadingHistoryItem {
-  VALUE: number;
+  CHANGE: {
+    COLUMN_NAME: string,
+    VALUE: string
+  }[];
 
   NOTE_AR: string;
   NOTE_EN: string;

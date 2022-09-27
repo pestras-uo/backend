@@ -2,8 +2,6 @@ import { Router } from 'express';
 import auth from '../../middlewares/auth';
 import controller from './controller';
 import validate from '../../middlewares/validate';
-import usersMiddlewares from '../../middlewares/users';
-import orgMiddlewares from '../../middlewares/orgunits';
 import { TokenType } from '../../auth/token';
 import { UserValidators } from './validators';
 import { avatarUpload } from '../../middlewares/upload';
@@ -11,23 +9,22 @@ import { avatarUpload } from '../../middlewares/upload';
 export default Router()
   .get(
     '/', 
-    auth(TokenType.SESSION, ["users.get.all"]), 
+    auth(["users.get.all"]), 
     controller.getAll
   )
   .get(
     '/inactive',
-    auth(TokenType.SESSION, ["users.get.inactive"]),
+    auth(["users.get.inactive"]),
     controller.getInactive
   )
   .get(
     '/orgunit/:id', 
-    auth(TokenType.SESSION, ["users.get.by-orgunit"]),
-    orgMiddlewares.exists("params.id"),
+    auth(["users.get.by-orgunit"]),
     controller.getByOrgunit
   )
   .get(
     '/:id',
-    auth(TokenType.SESSION, ["users.get.one"]),
+    auth(["users.get.one"]),
     controller.get
   )
   .put(

@@ -7,8 +7,9 @@ import { HttpError } from "../misc/errors";
 import userModel from '../models/auth/user';
 import { UserDetails } from "../models/auth/user/interface";
 
-export default function (tokenType = TokenType.SESSION, actions: Action[] = [], affectedIdParam?: string) {
+export default function (actions: Action[] = [], tokenType = TokenType.SESSION) {
   return async (req: Request, res: Response, next: NextFunction) => {
+    const affectedUserId = (req.baseUrl + req.path).startsWith('/api/admin') ? req.params.id : null;
 
     let authHeader = req.header("Authorization");
 
@@ -33,10 +34,10 @@ export default function (tokenType = TokenType.SESSION, actions: Action[] = [], 
 
     if (actions?.length > 0) {
 
-      if (affectedIdParam) {
+      if (affectedUserId) {
         let affectedUser: UserDetails;
         try {
-          affectedUser = await getAffectedUser(req, affectedIdParam);          
+          affectedUser = await getAffectedUser(affectedUserId);          
         } catch (error) {
           return next(error);
         }
@@ -58,9 +59,7 @@ export default function (tokenType = TokenType.SESSION, actions: Action[] = [], 
   }
 }
 
-async function getAffectedUser(req: Request, param: string) {
-  const id = req.params[param];
-
+async function getAffectedUser(id: string) {
   if (!id)
     throw new HttpError(HttpCode.BAD_REQUEST, 'affectedUserIdParamNotFound');
 

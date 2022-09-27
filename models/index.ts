@@ -1,11 +1,6 @@
 import oracle from "../db/oracle";
 import Serial from '../util/serial';
 
-export enum SchemaNames {
-  SYSTEM = "",
-  READINGS = ""
-}
-
 export enum TablesNames {
   AUTH = "auth",
   GROUPS = "groups",
@@ -33,6 +28,11 @@ export enum TablesNames {
   INDICATOR_GROUP = "indicator_group",
   INDICATOR_ARGUMENT = "indicator_argument",
 
+  INDICATOR_CONFIG = "indicator_config",
+
+  STATS_CONFIG = "stats_config",
+  DESCRIPTIVE_STATS_RESULT = "descriptive_stats_result",
+
   DISTRICTS = "districts",
   READING_DOCUMENT = "reading_document"
 }
@@ -53,4 +53,14 @@ export async function getChildren(table: string, serial: string) {
     .rows
     .filter(row => row.ID === serial)
     .map(row => Serial.last(row.ID));
+}
+
+export async function exists(tableName: TablesNames, id: string) {
+  return (await oracle.op().read<{ COUNT: number }>(`
+    
+      SELECT COUNT(*)
+      FROM ${tableName}
+      WHERE ID = :a
+    
+    `, [id])).rows?.[0].COUNT! > 0;
 }

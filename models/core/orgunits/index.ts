@@ -93,6 +93,9 @@ export default {
   // update
   // ----------------------------------------------------------------------------
   async update(id: string, name_ar: string, name_en: string) {
+    if (!(await this.exists(id)))
+      throw new HttpError(HttpCode.NOT_FOUND, 'orgunitNotFound');
+
     if (await this.updatedNameExists(id, name_ar, name_en))
       throw new HttpError(HttpCode.CONFLICT, "nameAlreadyExists");
 

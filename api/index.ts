@@ -8,6 +8,7 @@ import orgunits from './orgunits';
 import topics from './topics';
 import categories from './categories';
 import tags from './tags';
+import indicators from './indicators';
 
 export default Router()
   .use('/session', sessionApi)
@@ -17,4 +18,5 @@ export default Router()
   .use('/orgunits', orgunits)
   .use('/categories', categories)
   .use('/tags', tags)
-  .use('/topics', topics);
+  .use('/topics', topics)
+  .use('/indicators', indicators);

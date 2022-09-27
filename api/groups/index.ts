@@ -1,7 +1,5 @@
 import { Router } from "express";
-import { TokenType } from "../../auth/token";
 import auth from "../../middlewares/auth";
-import groupsMiddleWares from "../../middlewares/groups";
 import validate from "../../middlewares/validate";
 import controller from "./controller";
 import { GroupsValidators } from "./validators";
@@ -9,24 +7,23 @@ import { GroupsValidators } from "./validators";
 export default Router()
   .get(
     '/',
-    auth(TokenType.SESSION, ['groups.get.all']),
+    auth(['groups.get.all']),
     controller.getAll
   )
   .get(
     '/:id',
-    auth(TokenType.SESSION, ["groups.get.one"]),
+    auth(["groups.get.one"]),
     controller.get
   )
   .post(
     '/',
     validate(GroupsValidators.CREATE),
-    auth(TokenType.SESSION, ['groups.create']),
+    auth(['groups.create']),
     controller.create
   )
   .put(
     '/:id',
     validate(GroupsValidators.UPDATE),
-    auth(TokenType.SESSION, ['groups.update']),
-    groupsMiddleWares.exists('params.id'),
+    auth(['groups.update']),
     controller.update
   )

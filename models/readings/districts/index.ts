@@ -33,6 +33,16 @@ export default {
   
   // util
   // ------------------------------------------------------------------------------------------------
+  async exists(id: string) {
+    return (await oracle.op(DBSchemas.READINGS).read<{ COUNT: number }>(`
+    
+      SELECT COUNT(*)
+      FROM ${TablesNames.DISTRICTS}
+      WHERE ID = :a
+    
+    `, [id])).rows?.[0].COUNT! > 0;
+  },
+  
   async nameExists(name_ar: string, name_en: string) {
     return (await oracle.op(DBSchemas.READINGS).read<{ COUNT: number }>(`
     
@@ -82,6 +92,9 @@ export default {
   // update
   // ------------------------------------------------------------------------------------------------
   async update(id: string, name_ar: string, name_en: string) {
+    if (!(await this.exists(id)))
+      throw new HttpError(HttpCode.NOT_FOUND, 'districtNotFound');
+
     if (await this.updateNameExists(id, name_ar, name_en))
       throw new HttpError(HttpCode.CONFLICT, 'nameAlreadyExists');
 

@@ -12,13 +12,6 @@ export interface Indicator {
   UNIT_AR?: string;
   UNIT_EN?: string;
 
-  INTERVALS?: number;
-
-  KPI_MIN?: number;
-  KPI_MAX?: number;
-
-  EQUATION?: string;
-
   IS_ACTIVE: 1 | 0;
 
   CREATE_DATE: Date;

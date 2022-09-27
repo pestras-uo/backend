@@ -69,12 +69,32 @@ export const Actions = [
   "topics.get.all",
   "topics.get.one",
   "topics.get.tags",
+  "topics.get.documents",
   "topics.create",
   "topics.update.*",
   "topics.update",
   "topics.update.groups",
   "topics.update.categories",
-  "topics.update.documents"
+  "topics.update.documents",
+
+  // indicators
+  "indicators.*",
+  "indicators.get.*",
+  "indicators.get.topic",
+  "indicators.get.orgunit",
+  "indicators.get.one",
+  "indicators.get.tags",
+  "indicators.get.documents",
+  "indicators.create",
+  "indicators.update.*",
+  "indicators.update",
+  "indicators.update.orgunit",
+  "indicators.update.topic",
+  "indicators.update.activate",
+  "indicators.update.groups",
+  "indicators.update.categories",
+  "indicators.update.tags",
+  "indicators.update.documents",
 
 ] as const;
 

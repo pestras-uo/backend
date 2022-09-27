@@ -176,6 +176,9 @@ export default {
   async updateUsername(user_id: string, username: string) {
     const date = new Date();
 
+    if (!(await this.exists(user_id)))
+      throw new HttpError(HttpCode.NOT_FOUND, 'userNotFound');
+
     if (await this.usernameExists(username))
       throw new HttpError(HttpCode.CONFLICT, "usernameAlreadyExists");
 
@@ -200,6 +203,9 @@ export default {
   async updateAvatar(user_id: string, avatar: string) {
     const date = new Date();
 
+    if (!(await this.exists(user_id)))
+      throw new HttpError(HttpCode.NOT_FOUND, 'userNotFound');
+
     await oracle.op()
       .write(`
     
@@ -215,6 +221,9 @@ export default {
 
   async updateProfile(user_id: string, fullname: string, email: string, mobile: string) {
     const date = new Date();
+
+    if (!(await this.exists(user_id)))
+      throw new HttpError(HttpCode.NOT_FOUND, 'userNotFound');
 
     await oracle.op()
       .write(`
@@ -245,6 +254,10 @@ export default {
   },
 
   async replaceRoles(user_id: string, roles: number[]) {
+
+    if (!(await this.exists(user_id)))
+      throw new HttpError(HttpCode.NOT_FOUND, 'userNotFound');
+
     await oracle.op()
       .write(`
         
@@ -280,6 +293,10 @@ export default {
   },
 
   async replaceGroups(user_id: string, groups: string[]) {
+
+    if (!(await this.exists(user_id)))
+      throw new HttpError(HttpCode.NOT_FOUND, 'userNotFound');
+
     await oracle.op()
       .write(`
     
@@ -304,6 +321,10 @@ export default {
   // orgunits
   // ----------------------------------------------------------------------------------------------------------------
   async updateOrgunit(user_id: string, orgunit_id: string) {
+
+    if (!(await this.exists(user_id)))
+      throw new HttpError(HttpCode.NOT_FOUND, 'userNotFound');
+
     const date = new Date();
 
     await oracle.op()
@@ -325,6 +346,10 @@ export default {
   // activation
   // ----------------------------------------------------------------------------------------------------------------
   async activate(user_id: string, state = 1) {
+
+    if (!(await this.exists(user_id)))
+      throw new HttpError(HttpCode.NOT_FOUND, 'userNotFound');
+      
     const date = new Date();
 
     await oracle.op()

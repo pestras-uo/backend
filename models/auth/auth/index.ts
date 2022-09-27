@@ -2,6 +2,8 @@ import { Auth } from "./interface";
 import oracle from '../../../db/oracle';
 import { TablesNames } from "../..";
 import crypt from "../../../auth/crypt";
+import { HttpCode } from "../../../misc/http-codes";
+import { HttpError } from "../../../misc/errors";
 
 export default {
 
@@ -43,6 +45,16 @@ export default {
 
   // util
   // ----------------------------------------------------------------------------------------------------------------
+  async exists(user_id: string) {
+    return (await oracle.op().read<{ COUNT: number }>(`
+
+      SELECT COUNT(*) as COUNT
+      FROM ${TablesNames.AUTH}
+      WHERE user_id = :a
+
+    `, [user_id])).rows?.[0].COUNT! > 0;
+  },
+
   async hasSession(user_id: string, token: string) {
     return (await oracle.op().read<{ COUNT: number }>(`
 
@@ -62,6 +74,9 @@ export default {
     const create_date = new Date();
     const exp_date = new Date(create_date.getTime() + expAfter);
 
+    if (!(await this.exists(user_id)))
+      throw new HttpError(HttpCode.NOT_FOUND, 'userAuthNotFound');
+
     await oracle.op()
       .write(`
 
@@ -76,6 +91,9 @@ export default {
   },
 
   async setSocket(user_id: string, socket: string) {
+    if (!(await this.exists(user_id)))
+      throw new HttpError(HttpCode.NOT_FOUND, 'userAuthNotFound');
+
     await oracle.op()
       .write(`
 
@@ -90,6 +108,9 @@ export default {
   },
 
   async endSession(user_id: string) {
+    if (!(await this.exists(user_id)))
+      throw new HttpError(HttpCode.NOT_FOUND, 'userAuthNotFound');
+
     await oracle.op()
       .write(`
 
@@ -104,6 +125,9 @@ export default {
   },
 
   async removeSocket(user_id: string) {
+    if (!(await this.exists(user_id)))
+      throw new HttpError(HttpCode.NOT_FOUND, 'userAuthNotFound');
+
     await oracle.op()
       .write(`
 
@@ -123,6 +147,9 @@ export default {
   // update password
   // ----------------------------------------------------------------------------------------------------------------
   async updatePassword(user_id: string, password: string) {
+    if (!(await this.exists(user_id)))
+      throw new HttpError(HttpCode.NOT_FOUND, 'userAuthNotFound');
+
     const [hashed, salt] = await crypt.hash(password);
 
     await oracle.op()

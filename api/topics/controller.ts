@@ -102,12 +102,19 @@ export default {
   
   // documents
   // ------------------------------------------------------------------------------
+  async getDocuments(req: Request<{ id: string }>, res: Response, next: NextFunction) {
+    try {
+      res.json(await topicsModel.getDocuments(req.params.id));
+    } catch (error) {
+      next(error);
+    }
+  },
+
   async addDocument(req: Request<{ id: string }, any, AddTopicDocument>, res: Response, next: NextFunction) {
     try {
       const path = '/uploads/system/' + req.file?.filename;
-      const doc_id = await docsModel.create(path, req.body.name_ar, req.body.name_en);
 
-      await topicsModel.addDocument(req.params.id, doc_id);
+      await topicsModel.addDocument(req.params.id, path, req.body.name_ar, req.body.name_en);
 
       res.json(path);
 

@@ -214,6 +214,9 @@ export default {
   // update
   // -------------------------------------------------------------------------------
   async updateKey(id: string, name_ar: string, name_en: string) {
+    if (!(await this.keyExists(id)))
+      throw new HttpError(HttpCode.NOT_FOUND, 'tagKeyNotFound');
+
     if (await this.updateKeyNameExists(id, name_ar, name_en))
       throw new HttpError(HttpCode.CONFLICT, "nameAlreadyExists");
 
@@ -231,6 +234,9 @@ export default {
   },
 
   async updateValue(key_id: string, value_id: string, name_ar: string, name_en: string) {
+    if (!(await this.valueExists(key_id)))
+      throw new HttpError(HttpCode.NOT_FOUND, 'tagvalueNotFound');
+
     if (await this.updateValueNameExists(key_id, value_id, name_ar, name_en))
       throw new HttpError(HttpCode.CONFLICT, "nameAlreadyExists");
 

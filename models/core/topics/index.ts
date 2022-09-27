@@ -9,6 +9,7 @@ import { Group } from "../../auth/groups/interface";
 import { Category } from "../../misc/categories/interface";
 import { Tag, TagMap, TagQueryResult } from "../../misc/tags/interface";
 import { omit } from "../../../util/pick-omit";
+import { randomUUID } from 'crypto';
 
 export default {
 
@@ -140,6 +141,9 @@ export default {
   // update
   // ----------------------------------------------------------------------------
   async update(id: string, name_ar: string, name_en: string, desc_ar?: string, desc_en?: string) {
+    if (!(await this.exists(id)))
+      throw new HttpError(HttpCode.NOT_FOUND, 'topicNotFound');
+
     if (await this.updatedNameExists(id, name_ar, name_en))
       throw new HttpError(HttpCode.CONFLICT, "nameAlreadyExists");
 
@@ -174,6 +178,9 @@ export default {
   },
 
   async replaceCategories(topic_id: string, categories: string[]) {
+    if (!(await this.exists(topic_id)))
+      throw new HttpError(HttpCode.NOT_FOUND, 'topicNotFound');
+
     await oracle.op()
       .write(`
       
@@ -255,6 +262,9 @@ export default {
   },
 
   async replaceTags(topic_id: string, tags: string[]) {
+    if (!(await this.exists(topic_id)))
+      throw new HttpError(HttpCode.NOT_FOUND, 'topicNotFound');
+
     await oracle.op()
       .write(`
       
@@ -290,6 +300,9 @@ export default {
   },
 
   async replaceGroups(topic_id: string, groups: string[]) {
+    if (!(await this.exists(topic_id)))
+      throw new HttpError(HttpCode.NOT_FOUND, 'topicNotFound');
+
     await oracle.op()
       .write(`
       
@@ -323,8 +336,19 @@ export default {
     `, [topic_id])).rows || [];
   },
 
-  async addDocument(topic_id: string, doc_id: string) {
+  async addDocument(topic_id: string, path: string, name_ar: string, name_en: string) {
+    if (!(await this.exists(topic_id)))
+      throw new HttpError(HttpCode.NOT_FOUND, 'topicNotFound');
+
+    const doc_id = randomUUID();
+
     await oracle.op()
+      .write(`
+
+        INSERT INTO ${TablesNames.DOCUMENTS} (id, path, name_ar, name_en)
+        VALUES (:a, :b, :c, :d)
+
+      `, [doc_id, path, name_ar, name_en])
       .write(`
       
         INSERT INTO ${TablesNames.TOPIC_DOCUMENT} (topic_id, document_id)
@@ -344,6 +368,12 @@ export default {
         WHERE topic_id = :a document_id = :b
       
       `, [topic_id, doc_id])
+      .write(`
+
+        DELETE FROM ${TablesNames.DOCUMENTS}
+        WHERE id = :id
+        
+      `, [doc_id])
       .commit();
 
     return true;

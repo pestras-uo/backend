@@ -45,10 +45,12 @@ export async function verifyToken(token: string, type: TokenType) {
   if (tokenData.type === TokenType.SESSION) {
     return validateSessionToken(tokenData.id, token);
 
-  } else if (tokenData.type === TokenType.API) {
-    // TODO: validate api token
-    return validateApiAccess(tokenData.id);
-  }
+  } 
+  // else if (tokenData.type === TokenType.API) {
+  //   // TODO: validate api token
+  //   return validateApiAccess(tokenData.id);
+  // }
+  return null;
 }
 
 
@@ -92,6 +94,6 @@ async function validateSessionToken(user_id: string, token: string) {
 // validate api access
 // ----------------------------------------------------------------------------------------------------------
 async function validateApiAccess(api_id: string) {
-  return null;
+  return false;
 }
 
