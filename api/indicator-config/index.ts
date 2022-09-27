@@ -6,7 +6,7 @@ import { IndicatorConfigValidators } from "./validators";
 
 export default Router()
   .get(
-    '/',
+    '/:id',
     auth(["indicators.config.get"]),
     controller.get
   )
