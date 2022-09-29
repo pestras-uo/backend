@@ -81,7 +81,7 @@ export default {
         INSERT INTO ${ind_id} (id, value, reading_date, note_ar, note_en)
         VALUES (:a, :b, :c, :d)
       
-      `, [id, reading.VALUE, reading.READING_DATE])
+      `, [id, reading.READING_VALUE, reading.READING_DATE])
       .commit();
 
     return this.getById(ind_id, id);
@@ -107,7 +107,7 @@ export default {
     const history: ReadingHistoryItem[] = reading.HISTORY ? JSON.parse(reading.HISTORY) : [];
 
     history.push({
-      VALUE: reading.VALUE,
+      READING_VALUE: reading.READING_VALUE,
       NOTE_AR: reading.NOTE_AR,
       NOTE_EN: reading.NOTE_EN,
       READING_DATE: reading.READING_DATE.toISOString(),
@@ -124,7 +124,7 @@ export default {
         WHERE id = :g
       
       `, [
-        update.VALUE,
+        update.READING_VALUE,
         update.NOTE_AR,
         update.NOTE_EN,
         update.READING_DATE,

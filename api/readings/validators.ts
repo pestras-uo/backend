@@ -15,15 +15,15 @@ new Validall(ReadingsValidators.DELETE_DOCUMENT, {
 });
 
 new Validall(ReadingsValidators.CREATE, {
-  value: { $type: 'number', $required: true, $message: 'valueIsRequired' },
-  readingDate: { $type: 'string', $cast: 'date', $required: true, $message: 'readingDateIsRequired' },
+  reading_value: { $type: 'number', $required: true, $message: 'valueIsRequired' },
+  reading_date: { $type: 'string', $cast: 'date', $required: true, $message: 'readingDateIsRequired' },
   note_ar: { $type: 'string', $nullable: true, $message: 'invalidDescAr' },
   note_en: { $type: 'string', $nullable: true, $message: 'invalidDescEn' }
 });
 
 new Validall(ReadingsValidators.UPDATE, {
-  value: { $type: 'number', $required: true, $message: 'valueIsRequired' },
-  readingDate: { $type: 'string', $cast: 'date', $required: true, $message: 'readingDateIsRequired' },
+  reading_value: { $type: 'number', $required: true, $message: 'valueIsRequired' },
+  reading_date: { $type: 'string', $cast: 'date', $required: true, $message: 'readingDateIsRequired' },
   note_ar: { $type: 'string', $nullable: true, $message: 'invalidDescAr' },
   note_en: { $type: 'string', $nullable: true, $message: 'invalidDescEn' }
 });

@@ -15,7 +15,7 @@ import {
   UpdateIndicatorOrgunitRequest, 
   UpdateIndicatorTopicRequest,
   ActivateIndicatorRequest,
-  getIndicatorDocumentsRequest
+  GetIndicatorsDocumentsRequest
 } from "./interfaces";
 
 export default {
@@ -69,11 +69,11 @@ export default {
   },
 
   async updateOrgunit(req: UpdateIndicatorOrgunitRequest) {
-    req.res.json(await indicatorsModel.updateOrgunit(req.params.id, req.body.orgunit));
+    req.res.json(await indicatorsModel.updateOrgunit(req.params.id, req.body.orgunit_id));
   },
 
   async updateTopic(req: UpdateIndicatorTopicRequest) {
-    req.res.json(await indicatorsModel.updateOrgunit(req.params.id, req.body.topic));
+    req.res.json(await indicatorsModel.updateOrgunit(req.params.id, req.body.topic_id));
   },
 
   async activate(req: ActivateIndicatorRequest) {
@@ -103,7 +103,7 @@ export default {
   
   // documents
   // --------------------------------------------------------------------------------------
-  async getDocuments(req: getIndicatorDocumentsRequest) {
+  async getDocuments(req: GetIndicatorsDocumentsRequest) {
     req.res.json(await indicatorsModel.getDocuments(req.params.id));
   },
 

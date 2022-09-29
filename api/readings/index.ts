@@ -17,8 +17,18 @@ export default Router()
     auth(["readings.get.one"]),
     controller.getById
   )
+  .get(
+    '/:id/indicator/:ind_id/categories',
+    auth(["readings.get.categories"]),
+    controller.getCategories
+  )
+  .get(
+    '/:id/indicator/:ind_id/documents',
+    auth(["readings.get.documents"]),
+    controller.getDocuments
+  )
   .post(
-    '/:ind_id',
+    '/indicator/:ind_id',
     validate(ReadingsValidators.CREATE),
     auth(["readings.create.one"]),
     controller.create
@@ -39,6 +49,12 @@ export default Router()
     '/:id/indicator/:ind_id/approve/:state',
     auth(['readings.update.approve']),
     controller.approve
+  )
+  .put(
+    '/:id/indicator/:ind_id/categories',
+    validate(ReadingsValidators.UPDATE_CATEGORIES),
+    auth(["readings.update.categories"]),
+    controller.updateCategories
   )
   .delete(
     '/:id/indicator/:ind_id',

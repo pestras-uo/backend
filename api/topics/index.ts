@@ -16,6 +16,11 @@ export default Router()
     auth(["topics.get.one"]),
     controller.get
   )
+  .get(
+    '/:id/documents',
+    auth(["topics.get.documents"]),
+    controller.getDocuments
+  )
   .post(
     '/',
     validate(TopicsValidators.CREATE),

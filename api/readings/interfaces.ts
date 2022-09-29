@@ -29,10 +29,10 @@ export type CreateReadingRequest = Request<
   IndicatorReading,
   // body
   {
-    value: number;
+    reading_value: number;
+    reading_date: Date;
     note_ar?: string;
     note_en?: string;
-    reading_date: Date;
   }
 >;
 
@@ -43,10 +43,10 @@ export type UpdateReadingRequest = Request<
   Date,
   // body
   {
-    value: number;
+    reading_value: number;
+    reading_date: Date;
     note_ar?: string;
     note_en?: string;
-    reading_date: Date;
   }
 >;
 

@@ -28,7 +28,7 @@ export default {
 
   async create(req: CreateReadingRequest) {
     req.res.json(await readingsModel.create(req.params.ind_id, {
-      VALUE: req.body.value,
+      READING_VALUE: req.body.reading_value,
       READING_DATE: req.body.reading_date,
       NOTE_AR: req.body.note_ar,
       NOTE_EN: req.body.note_en
@@ -37,7 +37,7 @@ export default {
 
   async update(req: UpdateReadingRequest) {
     req.res.json(await readingsModel.update(req.params.ind_id, req.params.id, {
-      VALUE: req.body.value,
+      READING_VALUE: req.body.reading_value,
       READING_DATE: req.body.reading_date,
       NOTE_AR: req.body.note_ar,
       NOTE_EN: req.body.note_en

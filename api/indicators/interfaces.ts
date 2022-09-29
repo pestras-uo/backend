@@ -22,6 +22,13 @@ export type GetIndicatorsByIdRequest = Request<
   IndicatorDetails
 >;
 
+export type GetIndicatorsDocumentsRequest = Request<
+  // params
+  { id: string },
+  // response
+  IndicatorDocument[]
+>;
+
 export type CreateIndicatorRequest = Request<
   // params
   any,
@@ -65,7 +72,7 @@ export type UpdateIndicatorOrgunitRequest = Request<
   // response
   Date,
   // body
-  { orgunit: string; }
+  { orgunit_id: string; }
 >;
 
 export type UpdateIndicatorTopicRequest = Request<
@@ -74,7 +81,7 @@ export type UpdateIndicatorTopicRequest = Request<
   // response
   Date,
   // body
-  { topic: string; }
+  { topic_id: string; }
 >;
 
 export type ActivateIndicatorRequest = Request<
@@ -100,13 +107,6 @@ export type UpdateIndicatorCategoriesRequest = Request<
   boolean,
   // body
   { categories: string[]; }
->;
-
-export type getIndicatorDocumentsRequest = Request<
-  // params
-  { id: string },
-  // response
-  IndicatorDocument[]
 >;
 
 export type AddIndicatorDocumentRequest = Request<

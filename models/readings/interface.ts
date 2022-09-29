@@ -3,7 +3,7 @@ import { Document } from "..";
 export interface IndicatorReading {
   ID: string;
 
-  VALUE: number;
+  READING_VALUE: number;
 
   NOTE_AR?: string;
   NOTE_EN?: string;
@@ -19,7 +19,7 @@ export interface IndicatorReading {
 }
 
 export interface ReadingHistoryItem {
-  VALUE: number
+  READING_VALUE: number
 
   NOTE_AR: string;
   NOTE_EN: string;
