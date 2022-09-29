@@ -14,7 +14,7 @@ jobs:
 
     steps:
       - name: Deploy Beackend
-        uses: appleboy/ssh-action@v0.1.4
+        uses: appleboy/ssh-action@master
         with:
           host: ${{secrets.DIGITAL_OCEAN_HOST}}
           key: ${{secrets.DIGITALOCEAN_SSH_KEY}}
