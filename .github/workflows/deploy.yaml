@@ -19,7 +19,7 @@ jobs:
           host: ${{secrets.DIGITAL_OCEAN_HOST}}
           key: ${{secrets.DIGITALOCEAN_SSH_KEY}}
           username: ${{ secrets.DIGITAL_OCEAN_USER }}
-
+          script_stop: true
           script: |
             cd /home/gam/urban-observatory/backend
             git pull origin main
