@@ -8,11 +8,8 @@ export enum TablesNames {
   USERS = "users",
   USER_GROUP = "user_group",
   USER_ROLE = "user_role",
-
-  DOCUMENTS = "documents",
+  
   CATEGORIES = "categories",
-  TAGS_KEYS = "tags_keys",
-  TAGS_VALUES = "tags_values",
 
   ORGUNITS = "orgunits",
   TOPICS = "topics",
@@ -33,12 +30,22 @@ export enum TablesNames {
   STATS_CONFIG = "stats_config",
   DESCRIPTIVE_STATS_RESULT = "descriptive_stats_result",
 
-  DISTRICTS = "districts",
-  READING_DOCUMENT = "reading_document"
+  READINGS_VIEWS = "readings_views",
+  READING_DOCUMENT = "reading_document",
+  READING_CATEGORY = "reading_category"
+}
+
+export interface Document {  
+  PATH: string;
+
+  NAME_AR: string;
+  NAME_EN: string;
+
+  UPLOAD_DATE: Date;
 }
 
 export async function getChildren(table: string, serial: string) {
-  const result = await oracle.op().read<{ ID: string }>(`
+  const result = await oracle.op().query<{ ID: string }>(`
 
     SELECT id
     FROM ${table}
@@ -52,11 +59,11 @@ export async function getChildren(table: string, serial: string) {
   return result
     .rows
     .filter(row => row.ID === serial)
-    .map(row => Serial.last(row.ID));
+    .map(row => Serial.getLast(row.ID));
 }
 
 export async function exists(tableName: TablesNames, id: string) {
-  return (await oracle.op().read<{ COUNT: number }>(`
+  return (await oracle.op().query<{ COUNT: number }>(`
     
       SELECT COUNT(*)
       FROM ${tableName}

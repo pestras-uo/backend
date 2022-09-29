@@ -2,17 +2,16 @@ import { TablesNames } from "../..";
 import oracle from "../../../db/oracle";
 import { HttpError } from "../../../misc/errors";
 import { HttpCode } from "../../../misc/http-codes";
-import { Category } from "../../misc/categories/interface";
 import { exists } from "./util";
 
 export async function getCategories(indicator_id: string) {
-  return (await oracle.op().read<Category>(`
+  return ((await oracle.op().query<{ CATEGORY_ID: string }>(`
   
-    SELECT C.*
-    FROM ${TablesNames.CATEGORIES} C, ${TablesNames.INDICATOR_CATEGORY} IC
-    WHERE IC.INDICATOR_ID = :a AND C.ID = IC.CATEGORY_ID
+    SELECT category_id
+    FROM ${TablesNames.INDICATOR_CATEGORY}
+    WHERE indicator_id = :a
   
-  `, [indicator_id])).rows || [];
+  `, [indicator_id])).rows || []).map(r => r.CATEGORY_ID);
 }
 
 export async function replaceCategories(id: string, categories: string[]) {

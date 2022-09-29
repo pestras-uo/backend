@@ -2,7 +2,7 @@ import { TablesNames } from "../..";
 import oracle from "../../../db/oracle";
 
 export async function exists(id: string) {
-  return (await oracle.op().read<{ count: number }>(`
+  return (await oracle.op().query<{ count: number }>(`
 
      SELECT COUNT(id) as count
      FROM ${TablesNames.INDICATORS}
@@ -12,7 +12,7 @@ export async function exists(id: string) {
 }
 
 export async function nameExists(name_ar: string, name_en: string) {
-  return (await oracle.op().read<{ COUNT: number }>(`
+  return (await oracle.op().query<{ COUNT: number }>(`
 
      SELECT COUNT(name) as count
      FROM ${TablesNames.INDICATORS}
@@ -22,7 +22,7 @@ export async function nameExists(name_ar: string, name_en: string) {
 }
 
 export async function updatedNameExists(id: string, name_ar: string, name_en: string) {
-  return (await oracle.op().read<{ count: number }>(`
+  return (await oracle.op().query<{ count: number }>(`
 
      SELECT COUNT(name) as count
      FROM ${TablesNames.INDICATORS}

@@ -9,7 +9,7 @@ export default {
   // getters
   // --------------------------------------------------------------------------
   async get(indicator_id: string) {
-    return (await oracle.op().read<StatsConfig>(`
+    return (await oracle.op().query<StatsConfig>(`
     
       SELECT *
       FROM ${TablesNames.STATS_CONFIG}
@@ -24,7 +24,7 @@ export default {
   // util
   // --------------------------------------------------------------------------
   async exists(indicator_id: string, col_name: string) {
-    return (await oracle.op().read<{ COUNT: number }>(`
+    return (await oracle.op().query<{ COUNT: number }>(`
     
       SELECT COUNT(*) as COUNT
       FROM ${TablesNames.STATS_CONFIG}

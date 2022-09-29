@@ -1,3 +1,5 @@
+import { Document } from "../..";
+
 export interface Indicator {
   ID: string;
   ORGUNIT_ID: string;
@@ -30,4 +32,8 @@ export interface IndicatorDetailsQueryResultItem extends Indicator {
 
 export interface Arguments extends Indicator {
   VARIABLE: string;
+}
+
+export interface IndicatorDocument extends Document {
+  INDICATOR_ID: string;
 }

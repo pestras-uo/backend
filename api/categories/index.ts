@@ -10,6 +10,11 @@ export default Router()
     auth(["categories.get.all"]),
     controller.getAll
   )
+  .get(
+    '/:id',
+    auth(["categories.get.one"]),
+    controller.getAll
+  )
   .post(
     '/',
     validate(CategoriesValidators.CREATE),

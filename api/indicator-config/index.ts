@@ -7,8 +7,13 @@ import { IndicatorConfigValidators } from "./validators";
 export default Router()
   .get(
     '/:id',
-    auth(["indicators.config.get"]),
+    auth(["indicators.config.get.one"]),
     controller.get
+  )
+  .get(
+    '/:id/arguments',
+    auth(["indicators.config.get.arguments"]),
+    controller.getArguments
   )
   .post(
     '/',
@@ -33,4 +38,10 @@ export default Router()
     validate(IndicatorConfigValidators.UPDATE_EQUATION),
     auth(["indicators.config.update.equation"]),
     controller.updateEquation
+  )
+  .put(
+    '/:id/evaluation-day',
+    validate(IndicatorConfigValidators.UPDATE_EVAL_DAY),
+    auth(["indicators.config.update.evaluation-day"]),
+    controller.updateEvaluationDay
   );

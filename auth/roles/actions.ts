@@ -27,11 +27,6 @@ export const Actions = [
   "groups.create",
   "groups.update",
 
-  // Documents
-  "documents.*",
-  "documents.create",
-  "documents.delete",
-
   
   // Orgunits
   "orgunits.*",
@@ -41,7 +36,6 @@ export const Actions = [
   "orgunits.create",
   "orgunits.update.*",
   "orgunits.update.name",
-  "orgunits.update.tags",
 
   // Categories
   "categories.*",
@@ -50,32 +44,21 @@ export const Actions = [
   "categories.create",
   "categories.update",
 
-  // tags
-  "tags.*",
-  "tags.get.*",
-  "tags.get.all",
-  "tags.get.keys",
-  "tags.get.values",
-  "tags.create.*",
-  "tags.create.key",
-  "tags.create.value",
-  "tags.update.*",
-  "tags.update.key",
-  "tags.update.value",
-
   // topics
   "topics.*",
   "topics.get.*",
   "topics.get.all",
   "topics.get.one",
-  "topics.get.tags",
   "topics.get.documents",
-  "topics.create",
+  "topics.create.*",
+  "topics.create.one",
+  "topics.create.documents",
   "topics.update.*",
-  "topics.update",
+  "topics.update.one",
   "topics.update.groups",
   "topics.update.categories",
-  "topics.update.documents",
+  "topics.delete.*",
+  "topics.delete.documents",
 
   // indicators
   "indicators.*",
@@ -83,28 +66,50 @@ export const Actions = [
   "indicators.get.topic",
   "indicators.get.orgunit",
   "indicators.get.one",
-  "indicators.get.tags",
   "indicators.get.documents",
-  "indicators.create",
+  "indicators.create.*",
+  "indicators.create.one",
+  "indicators.create.documents",
   "indicators.update.*",
-  "indicators.update",
+  "indicators.update.one",
   "indicators.update.orgunit",
   "indicators.update.topic",
   "indicators.update.activate",
   "indicators.update.groups",
   "indicators.update.categories",
-  "indicators.update.tags",
-  "indicators.update.documents",
+  "indicators.delete.*",
+  "indicators.delete.documents",
 
   // indicator config
   "indicators.config.*",
-  "indicators.config.get",
+  "indicators.config.get.one",
+  "indicators.config.get.arguments",
   "indicators.config.create",
   "indicators.config.update.*",
   "indicators.config.update.intervals",
   "indicators.config.update.kpis",
   "indicators.config.update.equation",
+  "indicators.config.update.evaluation-day",
+  "indicators.config.update.readings-view",
 
+  // readings
+  "readings.*",
+  "readings.get.*",
+  "readings.get.all",
+  "readings.get.one",
+  "readings.get.categories",
+  "readings.get.documents",
+  "readings.create.*",
+  "readings.create.one",
+  "readings.create.documents",
+  "readings.update.*",
+  "readings.update.one",
+  "readings.update.approve",
+  "readings.update.categories",
+  "readings.delete.*",
+  "readings.delete.one",
+  "readings.delete.documents",
+  
 ] as const;
 
 export type Action = typeof Actions[number];

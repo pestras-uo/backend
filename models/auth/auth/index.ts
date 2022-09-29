@@ -11,7 +11,7 @@ export default {
   // getters
   // ----------------------------------------------------------------------------------------------------------------
   async getPassword(user_id: string) {
-    return (await oracle.op().read<Auth>(`
+    return (await oracle.op().query<Auth>(`
 
       SELECT password, salt
       FROM ${TablesNames.AUTH}
@@ -21,7 +21,7 @@ export default {
   },
 
   async getSession(user_id: string) {
-    return (await oracle.op().read<Pick<Auth, 'SOCKET' | 'TOKEN' | 'TOKEN_CREATE_DATE' | 'TOKEN_EXP_DATE'>>(`
+    return (await oracle.op().query<Pick<Auth, 'SOCKET' | 'TOKEN' | 'TOKEN_CREATE_DATE' | 'TOKEN_EXP_DATE'>>(`
 
       SELECT token, token_create_date, token_exp_date socket
       FROM ${TablesNames.AUTH}
@@ -31,7 +31,7 @@ export default {
   },
 
   async getSessionByToken(user_id: string, token: string) {
-    return (await oracle.op().read<Pick<Auth, 'SOCKET' | 'TOKEN' | 'TOKEN_CREATE_DATE' | 'TOKEN_EXP_DATE'>>(`
+    return (await oracle.op().query<Pick<Auth, 'SOCKET' | 'TOKEN' | 'TOKEN_CREATE_DATE' | 'TOKEN_EXP_DATE'>>(`
 
       SELECT token, token_create_date, token_exp_date, socket
       FROM ${TablesNames.AUTH}
@@ -46,7 +46,7 @@ export default {
   // util
   // ----------------------------------------------------------------------------------------------------------------
   async exists(user_id: string) {
-    return (await oracle.op().read<{ COUNT: number }>(`
+    return (await oracle.op().query<{ COUNT: number }>(`
 
       SELECT COUNT(*) as COUNT
       FROM ${TablesNames.AUTH}
@@ -56,7 +56,7 @@ export default {
   },
 
   async hasSession(user_id: string, token: string) {
-    return (await oracle.op().read<{ COUNT: number }>(`
+    return (await oracle.op().query<{ COUNT: number }>(`
 
       SELECT COUNT(*) as COUNT
       FROM ${TablesNames.AUTH}

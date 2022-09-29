@@ -7,8 +7,8 @@ export enum IndicatorsValidators {
   UPDATE_TOPIC = 'updateIndicatorTopic',
   UPDATE_CATEGORIES = 'updateIndicatorCategories',
   UPDATE_GROUPS = 'updateIndicatorGroups',
-  UPDATE_TAGS = 'updateIndicatorTags',
-  ADD_DOCUMENT = 'addIndicatorDocument'
+  ADD_DOCUMENT = 'addIndicatorDocument',
+  DELETE_DOCUMENT = 'deleteIndicaotDocument'
 }
 
 new Validall(IndicatorsValidators.CREATE, {
@@ -52,12 +52,12 @@ new Validall(IndicatorsValidators.UPDATE_GROUPS, {
   groups: { $default: [], $each: { $type: 'string', $message: 'invalidGroup' } }
 });
 
-new Validall(IndicatorsValidators.UPDATE_TAGS, {
-  tags: { $default: [], $each: { $type: 'string', $message: 'invalidTag' } }
-});
-
 new Validall(IndicatorsValidators.ADD_DOCUMENT, {
   name_ar: { $type: 'string', $required: true, $message: 'nameArIsRequired' },
   name_en: { $type: 'string', $required: true, $message: 'nameEnIsRequired' },
   document: { $required: true, $message: 'documentIsRequired' }
+});
+
+new Validall(IndicatorsValidators.DELETE_DOCUMENT, {
+  path: { $type: 'string', $required: true, $message: 'documentPathIsRequired' }
 });

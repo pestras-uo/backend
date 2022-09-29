@@ -1,12 +1,12 @@
 import { Request, Response, Router } from "express";
-import { ResLocals } from "../auth/interfaces";
+import { UserSession } from "../auth";
 import auth from "../middlewares/auth";
 import { HttpCode } from "../misc/http-codes";
 import pubSub from '../misc/pub-sub';
 
-const connected = new Map<string, Response<any, ResLocals>>();
+const connected = new Map<string, Response<any, UserSession>>();
 
-function sse(req: Request, res: Response<any, ResLocals>) {
+function sse(req: Request, res: Response<any, UserSession>) {
   const headers = {
     'Content-Type': 'text/event-stream',
     'Connection': 'keep-alive',

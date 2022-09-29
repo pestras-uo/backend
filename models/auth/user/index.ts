@@ -14,7 +14,7 @@ export default {
   // util methods
   // ----------------------------------------------------------------------------------------------------------------
   async exists(id: string) {
-    return (await oracle.op().read<{ COUNT: number }>(`
+    return (await oracle.op().query<{ COUNT: number }>(`
     
       SELECT COUNT(0) as COUNT
       FROM ${TablesNames.USERS}
@@ -24,7 +24,7 @@ export default {
   },
 
   async usernameExists(username: string) {
-    return (await oracle.op().read<{ COUNT: number }>(`
+    return (await oracle.op().query<{ COUNT: number }>(`
     
       SELECT COUNT(0) as COUNT
       FROM ${TablesNames.USERS}
@@ -39,7 +39,7 @@ export default {
   // getters
   // ----------------------------------------------------------------------------------------------------------------
   async get(id: string) {
-    const result = (await oracle.op().read<UserDetailsQueryResultItem>(`
+    const result = (await oracle.op().query<UserDetailsQueryResultItem>(`
     
       SELECT 
         U.*,
@@ -76,7 +76,7 @@ export default {
   },
 
   async getByUsername(username: string) {
-    const result = (await oracle.op().read<UserDetailsQueryResultItem>(`
+    const result = (await oracle.op().query<UserDetailsQueryResultItem>(`
     
       SELECT 
         U.*,
@@ -113,7 +113,7 @@ export default {
   },
 
   async getByOrgunit(orgunit_id: string, is_active = 1) {
-    return (await oracle.op().read<User>(`
+    return (await oracle.op().query<User>(`
     
       SELECT *
       FROM ${TablesNames.USERS}
@@ -123,7 +123,7 @@ export default {
   },
 
   async getAll(is_active = 1) {
-    return (await oracle.op().read<User>(`
+    return (await oracle.op().query<User>(`
     
       SELECT *
       FROM ${TablesNames.USERS}
@@ -244,7 +244,7 @@ export default {
   // roles
   // ----------------------------------------------------------------------------------------------------------------
   async getRoles(user_id: string) {
-    return (await oracle.op().read(`
+    return (await oracle.op().query(`
     
       SELECT *
       FROM ${TablesNames.USER_ROLE}
@@ -274,6 +274,8 @@ export default {
       
       `, roles.map(r => [user_id, r]))
       .commit();
+
+    return true;
   },
 
 
@@ -283,7 +285,7 @@ export default {
   // groups
   // ----------------------------------------------------------------------------------------------------------------
   async getGroups(user_id: string) {
-    return (await oracle.op().read<Group>(`
+    return (await oracle.op().query<Group>(`
     
       SELECT G.*
       FROM ${TablesNames.GROUPS} G, ${TablesNames.USER_GROUP} UG
@@ -349,7 +351,7 @@ export default {
 
     if (!(await this.exists(user_id)))
       throw new HttpError(HttpCode.NOT_FOUND, 'userNotFound');
-      
+
     const date = new Date();
 
     await oracle.op()

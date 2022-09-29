@@ -1,6 +1,7 @@
 import http from 'http';
 import { Server } from 'socket.io';
-import { TokenType, verifyToken } from '../auth/token';
+import { verifyToken } from '../auth';
+import { TokenType } from '../auth/token';
 import { HttpError } from '../misc/errors';
 import { HttpCode } from '../misc/http-codes';
 import pubsub, { PubSubEvent } from '../misc/pub-sub';

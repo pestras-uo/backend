@@ -50,7 +50,7 @@ import api from "./api";
     res
       .status(err.code || HttpCode.UNKNOWN_ERROR)
       .send(
-        err.code > 500
+        err.code! > 500
           ? config.prod ? HttpCode[err.code] : err.message
           : !err.code
             ? "unknwonError"

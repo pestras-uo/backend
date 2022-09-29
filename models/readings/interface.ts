@@ -1,8 +1,9 @@
+import { Document } from "..";
+
 export interface IndicatorReading {
   ID: string;
-  DISTRICT_ID: string;
 
-  INDICATOR_ID: string;
+  VALUE: number;
 
   NOTE_AR?: string;
   NOTE_EN?: string;
@@ -18,14 +19,16 @@ export interface IndicatorReading {
 }
 
 export interface ReadingHistoryItem {
-  CHANGE: {
-    COLUMN_NAME: string,
-    VALUE: string
-  }[];
+  VALUE: number
 
   NOTE_AR: string;
   NOTE_EN: string;
 
   READING_DATE: string;
   UPDATE_DATE: string;
+}
+
+export interface ReadingDocument extends Document {
+  INDICATOR_ID: string;
+  READING_ID: string;
 }

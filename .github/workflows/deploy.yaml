@@ -1,0 +1,27 @@
+name: Deploy to DigitalOcean Droplet
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: Ubuntu-latest
+
+    steps:
+      - name: Deploy Beackend
+        uses: appleboy/ssh-action@v0.1.4
+        with:
+          host: ${{secrets.DIGITAL_OCEAN_HOST}}
+          key: ${{secrets.DIGITALOCEAN_SSH_KEY}}
+          username: ${{ secrets.DIGITAL_OCEAN_USER }}
+
+          scripts: |
+            cd /home/gam/urban-observatory/backend
+            git pull origin main
+            npx tsc
+            pm2 reload 0 --update-env

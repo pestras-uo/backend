@@ -5,7 +5,7 @@ import { Role } from "./interface";
 export default {
 
   async get(id: number) {
-    return (await oracle.op().read<Role>(`
+    return (await oracle.op().query<Role>(`
 
       SELECT *
       FROM ${TablesNames.ROLES}
@@ -15,7 +15,7 @@ export default {
   },
 
   async getAll() {
-    return (await oracle.op().read<Role>(`
+    return (await oracle.op().query<Role>(`
 
       SELECT * 
       FROM ${TablesNames.ROLES}

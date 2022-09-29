@@ -5,7 +5,8 @@ export enum TopicsValidators {
   UPDATE = 'updateTopic',
   UPDATE_GROUPS = 'updateTopicGroups',
   UPDATE_CATEGORIES = 'updateTopicCategories',
-  ADD_DOCUMENT = 'addTopicDocument'
+  ADD_DOCUMENT = 'addTopicDocument',
+  DELETE_DOCUMENT = 'deleteTopicDocument'
 }
 
 new Validall(TopicsValidators.CREATE, {
@@ -37,4 +38,8 @@ new Validall(TopicsValidators.ADD_DOCUMENT, {
   name_ar: { $type: 'string', $required: true, $message: 'nameArIsRequired' },
   name_en: { $type: 'string', $required: true, $message: 'nameEnIsRequired' },
   document: { $required: true, $message: 'documentIsRequired' }
+});
+
+new Validall(TopicsValidators.DELETE_DOCUMENT, {
+  path: { $type: 'string', $required: true, $message: 'documentPathIsRequired' }
 });

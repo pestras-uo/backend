@@ -10,7 +10,7 @@ export default {
   // Getters
   // ----------------------------------------------------------------------------
   async getAll() {
-    return (await oracle.op().read<Orgunit>(`
+    return (await oracle.op().query<Orgunit>(`
 
       SELECT * 
       FROM ${TablesNames.ORGUNITS}
@@ -19,7 +19,7 @@ export default {
   },
 
   async get(id: string) {
-    return (await oracle.op().read<Orgunit>(`
+    return (await oracle.op().query<Orgunit>(`
 
       SELECT *
       FROM ${TablesNames.ORGUNITS}
@@ -34,7 +34,7 @@ export default {
   // Util
   // ----------------------------------------------------------------------------
   async exists(id: string) {
-   return (await oracle.op().read<{ COUNT: number }>(`
+   return (await oracle.op().query<{ COUNT: number }>(`
 
       SELECT COUNT(id) as COUNT
       FROM ${TablesNames.ORGUNITS}
@@ -44,7 +44,7 @@ export default {
   },
 
   async nameExists(name_ar: string, name_en: string) {
-   return (await oracle.op().read<{ COUNT: number }>(`
+   return (await oracle.op().query<{ COUNT: number }>(`
 
       SELECT COUNT(*) as COUNT
       FROM ${TablesNames.ORGUNITS}
@@ -54,7 +54,7 @@ export default {
   },
 
   async updatedNameExists(id: string, name_ar: string, name_en: string) {
-   return (await oracle.op().read<{ COUNT: number }>(`
+   return (await oracle.op().query<{ COUNT: number }>(`
 
       SELECT COUNT(*) as COUNT
       FROM ${TablesNames.ORGUNITS}

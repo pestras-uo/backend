@@ -1,3 +1,5 @@
+import { Document } from "../..";
+
 export interface Topic {
   ID: string;
 
@@ -19,4 +21,8 @@ export interface TopicDetails extends Topic {
 export interface TopicDetailsQueryResultItem extends Topic {
   GROUP_ID: number;
   CATEGORY_ID: number;
+}
+
+export interface TopicDocument extends Document {
+  TOPIC_ID: string;
 }

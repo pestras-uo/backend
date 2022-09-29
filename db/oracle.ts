@@ -104,12 +104,33 @@ class Operation {
     }
   }
 
-  async read<T = any>(sql: string, bindParams: oracledb.BindParameters = [], options: oracledb.ExecuteOptions = {}) {
+  async query<T = any>(sql: string, bindParams: oracledb.BindParameters = [], options: oracledb.ExecuteOptions = {}) {
     let conn!: oracledb.Connection;
 
     try {
       conn = await oracledb.getPool().getConnection(schemaCred[this._schema]);
       return conn.execute<T>(sql, bindParams, options);
+
+    } catch (error) {
+      throw error;
+
+    } finally {
+      await this._closeConn(conn);
+    }
+  }
+
+  async queryStream<T>(sql: string, bindParams: oracledb.BindParameters = [], options: oracledb.ExecuteOptions = {}) {
+    let conn!: oracledb.Connection;
+
+    try {
+      conn = await oracledb.getPool().getConnection(schemaCred[this._schema]);
+      const stream = conn.queryStream<T>(sql, bindParams, options);
+
+      stream
+        .on('end', () => stream.destroy())
+        .on('error', err => { throw err; });
+
+      return stream;
 
     } catch (error) {
       throw error;

@@ -3,6 +3,7 @@ import auth from "../../middlewares/auth";
 import controller from "./controller";
 import validate from "../../middlewares/validate";
 import { TopicsValidators } from "./validators";
+import { docUpload } from "../../middlewares/upload";
 
 export default Router()
   .get(
@@ -15,21 +16,23 @@ export default Router()
     auth(["topics.get.one"]),
     controller.get
   )
-  .get(
-    '/:id/tags',
-    auth(["topics.get.tags"]),
-    controller.getTags
-  )
   .post(
     '/',
     validate(TopicsValidators.CREATE),
-    auth(["topics.create"]),
+    auth(["topics.create.one"]),
     controller.create
+  )
+  .post(
+    '/:id/documents',
+    validate(TopicsValidators.ADD_DOCUMENT),
+    auth(["topics.create.documents"]),
+    docUpload.single('document'),
+    controller.addDocument
   )
   .put(
     '/:id',
     validate(TopicsValidators.UPDATE),
-    auth(["topics.update"]),
+    auth(["topics.update.one"]),
     controller.update
   )
   .put(
@@ -44,14 +47,9 @@ export default Router()
     auth(["topics.update.categories"]),
     controller.updateCategories
   )
-  .put(
-    '/:id/documents',
-    validate(TopicsValidators.ADD_DOCUMENT),
-    auth(["topics.update.documents"]),
-    controller.addDocument
-  )
   .delete(
-    '/:id/documents/:doc_id',
-    auth(["topics.update.documents"]),
+    '/:id/documents',
+    validate(TopicsValidators.DELETE_DOCUMENT),
+    auth(["topics.delete.documents"]),
     controller.removeDocument
   )

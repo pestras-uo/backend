@@ -8,24 +8,28 @@ export default {
     return this.regex.test(serial)
   },
 
-  levels(serial: string) {
+  isRoot(serial: string) {
+    return this.countLevels(serial) === 1;
+  },
+
+  countLevels(serial: string) {
     return serial.split(this.separator).length;
   },
 
-  root(serial: string) {
+  getRoot(serial: string) {
     return serial.split(this.separator)[0];
   },
 
-  parent(serial: string) {
+  getParent(serial: string) {
     return serial.split(this.separator).slice(0, -1).join(this.separator);
   },
 
-  last(serial: string) {
-    const length = this.levels(serial);
+  getLast(serial: string) {
+    const length = this.countLevels(serial);
     return length > 0 ? serial.split(this.separator)[length - 1] : '';
   },
 
-  tree(serial: string) {
+  toTree(serial: string) {
     const all: string[] = [];
     const blocks = serial.split(this.separator);
 
@@ -40,7 +44,7 @@ export default {
   },
 
   areSiblings(serial1: string, serial2: string) {
-    return this.parent(serial1) === this.parent(serial2);
+    return this.getParent(serial1) === this.getParent(serial2);
   },
 
   isDesc(descendant: string, serial: string, orIn = false) {

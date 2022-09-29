@@ -5,6 +5,7 @@ import validate from "../../middlewares/validate";
 import { TablesNames } from "../../models";
 import controller from "./controller";
 import { IndicatorsValidators } from "./validators";
+import { docUpload } from '../../middlewares/upload';
 
 export default Router()
   .get(
@@ -23,11 +24,6 @@ export default Router()
     controller.get
   )
   .get(
-    '/:id/tags',
-    auth(['indicators.get.tags']),
-    controller.getTags
-  )
-  .get(
     '/:id/documents',
     auth(['indicators.get.documents']),
     controller.getDocuments
@@ -36,14 +32,21 @@ export default Router()
   .post(
     '/',
     validate(IndicatorsValidators.CREATE),
-    auth(['indicators.create']),
+    auth(['indicators.create.one']),
     controller.create
+  )
+  .post(
+    '/:id/documents',
+    validate(IndicatorsValidators.ADD_DOCUMENT),
+    auth(["indicators.create.documents"]),
+    docUpload.single('document'),
+    controller.addDocument
   )
 
   .put(
     '/:id',
     validate(IndicatorsValidators.UPDATE),
-    auth(['indicators.update']),
+    auth(['indicators.update.one']),
     controller.update
   )
   .put(
@@ -72,21 +75,10 @@ export default Router()
     auth(['indicators.update.groups']),
     controller.updateGroups
   )
-  .put(
-    '/:id/tags',
-    validate(IndicatorsValidators.UPDATE_TAGS),
-    auth(['indicators.update.tags']),
-    controller.updateTags
-  )
-  .put(
-    '/:id/documents',
-    validate(IndicatorsValidators.ADD_DOCUMENT),
-    auth(["indicators.update.documents"]),
-    controller.addDocument
-  )
 
   .delete(
-    '/:id/documents/:doc_id',
-    auth(["indicators.update.documents"]),
+    '/:id/document',
+    validate(IndicatorsValidators.DELETE_DOCUMENT),
+    auth(["indicators.delete.documents"]),
     controller.removeDocument
   )

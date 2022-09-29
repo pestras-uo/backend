@@ -1,48 +1,132 @@
-export interface CreateIndicatorBody {
-  orgunit_id: string;
-  topic_id: string;
+import { Request } from "express";
+import { Indicator, IndicatorDetails, IndicatorDocument } from "../../models/indicators/indicators/interface";
 
-  name_ar: string;
-  name_en: string;
-  desc_ar?: string;
-  desc_en?: string;
-  unit_ar?: string;
-  unit_en?: string;
+export type GetIndicatorsByTopicRequest = Request<
+  // params
+  { topic_id: string },
+  // response
+  Indicator[]
+>;
 
-  parent?: string;
-}
+export type GetIndicatorsByOrgunitRequest = Request<
+  // params
+  { orgunit_id: string },
+  // response
+  Indicator[]
+>;
 
-export interface UpdateIndicatorBody {
-  name_ar: string;
-  name_en: string;
-  desc_ar?: string;
-  desc_en?: string;
-  unit_ar?: string;
-  unit_en?: string;
-}
+export type GetIndicatorsByIdRequest = Request<
+  // params
+  { id: string },
+  // response
+  IndicatorDetails
+>;
 
-export interface UpdateIndicatorOrgunitBody {
-  orgunit: string;
-}
+export type CreateIndicatorRequest = Request<
+  // params
+  any,
+  // response
+  IndicatorDetails,
+  // body
+  {
+    orgunit_id: string;
+    topic_id: string;
 
-export interface UpdateIndicatorTopicBody {
-  topic: string;
-}
+    name_ar: string;
+    name_en: string;
+    desc_ar?: string;
+    desc_en?: string;
+    unit_ar?: string;
+    unit_en?: string;
 
-export interface UpdateIndicatorCategoriesBody {
-  categories: string[];
-}
+    parent?: string;
+  }
+>
 
-export interface UpdateIndicatorGroupsBody {
-  groups: string[];
-}
+export type UpdateIndicatorRequest = Request<
+  // params
+  { id: string },
+  // response
+  Date,
+  // body
+  {
+    name_ar: string;
+    name_en: string;
+    desc_ar?: string;
+    desc_en?: string;
+    unit_ar?: string;
+    unit_en?: string;
+  }
+>
 
-export interface UpdateIndicatorTagsBody {
-  tags: string[];
-}
+export type UpdateIndicatorOrgunitRequest = Request<
+  // params
+  { id: string },
+  // response
+  Date,
+  // body
+  { orgunit: string; }
+>;
 
-export interface AddIndicatorDocumentBody {
-  name_ar: string;
-  name_en: string;
-  document: any;
-}
+export type UpdateIndicatorTopicRequest = Request<
+  // params
+  { id: string },
+  // response
+  Date,
+  // body
+  { topic: string; }
+>;
+
+export type ActivateIndicatorRequest = Request<
+  // params
+  { id: string, state: string },
+  // response
+  Date
+>;
+
+export type UpdateIndicatorGroupsRequest = Request<
+  // params
+  { id: string },
+  // response
+  boolean,
+  // body
+  { groups: string[]; }
+>;
+
+export type UpdateIndicatorCategoriesRequest = Request<
+  // params
+  { id: string },
+  // response
+  boolean,
+  // body
+  { categories: string[]; }
+>;
+
+export type getIndicatorDocumentsRequest = Request<
+  // params
+  { id: string },
+  // response
+  IndicatorDocument[]
+>;
+
+export type AddIndicatorDocumentRequest = Request<
+  // params
+  { id: string },
+  // response
+  { path: string },
+  // body
+  {
+    name_ar: string;
+    name_en: string;
+    document: any;
+  }
+>;
+
+export type RemoveIndicatorDocuemntRequest = Request<
+  // params
+  { id: string },
+  // response
+  boolean,
+  // body
+  { path: string; }
+>; 

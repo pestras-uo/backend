@@ -18,7 +18,7 @@ export default Router()
     controller.getInactive
   )
   .get(
-    '/orgunit/:id', 
+    '/orgunit/:orgunit_id', 
     auth(["users.get.by-orgunit"]),
     controller.getByOrgunit
   )

@@ -2,14 +2,14 @@ import { TablesNames } from "../..";
 import oracle, { DBSchemas } from "../../../db/oracle"
 import { HttpError } from "../../../misc/errors";
 import { HttpCode } from "../../../misc/http-codes";
-import { IndicatorConfig } from "./interface";
+import { IndicatorArgument, IndicatorConfig } from "./interface";
 
 export default {
 
   // getters
   // ----------------------------------------------------------------------
   async get(ind_id: string) {
-    return (await oracle.op().read<IndicatorConfig>(`
+    return (await oracle.op().query<IndicatorConfig>(`
     
       SELECT *
       FROM ${TablesNames.INDICATOR_CONFIG}
@@ -24,7 +24,7 @@ export default {
   // util
   // ----------------------------------------------------------------------
   async exists(ind_id: string) {
-    return (await oracle.op().read<{ COUNT: number }>(`
+    return (await oracle.op().query<{ COUNT: number }>(`
     
     SELECT COUNT(*) AS COUNT
     FROM ${TablesNames.INDICATOR_CONFIG}
@@ -38,21 +38,16 @@ export default {
 
   // create
   // ----------------------------------------------------------------------
-  async create(config: IndicatorConfig, args: { id: string, variable: string, column: string }[]) {
+  async create(config: Partial<IndicatorConfig>, args: { id: string, variable: string }[]) {
     /**
      * if equation is provided
      * set quatitative columns to 'value' and
      * remove make sure that readings view name is null
      */
     if (config.EQUATION) {
-      config.QANTITATIVE_COLUMNS = 'value';
-      config.READINGS_VIEW_NAME = null;
-
-    } else if (config.QANTITATIVE_COLUMNS.split(',').length === 0)
-      throw new HttpError(HttpCode.BAD_REQUEST, "quantitativeColumnsAreRequired");
-
-    if (!config.READINGS_VIEW_NAME)
-      config.READING_DATE_COLUMN = 'reading_date';
+      config.READINGS_VIEW = null;
+      config.VALUES_COLUMNS = null;
+    }
 
     if (await this.exists(config.INDICATOR_ID))
       throw new HttpError(HttpCode.CONFLICT, "indicatorConfigAlreadyExists");
@@ -67,10 +62,10 @@ export default {
           intervals,
           kpi_min,
           kpi_max,
-          quantitative_columns,
-          readings_view_name,
-          reading_date_column,
-          equation
+          readings_view,
+          values_columns,
+          equation,
+          evaluation_day
         ) VALUES (
           :a, :b, :c, :d, :e, :f, :g, :h
         )
@@ -80,10 +75,10 @@ export default {
         config.INTERVALS,
         config.KPI_MIN || null,
         config.KPI_MAX || null,
-        config.QANTITATIVE_COLUMNS,
-        config.READINGS_VIEW_NAME,
-        config.READING_DATE_COLUMN,
-        config.EQUATION
+        config.READINGS_VIEW,
+        config.VALUES_COLUMNS,
+        config.EQUATION,
+        config.EVALUATION_DAY
       ]);
 
 
@@ -91,20 +86,22 @@ export default {
       op
         .writeMany(`
       
-          INSERT INTO ${TablesNames.INDICATOR_ARGUMENT} (indicator_id, arg_id, variable, column_name)
-          VALUES (:a, :b, :c, :d)
+          INSERT INTO ${TablesNames.INDICATOR_ARGUMENT} (indicator_id, argument_id, variable)
+          VALUES (:a, :b, :c)
         
-        `, args.map(arg => [config.INDICATOR_ID, arg.id, arg.variable, arg.column]));
+        `, args.map(arg => [config.INDICATOR_ID, arg.id, arg.variable]));
 
     await op.commit();
 
-    if (!config.READINGS_VIEW_NAME)
+    if (!config.READINGS_VIEW)
       await oracle.op(DBSchemas.READINGS)
         .write(`
         
           CREATE TABLE ${config.INDICATOR_ID} (
             id NVARCHAR(36) CONSTRAINT ${config.INDICATOR_ID}_pk PRIMARY KEY,
-            district_id NUMBER NOT NULL,
+
+            value Number NOT NULL,
+
             note_ar NVARCHAR(128),
             note_en NVARCHAR(128),
   
@@ -115,13 +112,13 @@ export default {
             update_date DATE,
             reading_date DATE NOT NULL,
   
-            history NVARCHAR(1024),
-  
-            ${config.QANTITATIVE_COLUMNS.split(',').map(c => c.trim() + ' Number NOT NULL').join(',')}
+            history NVARCHAR(1024)
           )
         
         `)
         .commit();
+
+      return config;
   },
 
 
@@ -167,11 +164,9 @@ export default {
     return date;
   },
 
-  async updateEquation(ind_id: string, eq: string, args: { id: string; variable: string; column: string }[] = []) {
+  async updateEquation(ind_id: string, eq: string, args: { id: string; variable: string }[] = []) {
     if (!(await this.exists(ind_id)))
       throw new HttpError(HttpCode.NOT_FOUND, 'indicatorConfigNotFound');
-
-    const date = new Date();
 
     const op = oracle.op();
 
@@ -185,23 +180,54 @@ export default {
       .write(`
       
         UPDATE ${TablesNames.INDICATOR_CONFIG}
-        SET equation = :a, date = :b
-        WHERE id = :c
+        SET equation = :a
+        WHERE id = :b
       
-      `, [eq, date, ind_id]);
+      `, [eq, ind_id]);
 
     if (args.length > 0)
       op
         .writeMany(`
         
-          INSERT INTO ${TablesNames.INDICATOR_ARGUMENT} (indicator_id, arg_id, variable, column_name)
-          VALUES (:a, :b, :c, :d)
+          INSERT INTO ${TablesNames.INDICATOR_ARGUMENT} (indicator_id, argument_id, variable)
+          VALUES (:a, :b, :c)
         
-        `, args.map(arg => [ind_id, arg.id, arg.variable, arg.column]));
+        `, args.map(arg => [ind_id, arg.id, arg.variable]));
 
     await op.commit();
 
-    return date;
+    return true;
+  },
+
+  async updateEvaluationtionDay(ind_id: string, day: number) {
+    if (!(await this.exists(ind_id)))
+      throw new HttpError(HttpCode.NOT_FOUND, 'indicatorConfigNotFound');
+
+    await oracle.op()
+      .write(`
+      
+        UPDATE ${TablesNames.INDICATOR_CONFIG}
+        SET evaluation_day = :a
+        WHERE indicator_id = :b
+      
+      `, [day, ind_id])
+      .commit();
+
+    return true;
+  },
+
+  // TODO
+  async updateReadingView(ind_id: string, view: string, columns: string) {
+    if (!(await this.exists(ind_id)))
+      throw new HttpError(HttpCode.NOT_FOUND, 'indicatorConfigNotFound');
+
+
+    // BEGIN
+    //    EXECUTE IMMEDIATE 'DROP TABLE sales';
+    // EXCEPTION
+    //    WHEN OTHERS THEN NULL;
+    // END;
+    return true;
   },
 
 
@@ -210,13 +236,13 @@ export default {
   // arguments
   // -----------------------------------------------------------------------------------
   async getArguments(indicator_id: string) {
-    return (await oracle.op().read(`
+    return (await oracle.op().query<IndicatorArgument>(`
     
-      SELECT IA.*
+      SELECT *
       FROM
-        ${TablesNames.INDICATOR_ARGUMENT} IA
+        ${TablesNames.INDICATOR_ARGUMENT}
       WHERE
-        IA.INDICATOR_ID = :a
+        INDICATOR_ID = :a
   
     `, [indicator_id])).rows || [];
   }

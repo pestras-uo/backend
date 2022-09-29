@@ -8,7 +8,7 @@ export default Router()
   .get(
     '/',
     auth(['orgunits.get.many']),
-    controller.getMany
+    controller.getAll
   )
   .get(
     '/:id',
@@ -25,5 +25,5 @@ export default Router()
     '/:id',
     validate(orgunitsValidators.UPDATE_NAME),
     auth(['orgunits.update.name']),
-    controller.updateName
+    controller.update
   );

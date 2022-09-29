@@ -4,7 +4,7 @@ import { omit } from "../../../util/pick-omit";
 import { Indicator, IndicatorDetails, IndicatorDetailsQueryResultItem } from "./interface";
 
 export async function getPage(offset = 0, limit = 100, active = 1) {
-  return (await oracle.op().read<Indicator>(`
+  return (await oracle.op().query<Indicator>(`
 
     SELECT * 
     FROM ${TablesNames.INDICATORS}
@@ -16,7 +16,7 @@ export async function getPage(offset = 0, limit = 100, active = 1) {
 }
 
 export async function get(id: string) {
-  const result = (await oracle.op().read<IndicatorDetailsQueryResultItem>(`
+  const result = (await oracle.op().query<IndicatorDetailsQueryResultItem>(`
 
     SELECT
       I.*,
@@ -56,7 +56,7 @@ export async function get(id: string) {
 }
 
 export async function getByTopic(topic_id: string, active = 1) {
-  return (await oracle.op().read(`
+  return (await oracle.op().query<Indicator>(`
 
     SELECT *
     FROM ${TablesNames.INDICATORS}
@@ -66,7 +66,7 @@ export async function getByTopic(topic_id: string, active = 1) {
 }
 
 export async function getByOrgunit(orgunit_id: string, active = 1) {
-  return (await oracle.op().read(`
+  return (await oracle.op().query<Indicator>(`
 
     SELECT *
     FROM ${TablesNames.INDICATORS}

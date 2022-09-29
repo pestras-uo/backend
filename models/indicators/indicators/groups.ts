@@ -6,7 +6,7 @@ import { Group } from "../../auth/groups/interface";
 import { exists } from "./util";
 
 export async function getGroups(indicator_id: string) {
-  return (await oracle.op().read<Group>(`
+  return (await oracle.op().query<Group>(`
   
     SELECT G.*
     FROM ${TablesNames.GROUPS} G, ${TablesNames.INDICATOR_GROUP} IG

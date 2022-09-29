@@ -1,32 +1,38 @@
-import { NextFunction, Request, Response } from "express";
-import categoriesModel from '../../models/misc/categories';
-import { CreateCategoryBody, updateCategoryBody } from "./interfaces";
+import categoriesModel from '../../models/core/categories';
+import { 
+  CreateCategoryRequest, 
+  GetAllCategoriesRequest, 
+  GetCategoryByIdRequest, 
+  updateCategoryRequest
+} from "./interfaces";
 
 export default {
 
   // getters
   // --------------------------------------------------------------------
-  async getAll(_: Request, res: Response, next: NextFunction) {
-    try {
-      res.json(await categoriesModel.getAll());
-    } catch (error) {
-      next(error);
-    }
+  async getAll(req: GetAllCategoriesRequest) {
+    req.res.json(await categoriesModel.getAll());
   },
 
-  async create(req: Request<any, any, CreateCategoryBody>, res: Response, next: NextFunction) {
-    try {
-      res.json(await categoriesModel.create(req.body.name_ar, req.body.name_en, req.body.parent));
-    } catch (error) {
-      next(error);
-    }
+  async get(req: GetCategoryByIdRequest) {
+    req.res.json(await categoriesModel.get(req.params.id));
   },
 
-  async update(req: Request<{ id: string }, any, updateCategoryBody>, res: Response, next: NextFunction) {
-    try {
-      res.json(await categoriesModel.update(req.params.id, req.body.name_ar, req.body.name_en));
-    } catch (error) {
-      next(error);
-    }
+
+  
+
+  // create
+  // --------------------------------------------------------------------
+  async create(req: CreateCategoryRequest) {
+    req.res.json(await categoriesModel.create(req.body.name_ar, req.body.name_en, req.body.parent));
+  },
+
+
+
+
+  // update
+  // --------------------------------------------------------------------
+  async update(req: updateCategoryRequest) {
+    req.res.json(await categoriesModel.update(req.params.id, req.body.name_ar, req.body.name_en));
   }
 }

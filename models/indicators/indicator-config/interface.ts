@@ -6,9 +6,18 @@ export interface IndicatorConfig {
   KPI_MIN?: number;
   KPI_MAX?: number;
 
-  READINGS_VIEW_NAME?: string;
-  READING_DATE_COLUMN?: string;
-  QANTITATIVE_COLUMNS: string;
+  READINGS_VIEW?: string;
+  VALUES_COLUMNS?: string;
 
   EQUATION?: string;
+
+  EVALUATION_DAY?: number;
+  STATE: 0 | 1;
+}
+
+export interface IndicatorArgument {
+  INDICATOR_ID: string;
+  ARGUMENT_ID: string;
+  COLUMN: string;
+  VARIABLE: string;
 }

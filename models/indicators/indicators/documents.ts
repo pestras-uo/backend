@@ -2,58 +2,43 @@ import { TablesNames } from "../..";
 import oracle from "../../../db/oracle";
 import { HttpError } from "../../../misc/errors";
 import { HttpCode } from "../../../misc/http-codes";
-import { Document } from "../../misc/document/interface";
 import { exists } from "./util";
-import { randomUUID } from 'crypto';
+import { IndicatorDocument } from "./interface";
 
 export async function getDocuments(indicator_id: string) {
-  return (await oracle.op().read<Document>(`
+  return (await oracle.op().query<IndicatorDocument>(`
   
-    SELECT D.*
-    FROM ${TablesNames.DOCUMENTS} D, ${TablesNames.INDICATOR_DOCUMENT} ID
-    WHERE ID.INDICATOR_ID = :a AND D.ID = ID.DOCUMENT_ID
+    SELECT *
+    FROM ${TablesNames.INDICATOR_DOCUMENT}
+    WHERE ID.INDICATOR_ID = :a
   
   `, [indicator_id])).rows || [];
 }
 
-export async function addDocument(topic_id: string, path: string, name_ar: string, name_en: string) {
-  if (!(await exists(topic_id)))
-    throw new HttpError(HttpCode.NOT_FOUND, 'topicNotFound');
-
-  const doc_id = randomUUID();
+export async function addDocument(ind_id: string, path: string, name_ar: string, name_en: string) {
+  if (!(await exists(ind_id)))
+    throw new HttpError(HttpCode.NOT_FOUND, 'indicatorNotFound');
 
   await oracle.op()
     .write(`
-
-      INSERT INTO ${TablesNames.DOCUMENTS} (id, path, name_ar, name_en)
-      VALUES (:a, :b, :c, :d)
-
-    `, [doc_id, path, name_ar, name_en])
-    .write(`
     
-      INSERT INTO ${TablesNames.TOPIC_DOCUMENT} (topic_id, document_id)
-      SET (:a, :b)
+      INSERT INTO ${TablesNames.INDICATOR_DOCUMENT} (indicator_id, path, name_ar, name_en)
+      SET (:a, :b, :c, :d)
     
-    `, [topic_id, doc_id])
+    `, [ind_id, path, name_ar, name_en])
     .commit();
 
   return true;
 }
 
-export async function deleteDocument(topic_id: string, doc_id: string) {
+export async function deleteDocument(path: string) {
   await oracle.op()
     .write(`
     
-      DELETE FROM ${TablesNames.TOPIC_DOCUMENT}
-      WHERE topic_id = :a document_id = :b
+      DELETE FROM ${TablesNames.INDICATOR_DOCUMENT}
+      WHERE path = :a
     
-    `, [topic_id, doc_id])
-    .write(`
-
-      DELETE FROM ${TablesNames.DOCUMENTS}
-      WHERE id = :id
-      
-    `, [doc_id])
+    `, [path])
     .commit();
 
   return true;

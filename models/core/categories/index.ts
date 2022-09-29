@@ -10,7 +10,7 @@ export default {
   // getters
   // ------------------------------------------------------------------------
   async get(id: string) {
-    return (await oracle.op().read<Category>(`
+    return (await oracle.op().query<Category>(`
     
       SELECT *
       FROM ${TablesNames.CATEGORIES}
@@ -20,7 +20,7 @@ export default {
   },
 
   async getAll() {
-    return (await oracle.op().read<Category>(`
+    return (await oracle.op().query<Category>(`
     
       SELECT *
       FROM ${TablesNames.CATEGORIES}
@@ -34,7 +34,7 @@ export default {
   // util
   // ------------------------------------------------------------------------
   async exists(id: string) {
-    return (await oracle.op().read<{ COUNT: number }>(`
+    return (await oracle.op().query<{ COUNT: number }>(`
     
       SELECT COUNT(*) as COUNT
       FROM ${TablesNames.CATEGORIES}
@@ -44,7 +44,7 @@ export default {
   },
 
   async nameExists(name_ar: string, name_en: string) {
-    return (await oracle.op().read<{ COUNT: number }>(`
+    return (await oracle.op().query<{ COUNT: number }>(`
     
       SELECT COUNT(*) as COUNT
       FROM ${TablesNames.CATEGORIES}
@@ -54,7 +54,7 @@ export default {
   },
 
   async updateNameExists(id: string, name_ar: string, name_en: string) {
-    return (await oracle.op().read<{ COUNT: number }>(`
+    return (await oracle.op().query<{ COUNT: number }>(`
     
       SELECT COUNT(*) as COUNT
       FROM ${TablesNames.CATEGORIES}

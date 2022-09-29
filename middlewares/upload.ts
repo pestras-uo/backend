@@ -8,18 +8,8 @@ import { Request } from 'express';
 
 const docsStorage = multer.diskStorage({
   destination: function (req: Request, __, cb) {
-    const dir = path.join(config.uploadsDir, 'system', req.params.id);
-    fs.mkdirSync(dir, { recursive: true });
-    cb(null, dir);
-  },
-  filename: function (_, file, cb) {
-    cb(null, randomUUID() + "." + (extension(file.mimetype) || 'txt'));
-  }
-});
-
-const readingsDocsStorage = multer.diskStorage({
-  destination: function (req: Request, __, cb) {
-    const dir = path.join(config.uploadsDir, 'readings', req.params.id);
+    const blocks = req.baseUrl.split('/');
+    const dir = path.join(config.uploadsDir, blocks[blocks.length - 1], req.params.id);
     fs.mkdirSync(dir, { recursive: true });
     cb(null, dir);
   },
@@ -38,8 +28,7 @@ const avatarStorage = multer.diskStorage({
   }
 });
 
-const sysDocUpload = multer({ storage: docsStorage, limits: { fileSize: config.maxDocumentUploadSize } });
-const ReadingDocUpload = multer({ storage: readingsDocsStorage, limits: { fileSize: config.maxDocumentUploadSize } });
+const docUpload = multer({ storage: docsStorage, limits: { fileSize: config.maxDocumentUploadSize } });
 const avatarUpload = multer({ storage: avatarStorage, limits: { fileSize: config.maxAvatarUploadSize } });
 
-export { sysDocUpload, ReadingDocUpload, avatarUpload };
+export { docUpload, avatarUpload };
