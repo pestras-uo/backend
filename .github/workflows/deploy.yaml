@@ -20,7 +20,7 @@ jobs:
           key: ${{secrets.DIGITALOCEAN_SSH_KEY}}
           username: ${{ secrets.DIGITAL_OCEAN_USER }}
 
-          scripts: |
+          script: |
             cd /home/gam/urban-observatory/backend
             git pull origin main
             npx tsc
