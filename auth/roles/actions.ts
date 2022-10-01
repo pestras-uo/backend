@@ -82,15 +82,23 @@ export const Actions = [
 
   // indicator config
   "indicators.config.*",
+  "indicators.config.get.*",
   "indicators.config.get.one",
   "indicators.config.get.arguments",
   "indicators.config.create",
   "indicators.config.update.*",
-  "indicators.config.update.intervals",
-  "indicators.config.update.kpis",
-  "indicators.config.update.equation",
-  "indicators.config.update.evaluation-day",
-  "indicators.config.update.readings-view",
+  "indicators.config.update.one",
+  "indicators.config.update.state",
+
+  // equation config
+  "indicator.config.equation.*",
+  "indicator.config.equation.get.*",
+  "indicator.config.equation.get.one",
+  "indicator.config.equation.get.arguments",
+  "indicator.config.equation.create.*",
+  "indicator.config.equation.create.one",
+  "indicator.config.equation.update.*",
+  "indicator.config.equation.update.one",
 
   // readings
   "readings.*",

@@ -1,23 +1,25 @@
 import config from "./config";
 
-import http from 'http';
-import path from 'path';
-
+// server and plugins
 import express, { NextFunction, Request, Response } from "express";
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 
-// import misc
+// misc
+import http from 'http';
+import path from 'path';
 import { HttpError } from "./misc/errors";
 import { HttpCode } from "./misc/http-codes";
 
-// features
+// db
 import oracle from './db/oracle';
+
+// features
 import ws from './features/ws';
 import sse from './features/sse';
 
-// import apis
+// routes
 import api from "./api";
 
 (async () => {

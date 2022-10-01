@@ -1,18 +1,27 @@
-import oracle, { DBSchemas } from "../../db/oracle";
-import { HttpError } from "../../misc/errors";
-import { HttpCode } from "../../misc/http-codes";
+import oracle, { DBSchemas } from "db/oracle";
+import { HttpError } from "misc/errors";
+import { HttpCode } from "misc/http-codes";
 import { IndicatorReading, ReadingDocument, ReadingHistoryItem } from "./interface";
 import { randomUUID } from 'crypto';
-import indicatorConfig from "../indicators/indicator-config";
-import { TablesNames } from "..";
+import indicatorConfig from "../config";
+import { TablesNames } from "../..";
+import { IndicatorConfig, IndicatorType } from "models/indicators/config/interface";
+import viewsModel from "models/indicators/view";
 
-async function getIndicator(ind_id: string) {
-  const indicator = await indicatorConfig.get(ind_id);
+async function getIndicatorConfig(ind_id: string) {
+  const config = await indicatorConfig.get(ind_id);
 
-  if (!indicator)
+  if (!config)
     throw new HttpError(HttpCode.NOT_FOUND, 'indicatorNotFound');
 
-  return indicator;
+  return config;
+}
+
+async function getReadingSourceName(config: IndicatorConfig) {
+  if (config.TYPE !== IndicatorType.VIEW)
+    return config.INDICATOR_ID;
+
+  return (await viewsModel.get(config.INDICATOR_ID)).READINGS_VIEW;
 }
 
 export default {
@@ -20,7 +29,8 @@ export default {
   // getters
   // --------------------------------------------------------------------------------------
   async get(ind_id: string, offset = 0, limit = 100) {
-    const readingTableName = (await getIndicator(ind_id)).READINGS_VIEW || ind_id;
+    const config = await getIndicatorConfig(ind_id);
+    const readingTableName = await getReadingSourceName(config);
 
     return (await oracle.op(DBSchemas.READINGS).query<IndicatorReading>(`
     
@@ -33,7 +43,8 @@ export default {
   },
 
   async getById(ind_id: string, id: string) {
-    const readingTableName = (await getIndicator(ind_id)).READINGS_VIEW || ind_id;
+    const config = await getIndicatorConfig(ind_id);
+    const readingTableName = await getReadingSourceName(config);
 
     return (await oracle.op(DBSchemas.READINGS).query<IndicatorReading>(`
     
@@ -50,7 +61,8 @@ export default {
   // util
   // --------------------------------------------------------------------------------------
   async exists(ind_id: string, id: string) {
-    const readingTableName = (await getIndicator(ind_id)).READINGS_VIEW || ind_id;
+    const config = await getIndicatorConfig(ind_id);
+    const readingTableName = await getReadingSourceName(config);
 
     return (await oracle.op(DBSchemas.READINGS).query<{ COUNT: number }>(`
     
@@ -68,9 +80,9 @@ export default {
   // Create
   // --------------------------------------------------------------------------------------
   async create(ind_id: string, reading: Partial<IndicatorReading>) {
-    const indicator = await getIndicator(ind_id);
+    const config = await getIndicatorConfig(ind_id);
 
-    if (indicator.EQUATION || indicator.READINGS_VIEW)
+    if (config.TYPE !== IndicatorType.MANUAL)
       throw new HttpError(HttpCode.BAD_REQUEST, 'indicatorIsAutoComputed');
 
     const id = randomUUID();
@@ -93,9 +105,9 @@ export default {
   // update value
   // --------------------------------------------------------------------------------------
   async update(ind_id: string, id: string, update: Partial<IndicatorReading>) {
-    const indicator = await getIndicator(ind_id);
+    const config = await getIndicatorConfig(ind_id);
 
-    if (indicator.EQUATION || indicator.READINGS_VIEW)
+    if (config.TYPE !== IndicatorType.MANUAL)
       throw new HttpError(HttpCode.BAD_REQUEST, 'indicatorIsAutoComputed');
 
     const reading = await this.getById(ind_id, id);
@@ -143,9 +155,9 @@ export default {
   // approve
   // --------------------------------------------------------------------------------------
   async approve(ind_id: string, id: string, state = 1) {
-    const indicator = await getIndicator(ind_id);
+    const config = await getIndicatorConfig(ind_id);
 
-    if (indicator.READINGS_VIEW)
+    if (config.TYPE !== IndicatorType.MANUAL)
       throw new HttpError(HttpCode.BAD_REQUEST, 'indicatorIsAutoApproved');
 
     const date = new Date();
@@ -161,29 +173,6 @@ export default {
       .commit();
 
     return date;
-  },
-
-
-
-
-  // delete
-  // --------------------------------------------------------------------------------------
-  async delete(ind_id: string, id: string) {
-    const indicator = await getIndicator(ind_id);
-
-    if (indicator.EQUATION || indicator.READINGS_VIEW)
-      throw new HttpError(HttpCode.BAD_REQUEST, 'indicatorIsAutoComputed');
-
-    await oracle.op(DBSchemas.READINGS)
-      .write(`
-      
-        DELETE FROM ${ind_id}
-        WHERE id = :a
-
-      `, [id])
-      .commit();
-
-    return true;
   },
 
 

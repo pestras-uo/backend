@@ -1,4 +1,4 @@
-import { Document } from "..";
+import { Document } from "../..";
 
 export interface IndicatorReading {
   ID: string;

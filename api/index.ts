@@ -8,7 +8,6 @@ import orgunits from './orgunits';
 import topics from './topics';
 import categories from './categories';
 import indicators from './indicators';
-import indicatorConfig from './indicator-config';
 
 export default Router()
   .use('/session', sessionApi)
@@ -19,4 +18,3 @@ export default Router()
   .use('/categories', categories)
   .use('/topics', topics)
   .use('/indicators', indicators)
-  .use('/indicators-config', indicatorConfig);

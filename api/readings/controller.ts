@@ -1,4 +1,4 @@
-import readingsModel from '../../models/readings';
+import readingsModel from '../../models/indicators/readings';
 import fs from 'fs';
 import config from "../../config";
 import path from 'path';
@@ -46,10 +46,6 @@ export default {
 
   async approve(req: ApproveReadingRequest) {
     req.res.json(await readingsModel.approve(req.params.ind_id, req.params.id, +req.params.state));
-  },
-
-  async delete(req: DeleteReadingRequest) {
-    req.res.json(await readingsModel.delete(req.params.ind_id, req.params.id));
   },
 
   async getCategories(req: GetReadingCategoriesRequest) {

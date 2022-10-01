@@ -1,11 +1,13 @@
 import { Router } from "express";
-import auth from "../../middlewares/auth";
-import exists from "../../middlewares/exists";
-import validate from "../../middlewares/validate";
-import { TablesNames } from "../../models";
+import auth from "middlewares/auth";
+import exists from "middlewares/exists";
+import validate from "middlewares/validate";
+import { TablesNames } from "models/";
 import controller from "./controller";
 import { IndicatorsValidators } from "./validators";
-import { docUpload } from '../../middlewares/upload';
+import { docUpload } from 'middlewares/upload';
+import config from "./api/config";
+import equation from "./api/equation";
 
 export default Router()
   .get(
@@ -82,3 +84,5 @@ export default Router()
     auth(["indicators.delete.documents"]),
     controller.removeDocument
   )
+  .use('/:id/config', exists(TablesNames.INDICATORS, 'params.id'), config)
+  .use('/:id/equation', exists(TablesNames.INDICATORS, 'params.id'), equation);

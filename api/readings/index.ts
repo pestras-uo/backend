@@ -41,11 +41,6 @@ export default Router()
     controller.approve
   )
   .delete(
-    '/:id/indicator/:ind_id',
-    auth(["readings.delete.one"]),
-    controller.delete
-  )
-  .delete(
     '/:id/documents',
     validate(ReadingsValidators.DELETE_DOCUMENT),
     auth(['readings.delete.documents']),

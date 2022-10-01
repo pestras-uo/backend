@@ -13,19 +13,20 @@ export enum TablesNames {
 
   ORGUNITS = "orgunits",
   TOPICS = "topics",
-  TOPIC_TAG = "topic_tag",
   TOPIC_CATEGORY = "topic_category",
   TOPIC_DOCUMENT = "topic_document",
   TOPIC_GROUP = "topic_group",
 
   INDICATORS = "indicators",
-  INDICATOR_TAG = "indicator_tag",
   INDICATOR_CATEGORY = "indicator_category",
   INDICATOR_DOCUMENT = "indicator_document",
   INDICATOR_GROUP = "indicator_group",
-  INDICATOR_ARGUMENT = "indicator_argument",
-
+  
   INDICATOR_CONFIG = "indicator_config",
+  IND_EQ_CONFIG = 'indicator_equation_config',
+  INDICATOR_ARGUMENT = "indicator_argument",
+  IND_VIEW_CONFIG = 'indicator_view_config',
+  IND_WEB_SERVICE_CONFIG = 'indicator_web_service_config',
 
   STATS_CONFIG = "stats_config",
   DESCRIPTIVE_STATS_RESULT = "descriptive_stats_result",
