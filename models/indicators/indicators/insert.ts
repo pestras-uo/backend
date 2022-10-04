@@ -5,13 +5,8 @@ import { HttpCode } from "../../../misc/http-codes";
 import serial from "../../../util/serial";
 import { Indicator } from "./interface";
 import { get } from "./read";
-import { nameExists } from "./util";
 
 export async function create(ind: Partial<Indicator>, parent?: string) {
-
-  if (await nameExists(ind.NAME_AR, ind.NAME_EN))
-    throw new HttpError(HttpCode.CONFLICT, "nameAlreadyExists");
-
   const siblings = !!parent ? [] : await getChildren(TablesNames.INDICATORS, parent!);
   const id = serial.gen(parent, siblings);
 
@@ -33,14 +28,14 @@ export async function create(ind: Partial<Indicator>, parent?: string) {
 
     `, [
       id,
-      ind.ORGUNIT_ID,
-      ind.TOPIC_ID,
-      ind.NAME_AR,
-      ind.NAME_EN,
-      ind.DESC_AR,
-      ind.DESC_EN,
-      ind.UNIT_AR,
-      ind.UNIT_EN
+      ind.orgunit_id,
+      ind.topic_id,
+      ind.name_ar,
+      ind.name_en,
+      ind.desc_ar,
+      ind.desc_en,
+      ind.unit_ar,
+      ind.unit_en
     ])
     .commit();
 

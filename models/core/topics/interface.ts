@@ -1,28 +1,28 @@
 import { Document } from "../..";
 
 export interface Topic {
-  ID: string;
+  id: string;
 
-  NAME_AR: string;
-  NAME_EN: string;
+  name_ar: string;
+  name_en: string;
 
-  DESC_AR?: string;
-  DESC_EN?: string;
+  desc_ar?: string;
+  desc_en?: string;
 
-  CREATE_DATE: Date;
-  UPDATE_DATE?: Date;
+  create_date: Date;
+  update_date?: Date;
 }
 
 export interface TopicDetails extends Topic {
-  GROUPS: number[];
-  CATEGORIES: number[];
+  groups: number[];
+  categories: number[];
 }
 
 export interface TopicDetailsQueryResultItem extends Topic {
-  GROUP_ID: number;
-  CATEGORY_ID: number;
+  group_id: number;
+  category_id: number;
 }
 
 export interface TopicDocument extends Document {
-  TOPIC_ID: string;
+  topic_id: string;
 }

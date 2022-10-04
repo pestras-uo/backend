@@ -6,8 +6,9 @@ import { TablesNames } from "models/";
 import controller from "./controller";
 import { IndicatorsValidators } from "./validators";
 import { docUpload } from 'middlewares/upload';
-import config from "./api/config";
-import equation from "./api/equation";
+import config from "./config";
+import readings from "./readings";
+import stats from "./stats";
 
 export default Router()
   .get(
@@ -85,4 +86,5 @@ export default Router()
     controller.removeDocument
   )
   .use('/:id/config', exists(TablesNames.INDICATORS, 'params.id'), config)
-  .use('/:id/equation', exists(TablesNames.INDICATORS, 'params.id'), equation);
+  .use('/:id/readings', exists(TablesNames.INDICATORS, 'params.id'), readings)
+  .use('/:id/stats', exists(TablesNames.INDICATORS, 'params.id'), stats)

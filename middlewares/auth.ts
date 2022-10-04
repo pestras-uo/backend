@@ -21,7 +21,7 @@ export default function (actions: Action[] = [], tokenType = TokenType.SESSION) 
     if (!data)
       throw new HttpError(HttpCode.INVALID_TOKEN, "invalidToken");
 
-    if (!data.user.IS_ACTIVE)
+    if (!data.user.is_active)
       throw new HttpError(HttpCode.UNAUTHORIZED, 'userIsInactive');
 
     if (actions?.length > 0) {

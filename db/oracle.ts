@@ -85,6 +85,7 @@ process
   .once('SIGINT', closePool);
 
 class Operation {
+  private conn: oracledb.Connection;
   private _operations: {
     sql: string,
     bindParams: oracledb.BindParameters | oracledb.BindParameters[],
@@ -94,10 +95,10 @@ class Operation {
 
   constructor(private _schema: DBSchemas = DBSchemas.SYSTEM) { }
 
-  private async _closeConn(conn: oracledb.Connection) {
-    if (conn) {
+  private async _closeConn() {
+    if (this.conn) {
       try {
-        await conn.close();
+        await this.conn.close();
       } catch (error) {
         console.error(error);
       }
@@ -105,26 +106,24 @@ class Operation {
   }
 
   async query<T = any>(sql: string, bindParams: oracledb.BindParameters = [], options: oracledb.ExecuteOptions = {}) {
-    let conn!: oracledb.Connection;
 
     try {
-      conn = await oracledb.getPool().getConnection(schemaCred[this._schema]);
-      return conn.execute<T>(sql, bindParams, options);
+      this.conn = await oracledb.getPool().getConnection(schemaCred[this._schema]);
+      return this.conn.execute<T>(sql, bindParams, options);
 
     } catch (error) {
       throw error;
 
     } finally {
-      await this._closeConn(conn);
+      await this._closeConn();
     }
   }
 
   async queryStream<T>(sql: string, bindParams: oracledb.BindParameters = [], options: oracledb.ExecuteOptions = {}) {
-    let conn!: oracledb.Connection;
 
     try {
-      conn = await oracledb.getPool().getConnection(schemaCred[this._schema]);
-      const stream = conn.queryStream<T>(sql, bindParams, options);
+      this.conn = await oracledb.getPool().getConnection(schemaCred[this._schema]);
+      const stream = this.conn.queryStream<T>(sql, bindParams, options);
 
       stream
         .on('end', () => stream.destroy())
@@ -136,7 +135,7 @@ class Operation {
       throw error;
 
     } finally {
-      await this._closeConn(conn);
+      await this._closeConn();
     }
   }
 
@@ -151,26 +150,29 @@ class Operation {
   }
 
   async commit() {
-    let conn!: oracledb.Connection;
 
     try {
-      conn = await oracledb.getPool().getConnection(schemaCred[this._schema]);
+      this.conn = await oracledb.getPool().getConnection(schemaCred[this._schema]);
 
       for (const op of this._operations) {
         if (op.many)
-          await conn.executeMany(op.sql, (op.bindParams as oracledb.BindParameters[]) || [], { ...(op.options || {}), autoCommit: false });
+          await this.conn.executeMany(op.sql, (op.bindParams as oracledb.BindParameters[]) || [], { ...(op.options || {}), autoCommit: false });
         else
-          await conn.execute(op.sql, (op.bindParams as oracledb.BindParameters) || [], { ...(op.options || {}), autoCommit: false });
+          await this.conn.execute(op.sql, (op.bindParams as oracledb.BindParameters) || [], { ...(op.options || {}), autoCommit: false });
       }
 
-      return conn.commit();
+      return this.conn.commit();
 
     } catch (error: any) {
       throw error;
 
     } finally {
-      await this._closeConn(conn);
+      await this._closeConn();
     }
+  }
+
+  close() {
+    this._closeConn()
   }
 }
 

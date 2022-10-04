@@ -41,14 +41,14 @@ export default {
   // --------------------------------------------------------------------------------------
   async create(req: CreateIndicatorRequest) {
     req.res.json(await indicatorsModel.create({
-      ORGUNIT_ID: req.body.orgunit_id,
-      TOPIC_ID: req.body.topic_id,
-      NAME_AR: req.body.name_ar,
-      NAME_EN: req.body.name_en,
-      DESC_AR: req.body.desc_ar,
-      DESC_EN: req.body.desc_en,
-      UNIT_AR: req.body.unit_ar,
-      UNIT_EN: req.body.unit_en,
+      orgunit_id: req.body.orgunit_id,
+      topic_id: req.body.topic_id,
+      name_ar: req.body.name_ar,
+      name_en: req.body.name_en,
+      desc_ar: req.body.desc_ar,
+      desc_en: req.body.desc_en,
+      unit_ar: req.body.unit_ar,
+      unit_en: req.body.unit_en,
     }, req.body.parent));
   },
 
@@ -59,12 +59,12 @@ export default {
   // --------------------------------------------------------------------------------------
   async update(req: UpdateIndicatorRequest) {
     req.res.json(await indicatorsModel.update(req.params.id, {
-      NAME_AR: req.body.name_ar,
-      NAME_EN: req.body.name_en,
-      DESC_AR: req.body.desc_ar,
-      DESC_EN: req.body.desc_en,
-      UNIT_AR: req.body.unit_ar,
-      UNIT_EN: req.body.unit_en,
+      name_ar: req.body.name_ar,
+      name_en: req.body.name_en,
+      desc_ar: req.body.desc_ar,
+      desc_en: req.body.desc_en,
+      unit_ar: req.body.unit_ar,
+      unit_en: req.body.unit_en,
     }));
   },
 

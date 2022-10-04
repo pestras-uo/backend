@@ -41,7 +41,7 @@ async function validateSessionToken(user_id: string, token: string) {
   if (!session)
     throw new HttpError(HttpCode.INVALID_TOKEN, "tokenExpired");
 
-  if (session.TOKEN_EXP_DATE?.getTime()! < Date.now()) {
+  if (session.token_exp_date?.getTime()! < Date.now()) {
     console.log('expired');
     await authModel.endSession(user_id);
     throw new HttpError(HttpCode.INVALID_TOKEN, "tokenExpired");
@@ -56,8 +56,8 @@ async function validateSessionToken(user_id: string, token: string) {
     user,
     session: {
       TOKEN: token,
-      TOKEN_CREATE_DATE: session.TOKEN_CREATE_DATE,
-      TOKEN_EXP_DATE: session.TOKEN_EXP_DATE
+      TOKEN_CREATE_DATE: session.token_create_date,
+      TOKEN_EXP_DATE: session.token_exp_date
     } as TokenMeta
   };
 }

@@ -1,6 +1,6 @@
 export interface Category {
-  ID: string;
+  id: string;
 
-  NAME_AR: string;
-  NAME_EN: string;
+  name_ar: string;
+  name_en: string;
 }

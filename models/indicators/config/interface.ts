@@ -1,33 +1,48 @@
-export enum IndicatorType {
-  MANUAL,
-  VIEW,
-  WEB_SERVICE,
-  EQUATION
-}
-
 export enum IndicatorInterval {
+  NONE = 0,
   MONTHLY = 1,
   QUARTERLY = 3,
   BIANNUAL = 6,
   ANNUAL = 12
 }
 
+export enum ColumnType {
+  NUMBER,
+  TEXT,
+  DATE
+}
+
 export interface IndicatorConfig {
-  INDICATOR_ID: string;
+  indicator_id: string;
 
-  TYPE: IndicatorType;  
-  
-  INTERVALS?: IndicatorInterval;
-  EVALUATION_DAY?: number;
-  STATE?: 0 | 1;
+  reading_value_name_ar: string;
+  reading_value_name_en: string;
 
-  KPI_MIN?: number;
-  KPI_MAX?: number;  
+  intervals?: IndicatorInterval;
+  evaluation_day?: number;
+  require_approval?: 0 | 1;
+
+  kpi_min?: number;
+  kpi_max?: number;
+
+  view_name?: string;
+  equation?: string;
+  match_by_columns?: string;
 }
 
 export interface IndicatorArgument {
-  INDICATOR_ID: string;
-  ARGUMENT_ID: string;
-  VALUE_COLUMN: string;
-  VARIABLE: string;
+  indicator_id: string;
+  argument_id: string;
+  variable: string;
+}
+
+export interface ReadingColumn {
+  id: string;
+  indicator_id: string;
+
+  column_name: string;
+  type: ColumnType;
+
+  name_ar: string;
+  name_en: string;
 }

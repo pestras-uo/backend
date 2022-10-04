@@ -14,23 +14,23 @@ export default {
   // util methods
   // ----------------------------------------------------------------------------------------------------------------
   async exists(id: string) {
-    return (await oracle.op().query<{ COUNT: number }>(`
+    return (await oracle.op().query<{ count: number }>(`
     
-      SELECT COUNT(0) as COUNT
+      SELECT COUNT(0) as 'count'
       FROM ${TablesNames.USERS}
       WHERE id = :id
     
-    `, [id])).rows?.[0].COUNT! > 0;
+    `, [id])).rows?.[0].count! > 0;
   },
 
   async usernameExists(username: string) {
-    return (await oracle.op().query<{ COUNT: number }>(`
+    return (await oracle.op().query<{ count: number }>(`
     
-      SELECT COUNT(0) as COUNT
+      SELECT COUNT(0) as 'count'
       FROM ${TablesNames.USERS}
       WHERE username = :username
     
-    `, [username])).rows?.[0].COUNT! > 0;
+    `, [username])).rows?.[0].count! > 0;
   },
 
 
@@ -42,35 +42,36 @@ export default {
     const result = (await oracle.op().query<UserDetailsQueryResultItem>(`
     
       SELECT 
-        U.*,
-        UG.GROUP_ID GROUP_ID,
-        UR.ROLE_ID ROLE_ID
+        U.id 'id', U.orgunit_id 'orgunit_id', U.username 'username', U.is_active 'is_active, U.fullname 'fullname',
+        U.email 'email', U.mobile 'mobile', U.create_date 'create_date', U.update_date 'update_date'
+        UG.group_id 'group_id',
+        UR.role_id 'role_id'
       FROM 
         ${TablesNames.USERS} U
       LEFT JOIN
-        ${TablesNames.USER_GROUP} UG ON UG.USER_ID = U.ID
+        ${TablesNames.USER_GROUP} UG ON UG.user_id = U.id
       LEFT JOIN
-        ${TablesNames.USER_ROLE} UR ON UR.USER_ID = U.ID
+        ${TablesNames.USER_ROLE} UR ON UR.user_id = U.id
       WHERE
-        U.ID = :a
+        U.id = :a
     
     `, [id])).rows || [];
 
     if (result.length === 0)
       return null;
 
-    const user = omit<UserDetails, UserDetailsQueryResultItem>(result[0], ['GROUP_ID', 'ROLE_ID']);
+    const user = omit<UserDetails, UserDetailsQueryResultItem>(result[0], ['group_id', 'role_id']);
 
     const groups = new Set<string>();
     const roles = new Set<number>();
 
     for (const rec of result) {
-      !!rec.GROUP_ID && groups.add(rec.GROUP_ID);
-      typeof rec.ROLE_ID === 'number' && roles.add(rec.ROLE_ID);
+      !!rec.group_id && groups.add(rec.group_id);
+      typeof rec.role_id === 'number' && roles.add(rec.role_id);
     }
 
-    user.GROUPS = Array.from(groups);
-    user.ROLES = Array.from(roles);
+    user.groups = Array.from(groups);
+    user.roles = Array.from(roles);
 
     return user;
   },
@@ -79,35 +80,36 @@ export default {
     const result = (await oracle.op().query<UserDetailsQueryResultItem>(`
     
       SELECT 
-        U.*,
-        UG.GROUP_ID GROUP_ID,
-        UR.ROLE_ID ROLE_ID
+        U.id 'id', U.orgunit_id 'orgunit_id', U.username 'username', U.is_active 'is_active, U.fullname 'fullname',
+        U.email 'email', U.mobile 'mobile', U.create_date 'create_date', U.update_date 'update_date'
+        UG.group_id 'group_id',
+        UR.role_id 'role_id'
       FROM 
         ${TablesNames.USERS} U
       LEFT JOIN
-        ${TablesNames.USER_GROUP} UG ON UG.USER_ID = U.ID
+        ${TablesNames.USER_GROUP} UG ON UG.user_id = U.id
       LEFT JOIN
-        ${TablesNames.USER_ROLE} UR ON UR.USER_ID = U.ID
+        ${TablesNames.USER_ROLE} UR ON UR.user_id = U.id
       WHERE
-        U.USERNAME = :a
+        U.username = :a
     
     `, [username])).rows || [];
 
     if (result.length === 0)
       return null;
 
-    const user = omit<UserDetails, UserDetailsQueryResultItem>(result[0], ['GROUP_ID', 'ROLE_ID']);
+    const user = omit<UserDetails, UserDetailsQueryResultItem>(result[0], ['group_id', 'role_id']);
 
     const groups = new Set<string>();
     const roles = new Set<number>();
 
     for (const rec of result) {
-      !!rec.GROUP_ID && groups.add(rec.GROUP_ID);
-      typeof rec.ROLE_ID === 'number' && roles.add(rec.ROLE_ID);
+      !!rec.group_id && groups.add(rec.group_id);
+      typeof rec.role_id === 'number' && roles.add(rec.role_id);
     }
 
-    user.GROUPS = Array.from(groups);
-    user.ROLES = Array.from(roles);
+    user.groups = Array.from(groups);
+    user.roles = Array.from(roles);
 
     return user;
   },
@@ -115,7 +117,9 @@ export default {
   async getByOrgunit(orgunit_id: string, is_active = 1) {
     return (await oracle.op().query<User>(`
     
-      SELECT *
+      SELECT 
+        id 'id', orgunit_id 'orgunit_id', username 'username', is_active 'is_active, fullname 'fullname',
+        email 'email', mobile 'mobile', create_date 'create_date', update_date 'update_date'
       FROM ${TablesNames.USERS}
       WHERE orgunit_id = :a AND is_active = :b
   
@@ -125,7 +129,9 @@ export default {
   async getAll(is_active = 1) {
     return (await oracle.op().query<User>(`
     
-      SELECT *
+      SELECT 
+        id 'id', orgunit_id 'orgunit_id', username 'username', is_active 'is_active, fullname 'fullname',
+        email 'email', mobile 'mobile', create_date 'create_date', update_date 'update_date'
       FROM ${TablesNames.USERS}
       WHERE is_active = :b
   
@@ -244,13 +250,13 @@ export default {
   // roles
   // ----------------------------------------------------------------------------------------------------------------
   async getRoles(user_id: string) {
-    return (await oracle.op().query(`
+    return ((await oracle.op().query<{ role_id: string }>(`
     
-      SELECT *
+      SELECT role_id 'role_id'
       FROM ${TablesNames.USER_ROLE}
       WHERE user_id = :a
     
-    `, [user_id])).rows || [];
+    `, [user_id])).rows || []).map(r => r.role_id);
   },
 
   async replaceRoles(user_id: string, roles: number[]) {
@@ -285,13 +291,13 @@ export default {
   // groups
   // ----------------------------------------------------------------------------------------------------------------
   async getGroups(user_id: string) {
-    return (await oracle.op().query<Group>(`
+    return ((await oracle.op().query<{ group_id: string }>(`
     
-      SELECT G.*
-      FROM ${TablesNames.GROUPS} G, ${TablesNames.USER_GROUP} UG
-      WHERE UG.USER_ID = :a AND G.ID = UG.GROUP_ID
+      SELECT group_id 'group_id'
+      FROM ${TablesNames.USER_GROUP} UG
+      WHERE UG.user_id = :a
     
-    `, [user_id])).rows || [];
+    `, [user_id])).rows || []).map(r => r.group_id);
   },
 
   async replaceGroups(user_id: string, groups: string[]) {

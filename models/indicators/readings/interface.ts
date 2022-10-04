@@ -1,34 +1,34 @@
 import { Document } from "../..";
 
 export interface IndicatorReading {
-  ID: string;
+  id: string;
 
-  VALUE: number;
+  reading_value: number;
 
-  NOTE_AR?: string;
-  NOTE_EN?: string;
+  note_ar?: string;
+  note_en?: string;
 
-  IS_APPROVED?: 1 | 0;
-  APPROVE_DATE?: Date;
+  is_approved?: 1 | 0;
+  approve_date?: Date;
 
-  HISTORY: string;
-
-  READING_DATE: Date;
-  CREATE_DATE: Date;
-  UPDATE_DATE?: Date;
+  history: string;
+  
+  create_date: Date;
+  update_date?: Date;
 }
 
 export interface ReadingHistoryItem {
-  VALUE: number
+  reading_value: number
 
-  NOTE_AR: string;
-  NOTE_EN: string;
+  note_ar: string;
+  note_en: string;
+  
+  update_date: string;
 
-  READING_DATE: string;
-  UPDATE_DATE: string;
+  [key: string]: any;
 }
 
 export interface ReadingDocument extends Document {
-  INDICATOR_ID: string;
-  READING_ID: string;
+  indicator_id: string;
+  reading_id: string;
 }

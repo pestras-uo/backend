@@ -12,7 +12,12 @@ export default {
   async getAll() {
     return (await oracle.op().query<Orgunit>(`
 
-      SELECT * 
+      SELECT 
+        id 'id', 
+        name_ar 'name_ar', 
+        name_en 'name_en', 
+        create_date 'create_date',
+        update_date 'update_date'
       FROM ${TablesNames.ORGUNITS}
 
     `)).rows || [];
@@ -21,7 +26,12 @@ export default {
   async get(id: string) {
     return (await oracle.op().query<Orgunit>(`
 
-      SELECT *
+      SELECT 
+        id 'id', 
+        name_ar 'name_ar', 
+        name_en 'name_en', 
+        create_date 'create_date',
+        update_date 'update_date'
       FROM ${TablesNames.ORGUNITS}
       WHERE id = :id
 
@@ -34,33 +44,13 @@ export default {
   // Util
   // ----------------------------------------------------------------------------
   async exists(id: string) {
-   return (await oracle.op().query<{ COUNT: number }>(`
+   return (await oracle.op().query<{ count: number }>(`
 
-      SELECT COUNT(id) as COUNT
+      SELECT COUNT(id) as 'count'
       FROM ${TablesNames.ORGUNITS}
       WHERE id = :id
 
-    `, [id])).rows?.[0].COUNT! > 0;
-  },
-
-  async nameExists(name_ar: string, name_en: string) {
-   return (await oracle.op().query<{ COUNT: number }>(`
-
-      SELECT COUNT(*) as COUNT
-      FROM ${TablesNames.ORGUNITS}
-      WHERE name_ar = :name_ar OR name_en = :name_en
-
-    `, [name_ar, name_en])).rows?.[0].COUNT! > 0;
-  },
-
-  async updatedNameExists(id: string, name_ar: string, name_en: string) {
-   return (await oracle.op().query<{ COUNT: number }>(`
-
-      SELECT COUNT(*) as COUNT
-      FROM ${TablesNames.ORGUNITS}
-      WHERE (name_ar = :name_ar OR name_en = :name_en) AND id <> :id
-
-    `, [name_ar, name_en, id])).rows?.[0].COUNT! > 0;
+    `, [id])).rows?.[0].count! > 0;
   },
 
 
@@ -69,8 +59,6 @@ export default {
   // create
   // ----------------------------------------------------------------------------
   async create(name_ar: string, name_en: string, parent?: string) {
-    if (await this.nameExists(name_ar, name_en))
-      throw new HttpError(HttpCode.CONFLICT, "nameAlreadyExists");
 
     const siblings = !!parent ? [] : await getChildren(TablesNames.ORGUNITS, parent!);
     const id = Serial.gen(parent, siblings);
@@ -95,9 +83,6 @@ export default {
   async update(id: string, name_ar: string, name_en: string) {
     if (!(await this.exists(id)))
       throw new HttpError(HttpCode.NOT_FOUND, 'orgunitNotFound');
-
-    if (await this.updatedNameExists(id, name_ar, name_en))
-      throw new HttpError(HttpCode.CONFLICT, "nameAlreadyExists");
 
     const date = new Date();
 

@@ -12,7 +12,7 @@ export default {
   async get(id: string) {
     return (await oracle.op().query<Category>(`
     
-      SELECT *
+      SELECT id 'id', name_ar 'name_ar', name_en 'name_en'
       FROM ${TablesNames.CATEGORIES}
       WHERE id = :a
     
@@ -22,7 +22,7 @@ export default {
   async getAll() {
     return (await oracle.op().query<Category>(`
     
-      SELECT *
+      SELECT id 'id', name_ar 'name_ar', name_en 'name_en'
       FROM ${TablesNames.CATEGORIES}
     
     `)).rows || [];
@@ -34,33 +34,13 @@ export default {
   // util
   // ------------------------------------------------------------------------
   async exists(id: string) {
-    return (await oracle.op().query<{ COUNT: number }>(`
+    return (await oracle.op().query<{ count: number }>(`
     
-      SELECT COUNT(*) as COUNT
+      SELECT COUNT(*) as 'count'
       FROM ${TablesNames.CATEGORIES}
       WHERE id = :a
     
-    `, [id])).rows?.[0].COUNT! > 0;
-  },
-
-  async nameExists(name_ar: string, name_en: string) {
-    return (await oracle.op().query<{ COUNT: number }>(`
-    
-      SELECT COUNT(*) as COUNT
-      FROM ${TablesNames.CATEGORIES}
-      WHERE name_ar = :a OR name_en = :b
-    
-    `, [name_ar, name_en])).rows?.[0].COUNT! > 0;
-  },
-
-  async updateNameExists(id: string, name_ar: string, name_en: string) {
-    return (await oracle.op().query<{ COUNT: number }>(`
-    
-      SELECT COUNT(*) as COUNT
-      FROM ${TablesNames.CATEGORIES}
-      WHERE (name_ar = :a OR name_en = :b) AND id <> :c
-    
-    `, [name_ar, name_en, id])).rows?.[0].COUNT! > 0;
+    `, [id])).rows?.[0].count! > 0;
   },
 
 
@@ -69,9 +49,6 @@ export default {
   // create
   // ----------------------------------------------------------------------------
   async create(name_ar: string, name_en: string, parent?: string) {
-    if (await this.nameExists(name_ar, name_en))
-      throw new HttpError(HttpCode.CONFLICT, "nameAlreadyExists");
-
     const siblings = !!parent ? [] : await getChildren(TablesNames.CATEGORIES, parent!);
     const id = Serial.gen(parent, siblings);
 
@@ -84,7 +61,7 @@ export default {
       `, [id, name_ar, name_en])
       .commit();
 
-    return { ID: id, NAME_AR: name_ar, NAME_EN: name_en } as Category;
+    return { id: id, name_ar: name_ar, name_en: name_en } as Category;
   },
 
 
@@ -95,9 +72,6 @@ export default {
   async update(id: string, name_ar: string, name_en: string) {
     if (!(await this.exists(id)))
       throw new HttpError(HttpCode.NOT_FOUND, 'categoryNotFound');
-
-    if (await this.updateNameExists(id, name_ar, name_en))
-      throw new HttpError(HttpCode.CONFLICT, "nameAlreadyExists");
 
     await oracle.op()
       .write(`

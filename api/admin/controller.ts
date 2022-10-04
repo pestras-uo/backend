@@ -17,7 +17,7 @@ export default {
   async createUser(req: CreateUserRequest) {
     const body = req.body;
 
-    if (manager.getTopRole(req.res.locals.user.ROLES) >= manager.getTopRole(body.roles))
+    if (manager.getTopRole(req.res.locals.user.roles) >= manager.getTopRole(body.roles))
       throw new HttpError(HttpCode.UNAUTHORIZED, "unauthorizedRole");
 
     const user = await usersModel.create(
@@ -44,7 +44,7 @@ export default {
     const roles = req.body.roles;
     const user_id = req.params.id;
 
-    if (manager.getTopRole(req.res.locals.user.ROLES) >= manager.getTopRole(roles))
+    if (manager.getTopRole(req.res.locals.user.roles) >= manager.getTopRole(roles))
       throw new HttpError(HttpCode.UNAUTHORIZED, "unauthorizedRole");
 
     await usersModel.replaceRoles(user_id, roles);
