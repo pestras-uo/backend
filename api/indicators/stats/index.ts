@@ -1,7 +1,8 @@
 import { Router } from "express";
-import auth from "middlewares/auth";
-import validate from "middlewares/validate";
+import auth from "../../../middlewares/auth";
+import validate from "../../../middlewares/validate";
 import controller from "./controller";
+import results from "./results";
 import { StatsConfigValidators } from "./validators";
 
 export default Router()
@@ -27,3 +28,4 @@ export default Router()
     auth(['indicators.stats.update.one']),
     controller.update
   )
+  .use('/results', results);

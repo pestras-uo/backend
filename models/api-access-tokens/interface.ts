@@ -1,4 +1,4 @@
-import { Document } from "models";
+import { Document } from "../";
 
 export interface ApiAccessToken {
   id: string;

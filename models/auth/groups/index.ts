@@ -4,7 +4,6 @@ import { HttpCode } from "../../../misc/http-codes";
 import { Group } from "./interface";
 import { randomUUID } from 'crypto';
 import { TablesNames } from "../..";
-import serial from "util/serial";
 
 export default {
 

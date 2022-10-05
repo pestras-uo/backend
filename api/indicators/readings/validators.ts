@@ -8,7 +8,7 @@ export enum ReadingsValidators {
   DELETE_DOCUMENT = 'deleteReadingDocument'
 }
 
-new Validall(ReadingsValidators.DELETE_DOCUMENT, {
+new Validall(ReadingsValidators.GET_ALL, {
   offset: { $type: 'string', $cast: 'number', $required: true, $message: 'offsetIsRequired' },
   limit: { $type: 'string', $cast: 'number', $required: true, $message: 'limitIsRequired' }
 });

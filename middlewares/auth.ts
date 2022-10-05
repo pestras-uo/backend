@@ -1,4 +1,4 @@
-import { NextFunction, Request, Response } from "express";
+import { Request } from "express";
 import { HttpCode } from "../misc/http-codes";
 import { TokenType } from '../auth/token';
 import { verifyToken } from "../auth";
@@ -6,7 +6,6 @@ import { Action } from "../auth/roles/actions";
 import RolesManager from "../auth/roles/manager";
 import { HttpError } from "../misc/errors";
 import userModel from '../models/auth/user';
-import { UserDetails } from "../models/auth/user/interface";
 
 export default function (actions: Action[] = [], tokenType = TokenType.SESSION) {
 

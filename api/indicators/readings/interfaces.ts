@@ -1,5 +1,5 @@
 import { Request } from "express";
-import { IndicatorReading, ReadingDocument } from "models/indicators/readings/interface";
+import { IndicatorReading, ReadingDocument } from "../../../models/indicators/readings/interface";
 
 export type GetIndicatorReadingsRequest = Request<
   // params

@@ -1,6 +1,6 @@
-import oracle, { DBSchemas } from 'db/oracle';
-import { HttpError } from 'misc/errors';
-import { HttpCode } from 'misc/http-codes';
+import oracle, { DBSchemas } from '../../../db/oracle';
+import { HttpError } from '../../../misc/errors';
+import { HttpCode } from '../../../misc/http-codes';
 import { get as getConfig } from '../config/read'
 import { getAdditionalColumns } from '../config/util';
 import { IndicatorReading } from './interface';

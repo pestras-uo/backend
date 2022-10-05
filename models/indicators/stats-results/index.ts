@@ -1,5 +1,5 @@
-import oracle from "db/oracle"
-import { TablesNames } from "models"
+import oracle from "../../../db/oracle"
+import { TablesNames } from "../../"
 import { DescStatsResult } from "./interface";
 
 export default {

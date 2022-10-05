@@ -1,7 +1,5 @@
 import { getChildren, TablesNames } from "../..";
 import oracle, { DBSchemas } from "../../../db/oracle";
-import { HttpError } from "../../../misc/errors";
-import { HttpCode } from "../../../misc/http-codes";
 import serial from "../../../util/serial";
 import { Indicator } from "./interface";
 import { get } from "./read";

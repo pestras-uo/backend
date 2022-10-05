@@ -50,7 +50,7 @@ new Validall(IndicatorConfigValidators.CREATE_COMPUTATIONAL, {
     match_by_columns: {
       $default: [],
       $each: {
-        $each: { $type: 'string', $regex: /^[a-zA-Z]\.*+/, $message: 'invalidMatchByElement' }
+        $each: { $type: 'string', $regex: /^[a-zA-Z]\..+/, $message: 'invalidMatchByElement' }
       }
     },
     args: {

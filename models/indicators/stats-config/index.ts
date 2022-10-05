@@ -77,10 +77,12 @@ export default {
         INSERT INTO ${TablesNames.STATS_CONF} (
           id, 
           indicator_id, 
+          name_ar,
+          name_en,
           group_by_intervals,
           group_by_column,
         )
-        VALUES (:a, :b, :c, :d)
+        VALUES (:a, :b, :c, :d, :e, :f)
       
       `, [id, indicator_id, config.group_by_intervals, config.group_by_column])
       .commit();
@@ -105,7 +107,7 @@ export default {
       .write(`
       
         UPDATE ${TablesNames.STATS_CONF}
-        SET group_by_intervals = :c, group_by_column = :d
+        SET name_ar = :a, name_en = :b, group_by_intervals = :c, group_by_column = :d
         WHERE id = :e
       
       `, [config.group_by_intervals, config.group_by_column, id])

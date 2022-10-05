@@ -1,5 +1,5 @@
 import { CreateIndStatsConReq, GetIndStatsConfByIdReq, GetIndStatsConfReq, UpdateIndStatsConfReq } from "./interfaces";
-import statsModel from 'models/indicators/stats-config';
+import statsModel from '../../../models/indicators/stats-config';
 
 export default {
 

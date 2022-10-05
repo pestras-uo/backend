@@ -115,6 +115,7 @@ export const Actions = [
   "indicators.stats.get.*",
   "indicators.stats.get.indicator",
   "indicators.stats.get.one",
+  "indicators.stats.get.results",
   "indicators.stats.create.*",
   "indicators.stats.create.one",
   "indicators.stats.update.*",

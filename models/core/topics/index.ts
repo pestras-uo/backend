@@ -4,7 +4,6 @@ import { HttpError } from "../../../misc/errors";
 import { HttpCode } from "../../../misc/http-codes";
 import Serial from '../../../util/serial';
 import { Topic, TopicDetails, TopicDetailsQueryResultItem, TopicDocument } from "./interface";
-import { Group } from "../../auth/groups/interface";
 import { omit } from "../../../util/pick-omit";
 
 export default {

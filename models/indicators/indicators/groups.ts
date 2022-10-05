@@ -2,7 +2,6 @@ import { TablesNames } from "../..";
 import oracle from "../../../db/oracle";
 import { HttpError } from "../../../misc/errors";
 import { HttpCode } from "../../../misc/http-codes";
-import { Group } from "../../auth/groups/interface";
 import { exists } from "./util";
 
 export async function getGroups(indicator_id: string) {

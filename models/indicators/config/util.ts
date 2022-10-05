@@ -1,5 +1,5 @@
-import oracle from "db/oracle";
-import { TablesNames } from "models";
+import oracle from "../../../db/oracle";
+import { TablesNames } from "../../";
 import { ReadingColumn } from "./interface";
 
 export async function getAdditionalColumns(indicator_id: string) {

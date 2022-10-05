@@ -1,7 +1,7 @@
-import oracle from "db/oracle";
-import { HttpError } from "misc/errors";
-import { HttpCode } from "misc/http-codes";
-import { TablesNames } from "models";
+import oracle from "../../../db/oracle";
+import { HttpError } from "../../../misc/errors";
+import { HttpCode } from "../../../misc/http-codes";
+import { TablesNames } from "../../";
 import { IndicatorConfig, IndicatorInterval, ReadingColumn } from "./interface";
 import { exists } from "./util";
 import { randomUUID } from 'crypto';

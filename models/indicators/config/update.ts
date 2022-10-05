@@ -1,8 +1,8 @@
-import oracle from "db/oracle";
-import { HttpError } from "misc/errors";
-import { HttpCode } from "misc/http-codes";
-import { TablesNames } from "models";
-import { IndicatorConfig, IndicatorInterval } from "./interface";
+import oracle from "../../../db/oracle";
+import { HttpError } from "../../../misc/errors";
+import { HttpCode } from "../../../misc/http-codes";
+import { TablesNames } from "../../";
+import { IndicatorConfig } from "./interface";
 import { exists } from "./util";
 
 export async function update(

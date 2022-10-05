@@ -4,7 +4,6 @@ import { HttpError } from '../../../misc/errors';
 import { HttpCode } from '../../../misc/http-codes';
 import { TablesNames } from '../..';
 import { omit } from '../../../util/pick-omit';
-import { Group } from '../groups/interface';
 import { randomUUID } from 'crypto';
 import crypt from '../../../auth/crypt';
 

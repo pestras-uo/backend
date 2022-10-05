@@ -1,11 +1,11 @@
 import { Router } from "express";
-import auth from "middlewares/auth";
-import exists from "middlewares/exists";
-import validate from "middlewares/validate";
-import { TablesNames } from "models/";
+import auth from "../../middlewares/auth";
+import exists from "../../middlewares/exists";
+import validate from "../../middlewares/validate";
+import { TablesNames } from "../../models";
 import controller from "./controller";
 import { IndicatorsValidators } from "./validators";
-import { docUpload } from 'middlewares/upload';
+import { docUpload } from '../../middlewares/upload';
 import config from "./config";
 import readings from "./readings";
 import stats from "./stats";

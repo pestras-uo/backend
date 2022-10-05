@@ -1,5 +1,5 @@
 import { Request } from "express";
-import { StatsConfig } from "models/indicators/stats-config/interface";
+import { StatsConfig } from "../../../models/indicators/stats-config/interface";
 
 export type GetIndStatsConfReq = Request<
   // params

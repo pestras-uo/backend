@@ -1,5 +1,5 @@
 import { Request } from "express";
-import { IndicatorWebServiceConfig } from "models/web-service/interface";
+import { IndicatorWebServiceConfig } from "../../models/web-service/interface";
 
 export type GetIndicatorWebServiceConfigRequest = Request<
   // params

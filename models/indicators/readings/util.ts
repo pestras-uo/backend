@@ -1,4 +1,4 @@
-import oracle, { DBSchemas } from "db/oracle";
+import oracle, { DBSchemas } from "../../../db/oracle";
 
 export async function exists(
   indicator_id: string,
