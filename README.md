@@ -3,4 +3,4 @@
 - Typescript
 - Jsonwebtoken
 - SocketIO
-- Mongodb
+- Oracle
