@@ -6,9 +6,9 @@ export async function getArguments(indicator_id: string) {
   return (await oracle.op().query<IndicatorArgument>(`
   
     SELECT
-      indicator_id 'indicator_id',
-      argument_id 'argument_id',
-      variable 'variable'
+      indicator_id "indicator_id",
+      argument_id "argument_id",
+      variable "variable"
     FROM
       ${TablesNames.IND_ARG}
     WHERE
@@ -21,7 +21,7 @@ export async function getArgumentIndicators(argument_id: string) {
   return ((await oracle.op().query<IndicatorArgument>(`
   
     SELECT
-      indicator_id 'indicator_id'
+      indicator_id "indicator_id"
     FROM
       ${TablesNames.IND_ARG}
     WHERE

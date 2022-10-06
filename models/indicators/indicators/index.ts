@@ -2,8 +2,8 @@ import { getCategories, replaceCategories } from "./categories";
 import { addDocument, deleteDocument, getDocuments } from "./documents";
 import { getGroups, replaceGroups } from "./groups";
 import { create } from "./insert";
-import { get, getByOrgunit, getByTopic, getPage, getState } from "./read";
-import { activate, update, updateManyState, updateOrgunit, updateState, updateTopic } from "./update";
+import { get, getByOrgunit, getByTopic, getPage } from "./read";
+import { activate, update, updateOrgunit, updateTopic } from "./update";
 import { exists } from "./util";
 
 export default {
@@ -14,7 +14,6 @@ export default {
   get,
   getByTopic,
   getByOrgunit,
-  getState,
 
 
 
@@ -39,8 +38,6 @@ export default {
   updateOrgunit,
   updateTopic,
   activate,
-  updateState,
-  updateManyState,
 
 
 

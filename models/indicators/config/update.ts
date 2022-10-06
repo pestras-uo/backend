@@ -2,8 +2,8 @@ import oracle from "../../../db/oracle";
 import { HttpError } from "../../../misc/errors";
 import { HttpCode } from "../../../misc/http-codes";
 import { TablesNames } from "../../";
-import { IndicatorConfig } from "./interface";
-import { exists } from "./util";
+import { IndicatorConfig, IndicatorState } from "./interface";
+import { exists, existsMany } from "./util";
 
 export async function update(
   indicator_id: string,
@@ -36,6 +36,42 @@ export async function update(
       config.kpi_max ?? null,
       indicator_id
     ])
+    .commit();
+
+  return true;
+}
+
+
+export async function updateState(id: string, state = IndicatorState.IDLE) {
+  if (!(await exists(id)))
+    throw new HttpError(HttpCode.NOT_FOUND, 'indicatorNotFound');
+
+  await oracle.op()
+    .write(`
+    
+      UPDATE ${TablesNames.INDICATORS}
+      SET state = :a, update_date = :b
+      WHERE id = :c
+    
+    `, [state, new Date(), id])
+    .commit();
+
+  return true;
+}
+
+
+export async function updateManyState(ids: string[], state = IndicatorState.IDLE) {
+  if (!(await existsMany(ids)))
+    throw new HttpError(HttpCode.NOT_FOUND, 'indicatorNotFound');
+
+  await oracle.op()
+    .write(`
+    
+      UPDATE ${TablesNames.INDICATORS}
+      SET state = :a, update_date = :b
+      WHERE id IN :c
+    
+    `, [state, new Date(), ids])
     .commit();
 
   return true;

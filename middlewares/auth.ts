@@ -1,4 +1,4 @@
-import { Request } from "express";
+import { NextFunction, Request, Response } from "express";
 import { HttpCode } from "../misc/http-codes";
 import { TokenType } from '../auth/token';
 import { verifyToken } from "../auth";
@@ -9,7 +9,7 @@ import userModel from '../models/auth/user';
 
 export default function (actions: Action[] = [], tokenType = TokenType.SESSION) {
 
-  return async (req: Request) => {
+  return async (req: Request, _: Response, next: NextFunction) => {
     const affectedUserId = (req.baseUrl + req.path).startsWith('/api/admin') 
       ? req.params.id 
       : null;
@@ -40,7 +40,9 @@ export default function (actions: Action[] = [], tokenType = TokenType.SESSION) 
     req.res.locals.user = data.user;
     req.res.locals.session = data.session;
 
-    req.next();
+    console.log('auth next');
+
+    next();
   }
 }
 

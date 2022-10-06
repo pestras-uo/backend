@@ -7,7 +7,7 @@ import { exists } from "./util";
 export async function getGroups(indicator_id: string) {
   return ((await oracle.op().query<{ group_id: string }>(`
   
-    SELECT group_id 'group_id'
+    SELECT group_id "group_id"
     FROM ${TablesNames.IND_GROUP}
     WHERE indicator_id = :a
   

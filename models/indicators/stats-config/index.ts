@@ -4,8 +4,8 @@ import { HttpError } from '../../../misc/errors';
 import { HttpCode } from '../../../misc/http-codes';
 import { StatsConfig } from './interface';
 import { randomUUID } from 'crypto';
-import { updateState } from '../indicators/update';
-import { IndicatorState } from '../indicators/interface';
+import { updateState } from '../config/update';
+import { IndicatorState } from '../config/interface';
 
 export default {
 
@@ -15,13 +15,13 @@ export default {
     return (await oracle.op().query<StatsConfig>(`
     
       SELECT
-        id 'id',
-        indicator_id 'indicator_id',
-        name_ar 'name_ar',
-        name_en 'name_en',
-        state 'state',
-        intervals 'intervals',
-        group_by_column 'group_by_column'
+        id "id",
+        indicator_id "indicator_id",
+        name_ar "name_ar",
+        name_en "name_en",
+        state "state",
+        intervals "intervals",
+        group_by_column "group_by_column"
       FROM ${TablesNames.STATS_CONF}
       WHERE indicator_id = :a
     
@@ -32,13 +32,13 @@ export default {
     return (await oracle.op().query<StatsConfig>(`
     
       SELECT
-        id 'id',
-        indicator_id 'indicator_id',
-        name_ar 'name_ar',
-        name_en 'name_en',
-        state 'state',
-        intervals 'intervals',
-        group_by_column 'group_by_column'
+        id "id",
+        indicator_id "indicator_id",
+        name_ar "name_ar",
+        name_en "name_en",
+        state "state",
+        intervals "intervals",
+        group_by_column "group_by_column"
       FROM ${TablesNames.STATS_CONF}
       WHERE id = :a
     
@@ -53,7 +53,7 @@ export default {
   async exists(id: string) {
     return (await oracle.op().query<{ count: number }>(`
     
-      SELECT COUNT(*) as 'count'
+      SELECT COUNT(*) as "count"
       FROM ${TablesNames.STATS_CONF}
       WHERE id = :a
     

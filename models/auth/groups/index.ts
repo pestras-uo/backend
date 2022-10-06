@@ -12,7 +12,7 @@ export default {
   async get(id: string) {
     return (await oracle.op().query<Group>(`
 
-      SELECT id 'id', name_ar 'name_ar', name_en 'name_en'
+      SELECT id "id", name_ar "name_ar", name_en "name_en"
       FROM ${TablesNames.GROUPS}
       WHERE id = :id
 
@@ -22,7 +22,7 @@ export default {
   async getAll() {
     return (await oracle.op().query<Group>(`
 
-      SELECT id 'id', name_ar 'name_ar', name_en 'name_en'
+      SELECT id "id", name_ar "name_ar", name_en "name_en"
       FROM ${TablesNames.GROUPS}
 
     `)).rows || [];
@@ -37,7 +37,7 @@ export default {
   async exists(id: string) {
     return (await oracle.op().query<{ count: number }>(`
     
-      SELECT COUNT(*) as 'count'
+      SELECT COUNT(*) as "count"
       FROM ${TablesNames.GROUPS}
       WHERE id = :a
     
@@ -48,7 +48,7 @@ export default {
     const cs_id = ids.reduce((str: string, id: string) => str ? `${str}, ${id}` : str, '');
     return (await oracle.op().query<{ count: number }>(`
     
-      SELECT COUNT(*) as 'count'
+      SELECT COUNT(*) as "count"
       FROM ${TablesNames.GROUPS}
       WHERE id IN :a
     

@@ -13,8 +13,16 @@ export default {
   async getAll() {
     return (await oracle.op().query<Topic>(`
 
-      SELECT *
-      FROM ${TablesNames.TOPICS}
+      SELECT
+        id "id",
+        name_ar "name_ar",
+        name_en "name_en",
+        desc_ar "desc_ar",
+        desc_en "desc_en",
+        create_date "create_date",
+        update_date "update_date"
+      FROM
+        ${TablesNames.TOPICS}
 
     `)).rows || [];
   },
@@ -23,10 +31,15 @@ export default {
     const result = (await oracle.op().query<TopicDetailsQueryResultItem>(`
 
       SELECT
-        T.id 'id, T.name_ar 'name_ar', T.name_en 'name_en', T.desc_ar 'desc_ar',
-        T.desc_en 'desc_en', T.create_date 'create_date', T.update_date 'update_date'
-        TG.group_id 'group_id',
-        TC.category_id 'category_id'
+        T.id "id",
+        T.name_ar "name_ar",
+        T.name_en "name_en",
+        T.desc_ar "desc_ar",
+        T.desc_en "desc_en",
+        T.create_date "create_date",
+        T.update_date "update_date"
+        TG.group_id "group_id",
+        TC.category_id "category_id"
       FROM
         ${TablesNames.TOPICS} T,
       LEFT JOIN
@@ -68,7 +81,7 @@ export default {
   async exists(id: string) {
     return (await oracle.op().query<{ count: number }>(`
 
-      SELECT COUNT(id) as 'count'
+      SELECT COUNT(id) as "count"
       FROM ${TablesNames.TOPICS}
       WHERE id = :id
 
@@ -140,7 +153,7 @@ export default {
   async getCategories(topic_id: string) {
     return ((await oracle.op().query<{ category_id: string }>(`
     
-      SELECT category_id 'category_id'
+      SELECT category_id "category_id"
       FROM ${TablesNames.TOPIC_CAT}
       WHERE topic_id = :a
     
@@ -178,7 +191,7 @@ export default {
   async getGroups(topic_id: string) {
     return ((await oracle.op().query<{ group_id: string }>(`
     
-      SELECT group_id 'group_id'
+      SELECT group_id "group_id"
       FROM ${TablesNames.TOPIC_GROUP}
       WHERE topic_id = :a
     
@@ -216,11 +229,11 @@ export default {
     return (await oracle.op().query<TopicDocument>(`
     
       SELECT 
-        topic_id 'topic_id,
-        path 'path',
-        name_ar 'name_ar',
-        name_en 'name_en',
-        upload_date 'upload_date'
+        topic_id "topic_id",
+        path "path",
+        name_ar "name_ar",
+        name_en "name_en",
+        upload_date "upload_date"
       FROM ${TablesNames.TOPIC_DOC}
       WHERE topic_id = :a
     

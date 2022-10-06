@@ -16,21 +16,21 @@ export async function get(
     return getViewReadings(indicator_id, offset, limit, config.view_name);
 
   const additionalColumns = (await getAdditionalColumns(indicator_id))
-    .map(c => `${c.column_name} '${c.column_name}'`).join(',');
+    .map(c => `${c.column_name} "${c.column_name}"`).join(',');
 
   return (await oracle.op(DBSchemas.READINGS)
     .query<IndicatorReading>(`
     
       SELECT
-        id 'id',
-        reading_value 'reading_value',
+        id "id",
+        reading_value "reading_value",
         ${!!additionalColumns ? additionalColumns + ',' : ''}
-        note_ar 'note_ar',
-        note_en 'note_en',
-        is_approved 'is_approved',
-        approve_date 'approve_date',
-        create_date 'create_date',
-        update_date 'update_date'
+        note_ar "note_ar",
+        note_en "note_en",
+        is_approved "is_approved",
+        approve_date "approve_date",
+        create_date "create_date",
+        update_date "update_date"
       FROM ${indicator_id}
         OFFSET :b ROWS
         FETCH NEXT :c ROWS ONLY
@@ -70,21 +70,21 @@ export async function getById(
   const config = await getConfig(indicator_id);
   const readingTableName = config.view_name || indicator_id;
   const additionalColumns = (await getAdditionalColumns(indicator_id))
-    .map(c => `${c.column_name} '${c.column_name}'`).join(',');
+    .map(c => `${c.column_name} "${c.column_name}"`).join(',');
 
   return (await oracle.op(DBSchemas.READINGS)
     .query<IndicatorReading>(`
     
       SELECT
-        id 'id',
-        reading_value 'reading_value',
+        id "id",
+        reading_value "reading_value",
         ${!!additionalColumns ? additionalColumns + ',' : ''}
-        note_ar 'note_ar',
-        note_en 'note_en',
-        is_approved 'is_approved',
-        approve_date 'approve_date',
-        create_date 'create_date',
-        update_date 'update_date'
+        note_ar "note_ar",
+        note_en "note_en",
+        is_approved "is_approved",
+        approve_date "approve_date",
+        create_date "create_date",
+        update_date "update_date"
       FROM ${readingTableName}
       WHERE id = :a
 

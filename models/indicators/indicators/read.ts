@@ -17,7 +17,6 @@ export async function getPage(offset = 0, limit = 100, active = 1) {
       unit_ar 'unit_ar',
       unit_en 'unit_en',
       is_active 'is_active',
-      state 'state',
       create_date 'create_date',
       update_date 'update_date'
     FROM ${TablesNames.INDICATORS}
@@ -42,7 +41,6 @@ export async function get(id: string) {
       I.unit_ar 'unit_ar',
       I.unit_en 'unit_en',
       I.is_active 'is_active',
-      I.state 'state',
       I.create_date 'create_date',
       I.update_date 'update_date'
       IG.group_id 'group_id',
@@ -94,7 +92,6 @@ export async function getByTopic(topic_id: string, active = 1) {
       unit_ar 'unit_ar',
       unit_en 'unit_en',
       is_active 'is_active',
-      state 'state',
       create_date 'create_date',
       update_date 'update_date'
     FROM ${TablesNames.INDICATORS}
@@ -107,31 +104,20 @@ export async function getByOrgunit(orgunit_id: string, active = 1) {
   return (await oracle.op().query<Indicator>(`
 
     SELECT
-      id 'id',
-      orgunit_id 'orgunit_id',
-      topic_id 'topic_id',
-      name_ar 'name_ar',
-      name_en 'name_en',
-      desc_ar 'desc_ar',
-      desc_en 'desc_en',
-      unit_ar 'unit_ar',
-      unit_en 'unit_en',
-      is_active 'is_active',
-      state 'state',
-      create_date 'create_date',
-      update_date 'update_date'
+      id "id",
+      orgunit_id "orgunit_id",
+      topic_id "topic_id",
+      name_ar "name_ar",
+      name_en "name_en",
+      desc_ar "desc_ar",
+      desc_en "desc_en",
+      unit_ar "unit_ar",
+      unit_en "unit_en",
+      is_active "is_active",
+      create_date "create_date",
+      update_date "update_date"
     FROM ${TablesNames.INDICATORS}
     WHERE orgunit_id = :a AND is_active = ${active}
 
   `, [orgunit_id])).rows || [];
-}
-
-export async function getState(id: string) {
-  return (await oracle.op().query<Indicator>(`
-
-  SELECT state 'state'
-  FROM ${TablesNames.INDICATORS}
-  WHERE id: a
-
-`, [id])).rows[0]?.state ?? null;
 }

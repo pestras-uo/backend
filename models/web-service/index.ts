@@ -13,19 +13,19 @@ export default {
     return (await oracle.op().query<IndicatorWebServiceConfig>(`
     
       SELECT
-        id 'id',
-        resource_uri 'resource_uri',
-        username 'username',
-        password 'password',
-        access_token 'access_token',
-        query 'query',
-        data_path 'data_path',
-        intervals 'intervals',
-        evaluation_day 'evaluation_day',
-        is_cumulative 'is_cumulative',
-        values_columns 'values_columns',
-        additional_columns 'additional_columns',
-        state 'state'
+        id "id",
+        resource_uri "resource_uri",
+        username "username",
+        password "password",
+        access_token "access_token",
+        query "query",
+        data_path "data_path",
+        intervals "intervals",
+        evaluation_day "evaluation_day",
+        is_cumulative "is_cumulative",
+        values_columns "values_columns",
+        additional_columns "additional_columns",
+        state "state"
       FROM
         ${TablesNames.WEB_SERVICE_CONFIG}
       WHERE
@@ -40,13 +40,13 @@ export default {
   // util
   // --------------------------------------------------------------------------------
   async exists(ind_id: string) {
-    return (await oracle.op().query<{ COUNT: number }>(`
+    return (await oracle.op().query<{ count: number }>(`
     
-      SELECT COUNT(*) AS COUNT
+      SELECT COUNT(*) AS "count"
       FROM ${TablesNames.WEB_SERVICE_CONFIG}
       WHERE id = :a
 
-    `, [ind_id])).rows[0].COUNT! > 0;
+    `, [ind_id])).rows[0].count! > 0;
   },
 
 

@@ -35,6 +35,7 @@ export default {
   },
 
   async verifySession(req: VerifySessionRequest) {
+    console.log(req.res.locals);
     const newToken = sign({
       id: req.res.locals.user.id,
       type: TokenType.SESSION

@@ -12,12 +12,12 @@ export async function getDocuments(
   return (await oracle.op(DBSchemas.READINGS).query<ReadingDocument>(`
   
     SELECT 
-      indicator_id 'indicator_id',
-      reading_id 'reading_id',
-      path 'path',
-      name_ar 'name_ar',
-      name_en 'name_en',
-      upload_date 'upload_date
+      indicator_id "indicator_id",
+      reading_id "reading_id",
+      path "path",
+      name_ar "name_ar",
+      name_en "name_en",
+      upload_date "upload_date"
     FROM ${TablesNames.READ_DOC}
     WHERE indicator_id = :a AND reading_id = :b
   

@@ -14,12 +14,12 @@ const schemaCred = [
   {
     // system
     user: config.dbSystemUser,
-    pass: config.dbSystemPass,
+    password: config.dbSystemPass,
   },
   {
     // readings
     user: config.dbReadingsUser,
-    pass: config.dbReadingsPass,
+    password: config.dbReadingsPass,
   }
 ];
 

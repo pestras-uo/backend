@@ -6,7 +6,7 @@ export async function exists(
 ) {
   return (await oracle.op(DBSchemas.READINGS).query<{ count: number }>(`
   
-    SELECT COUNT(*) 'count'
+    SELECT COUNT(*) "count"
     FROM ${indicator_id}
     WHERE id = :a
   

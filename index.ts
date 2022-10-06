@@ -51,13 +51,7 @@ import api from "./api";
 
     res
       .status(err.code || HttpCode.UNKNOWN_ERROR)
-      .send(
-        err.code! > 500
-          ? config.prod ? HttpCode[err.code] : err.message
-          : !err.code
-            ? "unknwonError"
-            : err.message
-      );
+      .send(config.prod ? HttpCode[err.code] || "unknwonError" : err.message);
   });
   
   server.listen(config.port as number, '127.0.0.1', () => console.log('listening on port: ', config.port));

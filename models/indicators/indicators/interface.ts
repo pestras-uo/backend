@@ -1,11 +1,5 @@
 import { Document } from "../..";
 
-export enum IndicatorState {
-  IDLE,
-  COMPUTING,
-  ANALYZING
-}
-
 export interface Indicator {
   id: string;
   orgunit_id: string;
@@ -21,7 +15,6 @@ export interface Indicator {
   unit_en?: string;
 
   is_active: 1 | 0;
-  state: IndicatorState;
 
   create_date: Date;
   update_date?: Date;

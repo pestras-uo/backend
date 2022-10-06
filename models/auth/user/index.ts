@@ -15,7 +15,7 @@ export default {
   async exists(id: string) {
     return (await oracle.op().query<{ count: number }>(`
     
-      SELECT COUNT(0) as 'count'
+      SELECT COUNT(0) as "count"
       FROM ${TablesNames.USERS}
       WHERE id = :id
     
@@ -25,7 +25,7 @@ export default {
   async usernameExists(username: string) {
     return (await oracle.op().query<{ count: number }>(`
     
-      SELECT COUNT(0) as 'count'
+      SELECT COUNT(0) as "count"
       FROM ${TablesNames.USERS}
       WHERE username = :username
     
@@ -41,10 +41,17 @@ export default {
     const result = (await oracle.op().query<UserDetailsQueryResultItem>(`
     
       SELECT 
-        U.id 'id', U.orgunit_id 'orgunit_id', U.username 'username', U.is_active 'is_active, U.fullname 'fullname',
-        U.email 'email', U.mobile 'mobile', U.create_date 'create_date', U.update_date 'update_date'
-        UG.group_id 'group_id',
-        UR.role_id 'role_id'
+        U.id "id",
+        U.orgunit_id "orgunit_id", 
+        U.username "username", 
+        U.is_active "is_active", 
+        U.fullname "fullname",
+        U.email "email",
+        U.mobile "mobile",
+        U.create_date "create_date",
+        U.update_date "update_date",
+        UG.group_id "group_id",
+        UR.role_id "role_id"
       FROM 
         ${TablesNames.USERS} U
       LEFT JOIN
@@ -79,10 +86,17 @@ export default {
     const result = (await oracle.op().query<UserDetailsQueryResultItem>(`
     
       SELECT 
-        U.id 'id', U.orgunit_id 'orgunit_id', U.username 'username', U.is_active 'is_active, U.fullname 'fullname',
-        U.email 'email', U.mobile 'mobile', U.create_date 'create_date', U.update_date 'update_date'
-        UG.group_id 'group_id',
-        UR.role_id 'role_id'
+        U.id "id",
+        U.orgunit_id "orgunit_id", 
+        U.username "username", 
+        U.is_active "is_active", 
+        U.fullname "fullname",
+        U.email "email",
+        U.mobile "mobile",
+        U.create_date "create_date",
+        U.update_date "update_date",
+        UG.group_id "group_id",
+        UR.role_id "role_id"
       FROM 
         ${TablesNames.USERS} U
       LEFT JOIN
@@ -117,8 +131,15 @@ export default {
     return (await oracle.op().query<User>(`
     
       SELECT 
-        id 'id', orgunit_id 'orgunit_id', username 'username', is_active 'is_active, fullname 'fullname',
-        email 'email', mobile 'mobile', create_date 'create_date', update_date 'update_date'
+        id "id",
+        orgunit_id "orgunit_id",
+        username "username",
+        is_active "is_active",
+        fullname "fullname",
+        email "email",
+        mobile "mobile",
+        create_date "create_date",
+        update_date "update_date"
       FROM ${TablesNames.USERS}
       WHERE orgunit_id = :a AND is_active = :b
   
@@ -129,8 +150,15 @@ export default {
     return (await oracle.op().query<User>(`
     
       SELECT 
-        id 'id', orgunit_id 'orgunit_id', username 'username', is_active 'is_active, fullname 'fullname',
-        email 'email', mobile 'mobile', create_date 'create_date', update_date 'update_date'
+        id "id",
+        orgunit_id "orgunit_id",
+        username "username",
+        is_active "is_active",
+        fullname "fullname",
+        email "email",
+        mobile "mobile",
+        create_date "create_date",
+        update_date "update_date"
       FROM ${TablesNames.USERS}
       WHERE is_active = :b
   
@@ -251,7 +279,7 @@ export default {
   async getRoles(user_id: string) {
     return ((await oracle.op().query<{ role_id: string }>(`
     
-      SELECT role_id 'role_id'
+      SELECT role_id "role_id"
       FROM ${TablesNames.USER_ROLE}
       WHERE user_id = :a
     
@@ -292,7 +320,7 @@ export default {
   async getGroups(user_id: string) {
     return ((await oracle.op().query<{ group_id: string }>(`
     
-      SELECT group_id 'group_id'
+      SELECT group_id "group_id"
       FROM ${TablesNames.USER_GROUP} UG
       WHERE UG.user_id = :a
     

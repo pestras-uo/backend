@@ -12,6 +12,12 @@ export enum ColumnType {
   DATE
 }
 
+export enum IndicatorState {
+  IDLE,
+  COMPUTING,
+  ANALYZING
+}
+
 export interface IndicatorConfig {
   indicator_id: string;
 
@@ -28,6 +34,8 @@ export interface IndicatorConfig {
   view_name?: string;
   equation?: string;
   match_by_columns?: string;
+  
+  state?: IndicatorState;
 }
 
 export interface IndicatorArgument {

@@ -13,12 +13,13 @@ export default {
     return (await oracle.op().query<Orgunit>(`
 
       SELECT 
-        id 'id', 
-        name_ar 'name_ar', 
-        name_en 'name_en', 
-        create_date 'create_date',
-        update_date 'update_date'
-      FROM ${TablesNames.ORGUNITS}
+        id "id", 
+        name_ar "name_ar", 
+        name_en "name_en", 
+        create_date "create_date",
+        update_date "update_date"
+      FROM
+        ${TablesNames.ORGUNITS}
 
     `)).rows || [];
   },
@@ -27,13 +28,15 @@ export default {
     return (await oracle.op().query<Orgunit>(`
 
       SELECT 
-        id 'id', 
-        name_ar 'name_ar', 
-        name_en 'name_en', 
-        create_date 'create_date',
-        update_date 'update_date'
-      FROM ${TablesNames.ORGUNITS}
-      WHERE id = :id
+        id "id", 
+        name_ar "name_ar", 
+        name_en "name_en", 
+        create_date "create_date",
+        update_date "update_date"
+      FROM
+        ${TablesNames.ORGUNITS}
+      WHERE
+        id = :id
 
     `, [id])).rows?.[0] || null;
   },
@@ -46,7 +49,7 @@ export default {
   async exists(id: string) {
    return (await oracle.op().query<{ count: number }>(`
 
-      SELECT COUNT(id) as 'count'
+      SELECT COUNT(id) as "count"
       FROM ${TablesNames.ORGUNITS}
       WHERE id = :id
 

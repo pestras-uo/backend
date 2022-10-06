@@ -13,7 +13,7 @@ export default {
   async getPassword(user_id: string) {
     return (await oracle.op().query<Auth>(`
 
-      SELECT password 'password', salt 'salt'
+      SELECT password "password", salt "salt"
       FROM ${TablesNames.AUTH}
       WHERE user_id = :a
 
@@ -23,7 +23,7 @@ export default {
   async getSession(user_id: string) {
     return (await oracle.op().query<Pick<Auth, 'socket' | 'token' | 'token_create_date' | 'token_exp_date'>>(`
 
-      SELECT token 'token', token_create_date 'token_create_date', token_exp_date 'token_exp_date', socket 'socket'
+      SELECT token "token", token_create_date "token_create_date", token_exp_date "token_exp_date", socket "socket"
       FROM ${TablesNames.AUTH}
       WHERE user_id = :a
 
@@ -33,9 +33,15 @@ export default {
   async getSessionByToken(user_id: string, token: string) {
     return (await oracle.op().query<Pick<Auth, 'socket' | 'token' | 'token_create_date' | 'token_exp_date'>>(`
 
-      SELECT token 'token', token_create_date 'token_create_date', token_exp_date 'token_exp_date', socket 'socket'
-      FROM ${TablesNames.AUTH}
-      WHERE user_id = :a AND token = :b
+      SELECT 
+        token "token",
+        token_create_date "token_create_date",
+        token_exp_date "token_exp_date",
+        socket "socket"
+      FROM
+        ${TablesNames.AUTH}
+      WHERE
+        user_id = :a AND token = :b
 
     `, [user_id, token])).rows?.[0] || null;
   },
@@ -48,7 +54,7 @@ export default {
   async exists(user_id: string) {
     return (await oracle.op().query<{ count: number }>(`
 
-      SELECT COUNT(*) as 'count'
+      SELECT COUNT(*) as "count"
       FROM ${TablesNames.AUTH}
       WHERE user_id = :a
 
@@ -58,7 +64,7 @@ export default {
   async hasSession(user_id: string, token: string) {
     return (await oracle.op().query<{ count: number }>(`
 
-      SELECT COUNT(*) as 'count'
+      SELECT COUNT(*) as "count"
       FROM ${TablesNames.AUTH}
       WHERE user_id = :a AND token = :b
 

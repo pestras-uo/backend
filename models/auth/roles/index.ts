@@ -7,7 +7,7 @@ export default {
   async get(id: number) {
     return (await oracle.op().query<Role>(`
 
-      SELECT id 'id', name 'name'
+      SELECT id "id", name "name"
       FROM ${TablesNames.ROLES}
       WHERE id = :id
 
@@ -17,7 +17,7 @@ export default {
   async getAll() {
     return (await oracle.op().query<Role>(`
 
-      SELECT id 'id', name 'name'
+      SELECT id "id", name "name"
       FROM ${TablesNames.ROLES}
 
     `)).rows || [];

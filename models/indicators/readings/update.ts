@@ -4,8 +4,8 @@ import { HttpCode } from "../../../misc/http-codes";
 import { getArgumentIndicators } from "../config/arguments";
 import { get as getConfig } from "../config/read";
 import { getAdditionalColumns } from "../config/util";
-import { IndicatorState } from "../indicators/interface";
-import indModel from "../indicators";
+import { IndicatorState } from "../config/interface";
+import configModel from "../config";
 import { IndicatorReading, ReadingHistoryItem } from "./interface";
 import { getById } from "./read";
 
@@ -71,11 +71,11 @@ export async function update(
     .commit();
 
   // set indicator state to analyzing
-  indModel.updateState(indicator_id, IndicatorState.ANALYZING);
+  configModel.updateState(indicator_id, IndicatorState.ANALYZING);
   // set all indicators state that use this reading as argument
   // to computing
   getArgumentIndicators(indicator_id)
-    .then(ids => indModel.updateManyState(ids, IndicatorState.COMPUTING));
+    .then(ids => configModel.updateManyState(ids, IndicatorState.COMPUTING));
 
   return true;
 }

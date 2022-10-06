@@ -12,7 +12,7 @@ export default {
   async get(id: string) {
     return (await oracle.op().query<Category>(`
     
-      SELECT id 'id', name_ar 'name_ar', name_en 'name_en'
+      SELECT id "id", name_ar "name_ar", name_en "name_en"
       FROM ${TablesNames.CATEGORIES}
       WHERE id = :a
     
@@ -22,7 +22,7 @@ export default {
   async getAll() {
     return (await oracle.op().query<Category>(`
     
-      SELECT id 'id', name_ar 'name_ar', name_en 'name_en'
+      SELECT id "id", name_ar "name_ar", name_en "name_en"
       FROM ${TablesNames.CATEGORIES}
     
     `)).rows || [];

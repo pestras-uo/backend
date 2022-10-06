@@ -7,7 +7,7 @@ import { exists } from "./util";
 export async function getCategories(indicator_id: string) {
   return ((await oracle.op().query<{ category_id: string }>(`
   
-    SELECT category_id 'category_id'
+    SELECT category_id "category_id"
     FROM ${TablesNames.IND_CAT}
     WHERE indicator_id = :a
   

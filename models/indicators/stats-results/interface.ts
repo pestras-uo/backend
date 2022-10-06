@@ -1,5 +1,4 @@
 export interface DescStatsResult {
-  indicator_id: string;
   config_id: string;
 
   group_column?: string;
