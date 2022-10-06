@@ -38,4 +38,9 @@ export default Router()
     validate(IndicatorConfigValidators.UPDATE),
     auth(["indicators.config.update.one"]),
     controller.update
-  );
+  )
+  .put(
+    '/state/:state',
+    auth(["indicators.config.update.state"]),
+    controller.updateState
+  )

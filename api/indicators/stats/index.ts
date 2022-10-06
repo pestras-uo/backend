@@ -12,7 +12,7 @@ export default Router()
     controller.get
   )
   .get(
-    '/:stats_is',
+    '/:stats_id',
     auth(['indicators.stats.get.one']),
     controller.getById
   )
@@ -22,10 +22,10 @@ export default Router()
     auth(['indicators.stats.create.one']),
     controller.create
   )
-  .post(
+  .put(
     '/:stats_id',
     validate(StatsConfigValidators.UPDATE),
     auth(['indicators.stats.update.one']),
     controller.update
   )
-  .use('/results', results);
+  .use('/:stats_id/results', results);

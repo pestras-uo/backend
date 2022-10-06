@@ -68,5 +68,9 @@ export default {
       kpi_min: req.body.kpi_min,
       kpi_max: req.body.kpi_max
     }));
+  },
+
+  async updateState(req: UpdateIndicatorStateRequest) {
+    req.res.json(await indConfigModel.updateState(req.params.id, +req.params.state));
   }
 }
