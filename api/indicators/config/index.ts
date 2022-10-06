@@ -43,4 +43,4 @@ export default Router()
     '/state/:state',
     auth(["indicators.config.update.state"]),
     controller.updateState
-  )
+  );
