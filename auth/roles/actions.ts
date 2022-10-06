@@ -91,6 +91,7 @@ export const Actions = [
   "indicators.config.create.view",
   "indicators.config.update.*",
   "indicators.config.update.one",
+  "indicators.config.update.state",
 
   // readings
   "indicators.readings.*",
