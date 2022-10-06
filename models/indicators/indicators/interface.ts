@@ -1,39 +1,35 @@
 import { Document } from "../..";
 
 export interface Indicator {
-  ID: string;
-  ORGUNIT_ID: string;
-  TOPIC_ID: string;
+  id: string;
+  orgunit_id: string;
+  topic_id: string;
 
-  NAME_AR: string;
-  NAME_EN: string;
+  name_ar: string;
+  name_en: string;
 
-  DESC_AR?: string;
-  DESC_EN?: string;
+  desc_ar?: string;
+  desc_en?: string;
 
-  UNIT_AR?: string;
-  UNIT_EN?: string;
+  unit_ar?: string;
+  unit_en?: string;
 
-  IS_ACTIVE: 1 | 0;
+  is_active: 1 | 0;
 
-  CREATE_DATE: Date;
-  UPDATE_DATE?: Date;
+  create_date: Date;
+  update_date?: Date;
 }
 
 export interface IndicatorDetails extends Indicator {
-  GROUPS: number[];
-  CATEGORIES: number[];
+  groups: number[];
+  categories: number[];
 }
 
 export interface IndicatorDetailsQueryResultItem extends Indicator {
-  GROUP_ID: number;
-  CATEGORY_ID: number;
-}
-
-export interface Arguments extends Indicator {
-  VARIABLE: string;
+  group_id: number;
+  category_id: number;
 }
 
 export interface IndicatorDocument extends Document {
-  INDICATOR_ID: string;
+  indicator_id: string;
 }

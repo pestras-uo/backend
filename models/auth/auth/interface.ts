@@ -1,13 +1,13 @@
 export interface Auth {
-  USER_ID: string;
+  user_id: string;
   
-  PASSWORD: string;
-  SALT: string;
+  password: string;
+  salt: string;
 
-  TOKEN?: string;
-  TOKEN_CREATE_DATE?: Date;
-  TOKEN_EXP_DATE?: Date;
-  SOCKET?: string;
+  token?: string;
+  token_create_date?: Date;
+  token_exp_date?: Date;
+  socket?: string;
   
-  UPDATE_DATE?: Date;
+  update_date?: Date;
 }

@@ -6,6 +6,9 @@ import { TablesNames } from "../../models";
 import controller from "./controller";
 import { IndicatorsValidators } from "./validators";
 import { docUpload } from '../../middlewares/upload';
+import config from "./config";
+import readings from "./readings";
+import stats from "./stats";
 
 export default Router()
   .get(
@@ -82,3 +85,6 @@ export default Router()
     auth(["indicators.delete.documents"]),
     controller.removeDocument
   )
+  .use('/:id/config', exists(TablesNames.INDICATORS, 'params.id'), config)
+  .use('/:id/readings', exists(TablesNames.INDICATORS, 'params.id'), readings)
+  .use('/:id/stats', exists(TablesNames.INDICATORS, 'params.id'), stats)

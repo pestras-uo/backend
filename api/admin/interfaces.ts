@@ -2,12 +2,6 @@ import { Request } from "express";
 import { UserSession } from "../../auth";
 import { UserDetails } from "../../models/auth/user/interface";
 
-namespace A {
-  export interface B {}
-}
-
-let a: A.B
-
 export type CreateUserRequest = Request<
   // params
   any, 

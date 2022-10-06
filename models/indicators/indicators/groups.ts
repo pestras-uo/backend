@@ -2,17 +2,16 @@ import { TablesNames } from "../..";
 import oracle from "../../../db/oracle";
 import { HttpError } from "../../../misc/errors";
 import { HttpCode } from "../../../misc/http-codes";
-import { Group } from "../../auth/groups/interface";
 import { exists } from "./util";
 
 export async function getGroups(indicator_id: string) {
-  return (await oracle.op().query<Group>(`
+  return ((await oracle.op().query<{ group_id: string }>(`
   
-    SELECT G.*
-    FROM ${TablesNames.GROUPS} G, ${TablesNames.INDICATOR_GROUP} IG
-    WHERE IG.INDICATOR_ID = :a AND G.ID = IG.GROUP_ID
+    SELECT group_id "group_id"
+    FROM ${TablesNames.IND_GROUP}
+    WHERE indicator_id = :a
   
-  `, [indicator_id])).rows || [];
+  `, [indicator_id])).rows || []).map(r => r.group_id);
 }
 
 export async function replaceGroups(id: string, groups: string[]) {
@@ -22,13 +21,13 @@ export async function replaceGroups(id: string, groups: string[]) {
   await oracle.op()
     .write(`
     
-      DELETE FROM ${TablesNames.INDICATOR_GROUP}
+      DELETE FROM ${TablesNames.IND_GROUP}
       WHERE indicator_id = :a
 
     `, [id])
     .writeMany(`
     
-      INSERT INTO ${TablesNames.INDICATOR_GROUP} (indicator_id, group_id)
+      INSERT INTO ${TablesNames.IND_GROUP} (indicator_id, group_id)
       VALUES (:a, :b)
     
     `, groups.map(g => [id, g]))

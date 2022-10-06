@@ -13,41 +13,40 @@ export enum TablesNames {
 
   ORGUNITS = "orgunits",
   TOPICS = "topics",
-  TOPIC_TAG = "topic_tag",
-  TOPIC_CATEGORY = "topic_category",
-  TOPIC_DOCUMENT = "topic_document",
+  TOPIC_CAT = "topic_category",
+  TOPIC_DOC = "topic_document",
   TOPIC_GROUP = "topic_group",
 
   INDICATORS = "indicators",
-  INDICATOR_TAG = "indicator_tag",
-  INDICATOR_CATEGORY = "indicator_category",
-  INDICATOR_DOCUMENT = "indicator_document",
-  INDICATOR_GROUP = "indicator_group",
-  INDICATOR_ARGUMENT = "indicator_argument",
-
-  INDICATOR_CONFIG = "indicator_config",
-
-  STATS_CONFIG = "stats_config",
-  DESCRIPTIVE_STATS_RESULT = "descriptive_stats_result",
-
-  READINGS_VIEWS = "readings_views",
-  READING_DOCUMENT = "reading_document",
-  READING_CATEGORY = "reading_category"
+  IND_CAT = "indicator_category",
+  IND_DOC = "indicator_document",
+  IND_GROUP = "indicator_group",
+  
+  IND_CONF = "indicator_config",
+  IND_ARG = "indicator_argument",
+  READ_ADD_COLS = "reading_additional_columns",
+  
+  STATS_CONF = "stats_config",
+  DESC_STATS_RESULT = "descriptive_stats_result",
+  
+  WEB_SERVICE_CONFIG = 'indicator_web_service_config',
+  
+  READ_DOC = "reading_document"
 }
 
 export interface Document {  
-  PATH: string;
+  path: string;
 
-  NAME_AR: string;
-  NAME_EN: string;
+  name_ar: string;
+  name_en: string;
 
-  UPLOAD_DATE: Date;
+  upload_date: Date;
 }
 
 export async function getChildren(table: string, serial: string) {
-  const result = await oracle.op().query<{ ID: string }>(`
+  const result = await oracle.op().query<{ id: string }>(`
 
-    SELECT id
+    SELECT id 'id'
     FROM ${table}
     WHERE id LIKE '${serial}%'
 
@@ -58,16 +57,16 @@ export async function getChildren(table: string, serial: string) {
 
   return result
     .rows
-    .filter(row => row.ID === serial)
-    .map(row => Serial.getLast(row.ID));
+    .filter(row => row.id === serial)
+    .map(row => Serial.getLast(row.id));
 }
 
 export async function exists(tableName: TablesNames, id: string) {
-  return (await oracle.op().query<{ COUNT: number }>(`
+  return (await oracle.op().query<{ count: number }>(`
     
-      SELECT COUNT(*)
+      SELECT COUNT(*) 'count'
       FROM ${tableName}
       WHERE ID = :a
     
-    `, [id])).rows?.[0].COUNT! > 0;
+    `, [id])).rows?.[0].count! > 0;
 }

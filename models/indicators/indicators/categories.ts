@@ -5,13 +5,13 @@ import { HttpCode } from "../../../misc/http-codes";
 import { exists } from "./util";
 
 export async function getCategories(indicator_id: string) {
-  return ((await oracle.op().query<{ CATEGORY_ID: string }>(`
+  return ((await oracle.op().query<{ category_id: string }>(`
   
-    SELECT category_id
-    FROM ${TablesNames.INDICATOR_CATEGORY}
+    SELECT category_id "category_id"
+    FROM ${TablesNames.IND_CAT}
     WHERE indicator_id = :a
   
-  `, [indicator_id])).rows || []).map(r => r.CATEGORY_ID);
+  `, [indicator_id])).rows || []).map(r => r.category_id);
 }
 
 export async function replaceCategories(id: string, categories: string[]) {
@@ -21,13 +21,13 @@ export async function replaceCategories(id: string, categories: string[]) {
   await oracle.op()
     .write(`
     
-      DELETE FROM ${TablesNames.INDICATOR_CATEGORY}
+      DELETE FROM ${TablesNames.IND_CAT}
       WHERE indicator_id = :a
     
     `, [id])
     .writeMany(`
     
-      INSERT INTO ${TablesNames.INDICATOR_CATEGORY} (indicator_id, category_id)
+      INSERT INTO ${TablesNames.IND_CAT} (indicator_id, category_id)
       VALUES (:a, :b)
     
     `, categories.map(c => [id, c]))

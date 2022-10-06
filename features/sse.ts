@@ -15,11 +15,11 @@ function sse(req: Request, res: Response<any, UserSession>) {
 
   res.writeHead(HttpCode.OK, headers);
 
-  connected.set(res.locals.user.ID, res);
+  connected.set(res.locals.user.id, res);
 
   req.on('close', () => {
     console.log("sse connection closed:", res.locals?.session?.TOKEN);
-    connected.delete(res.locals.user.ID);
+    connected.delete(res.locals.user.id);
   });
 }
 
@@ -30,7 +30,7 @@ pubSub.on('sse.message', e => {
 
   } else if (e.groups?.length) {
     for (const res of connected.values())
-      if (pubSub.inGroups(e, res.locals.user.GROUPS))
+      if (pubSub.inGroups(e, res.locals.user.groups))
         res.json(e.data);
 
   } else {

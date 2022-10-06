@@ -24,7 +24,7 @@ const ws = {
         if (!tokenData)
           return next(new HttpError(HttpCode.INVALID_TOKEN, "invalidToken"));
 
-        socket.data._id = tokenData.user.ID;
+        socket.data._id = tokenData.user.id;
         socket.data.token = token;
         next();
       } catch (error: any) {

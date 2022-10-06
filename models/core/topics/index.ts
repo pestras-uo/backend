@@ -4,7 +4,6 @@ import { HttpError } from "../../../misc/errors";
 import { HttpCode } from "../../../misc/http-codes";
 import Serial from '../../../util/serial';
 import { Topic, TopicDetails, TopicDetailsQueryResultItem, TopicDocument } from "./interface";
-import { Group } from "../../auth/groups/interface";
 import { omit } from "../../../util/pick-omit";
 
 export default {
@@ -14,8 +13,16 @@ export default {
   async getAll() {
     return (await oracle.op().query<Topic>(`
 
-      SELECT *
-      FROM ${TablesNames.TOPICS}
+      SELECT
+        id "id",
+        name_ar "name_ar",
+        name_en "name_en",
+        desc_ar "desc_ar",
+        desc_en "desc_en",
+        create_date "create_date",
+        update_date "update_date"
+      FROM
+        ${TablesNames.TOPICS}
 
     `)).rows || [];
   },
@@ -24,15 +31,21 @@ export default {
     const result = (await oracle.op().query<TopicDetailsQueryResultItem>(`
 
       SELECT
-        T.*,
-        TG.GROUP_ID GROUP_ID,
-        TC.GROUP_ID CATEGORY_ID
+        T.id "id",
+        T.name_ar "name_ar",
+        T.name_en "name_en",
+        T.desc_ar "desc_ar",
+        T.desc_en "desc_en",
+        T.create_date "create_date",
+        T.update_date "update_date"
+        TG.group_id "group_id",
+        TC.category_id "category_id"
       FROM
         ${TablesNames.TOPICS} T,
       LEFT JOIN
-        ${TablesNames.TOPIC_GROUP} TG ON TG.TOPIC_ID = T.ID
+        ${TablesNames.TOPIC_GROUP} TG ON TG.topic_id = T.ID
       LEFT JOIN
-        ${TablesNames.TOPIC_CATEGORY} TG ON TC.TOPIC_ID = T.ID
+        ${TablesNames.TOPIC_CAT} TG ON TC.topic_id = T.ID
       WHERE
         T.ID = :a
 
@@ -42,20 +55,20 @@ export default {
       return null;
 
     const topic = omit<TopicDetails, TopicDetailsQueryResultItem>(result[0], [
-      'GROUP_ID',
-      'CATEGORY_ID',
+      'group_id',
+      'category_id',
     ]);
 
     const groups = new Set<number>();
     const categories = new Set<number>();
 
     for (const rec of result) {
-      groups.add(rec.GROUP_ID);
-      categories.add(rec.CATEGORY_ID);
+      groups.add(rec.group_id);
+      categories.add(rec.category_id);
     }
 
-    topic.GROUPS = Array.from(groups);
-    topic.CATEGORIES = Array.from(categories);
+    topic.groups = Array.from(groups);
+    topic.categories = Array.from(categories);
 
     return topic;
   },
@@ -68,31 +81,11 @@ export default {
   async exists(id: string) {
     return (await oracle.op().query<{ count: number }>(`
 
-      SELECT COUNT(id) as count
+      SELECT COUNT(id) as "count"
       FROM ${TablesNames.TOPICS}
       WHERE id = :id
 
     `, [id])).rows?.[0].count! > 0;
-  },
-
-  async nameExists(name_ar: string, name_en: string) {
-    return (await oracle.op().query<{ COUNT: number }>(`
-
-      SELECT COUNT(name) as count
-      FROM ${TablesNames.TOPICS}
-      WHERE name_ar = :name_ar OR name_en = :name_en
-
-    `, [name_ar, name_en])).rows?.[0].COUNT! > 0;
-  },
-
-  async updatedNameExists(id: string, name_ar: string, name_en: string) {
-    return (await oracle.op().query<{ count: number }>(`
-
-      SELECT COUNT(name) as count
-      FROM ${TablesNames.TOPICS}
-      WHERE (name_ar = :name_ar OR name_en = :name_en) AND id <> :id
-
-    `, [name_ar, name_en, id])).rows?.[0].count! > 0;
   },
 
 
@@ -101,9 +94,6 @@ export default {
   // create
   // ----------------------------------------------------------------------------
   async create(name_ar: string, name_en: string, parent?: string, desc_ar?: string, desc_en?: string, groups: string[] = [], categories: string[] = []) {
-    if (await this.nameExists(name_ar, name_en))
-      throw new HttpError(HttpCode.CONFLICT, "nameAlreadyExists");
-
     const siblings = !!parent ? [] : await getChildren(TablesNames.TOPICS, parent!);
     const id = Serial.gen(parent, siblings);
 
@@ -122,7 +112,7 @@ export default {
       `, groups.map(g => [id, g]))
       .writeMany(`
       
-        INSERT INTO ${TablesNames.TOPIC_CATEGORY} (topic_id, category_id)
+        INSERT INTO ${TablesNames.TOPIC_CAT} (topic_id, category_id)
         VALUES (:a, :b)
       
       `, categories.map(c => [id, c]))
@@ -139,9 +129,6 @@ export default {
   async update(id: string, name_ar: string, name_en: string, desc_ar?: string, desc_en?: string) {
     if (!(await this.exists(id)))
       throw new HttpError(HttpCode.NOT_FOUND, 'topicNotFound');
-
-    if (await this.updatedNameExists(id, name_ar, name_en))
-      throw new HttpError(HttpCode.CONFLICT, "nameAlreadyExists");
 
     const date = new Date();
 
@@ -164,13 +151,13 @@ export default {
   // category
   // ----------------------------------------------------------------------------
   async getCategories(topic_id: string) {
-    return ((await oracle.op().query<{ CATEGORY_ID: string }>(`
+    return ((await oracle.op().query<{ category_id: string }>(`
     
-      SELECT category_id
-      FROM ${TablesNames.TOPIC_CATEGORY}
+      SELECT category_id "category_id"
+      FROM ${TablesNames.TOPIC_CAT}
       WHERE topic_id = :a
     
-    `, [topic_id])).rows || []).map(r => r.CATEGORY_ID);
+    `, [topic_id])).rows || []).map(r => r.category_id);
   },
 
   async replaceCategories(topic_id: string, categories: string[]) {
@@ -180,13 +167,13 @@ export default {
     await oracle.op()
       .write(`
       
-        DELETE FROM ${TablesNames.TOPIC_CATEGORY}
+        DELETE FROM ${TablesNames.TOPIC_CAT}
         WHERE topic_id = :a
       
       `, [topic_id])
       .writeMany(`
       
-        INSERT INTO ${TablesNames.TOPIC_CATEGORY} (topic_id, category_id)
+        INSERT INTO ${TablesNames.TOPIC_CAT} (topic_id, category_id)
         VALUES (:a, :b)
       
       `, categories.map(c => [topic_id, c]))
@@ -202,13 +189,13 @@ export default {
   // groups
   // ----------------------------------------------------------------------------------------------------------------
   async getGroups(topic_id: string) {
-    return (await oracle.op().query<Group>(`
+    return ((await oracle.op().query<{ group_id: string }>(`
     
-      SELECT G.*
-      FROM ${TablesNames.GROUPS} G, ${TablesNames.TOPIC_GROUP} TG
-      WHERE TG.TOPIC_ID = :a AND G.ID = TG.GROUP_ID
+      SELECT group_id "group_id"
+      FROM ${TablesNames.TOPIC_GROUP}
+      WHERE topic_id = :a
     
-    `, [topic_id])).rows || [];
+    `, [topic_id])).rows || []).map(r => r.group_id);
   },
 
   async replaceGroups(topic_id: string, groups: string[]) {
@@ -241,8 +228,13 @@ export default {
   async getDocuments(topic_id: string) {
     return (await oracle.op().query<TopicDocument>(`
     
-      SELECT *
-      FROM ${TablesNames.TOPIC_DOCUMENT}
+      SELECT 
+        topic_id "topic_id",
+        path "path",
+        name_ar "name_ar",
+        name_en "name_en",
+        upload_date "upload_date"
+      FROM ${TablesNames.TOPIC_DOC}
       WHERE topic_id = :a
     
     `, [topic_id])).rows || [];
@@ -255,7 +247,7 @@ export default {
     await oracle.op()
       .write(`
       
-        INSERT INTO ${TablesNames.TOPIC_DOCUMENT} (topic_id, document_id, path, name_ar, name_en)
+        INSERT INTO ${TablesNames.TOPIC_DOC} (topic_id, document_id, path, name_ar, name_en)
         SET (:a, :b, :c, :d)
       
       `, [topic_id, path, name_ar, name_en])
@@ -268,7 +260,7 @@ export default {
     await oracle.op()
       .write(`
       
-        DELETE FROM ${TablesNames.TOPIC_DOCUMENT}
+        DELETE FROM ${TablesNames.TOPIC_DOC}
         WHERE path = :b
       
       `, [path])

@@ -1,27 +1,27 @@
 export interface User {
-  ID: string;
-  ORGUNIT_ID: string;
+  id: string;
+  orgunit_id: string;
 
-  USERNAME: string;
-  IS_ACTIVE: number;
+  username: string;
+  is_active: number;
 
   // document id
-  AVATAR?: string;
+  avatar?: string;
 
-  FULLNAME: string;
-  EMAIL?: string;
-  MOBILE?: string;
+  fullname: string;
+  email?: string;
+  mobile?: string;
 
-  CREATE_DATE: Date;
-  UPDATE_DATE?: Date;
+  create_date: Date;
+  update_date?: Date;
 }
 
 export interface UserDetails extends User {
-  GROUPS: string[];
-  ROLES: number[];
+  groups: string[];
+  roles: number[];
 }
 
 export interface UserDetailsQueryResultItem extends User {
-  GROUP_ID: string;
-  ROLE_ID: number;
+  group_id: string;
+  role_id: number;
 }

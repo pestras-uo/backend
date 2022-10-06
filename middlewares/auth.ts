@@ -6,11 +6,10 @@ import { Action } from "../auth/roles/actions";
 import RolesManager from "../auth/roles/manager";
 import { HttpError } from "../misc/errors";
 import userModel from '../models/auth/user';
-import { UserDetails } from "../models/auth/user/interface";
 
 export default function (actions: Action[] = [], tokenType = TokenType.SESSION) {
 
-  return async (req: Request) => {
+  return async (req: Request, _: Response, next: NextFunction) => {
     const affectedUserId = (req.baseUrl + req.path).startsWith('/api/admin') 
       ? req.params.id 
       : null;
@@ -21,7 +20,7 @@ export default function (actions: Action[] = [], tokenType = TokenType.SESSION) 
     if (!data)
       throw new HttpError(HttpCode.INVALID_TOKEN, "invalidToken");
 
-    if (!data.user.IS_ACTIVE)
+    if (!data.user.is_active)
       throw new HttpError(HttpCode.UNAUTHORIZED, 'userIsInactive');
 
     if (actions?.length > 0) {
@@ -41,7 +40,9 @@ export default function (actions: Action[] = [], tokenType = TokenType.SESSION) 
     req.res.locals.user = data.user;
     req.res.locals.session = data.session;
 
-    req.next();
+    console.log('auth next');
+
+    next();
   }
 }
 

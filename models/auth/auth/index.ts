@@ -13,7 +13,7 @@ export default {
   async getPassword(user_id: string) {
     return (await oracle.op().query<Auth>(`
 
-      SELECT password, salt
+      SELECT password "password", salt "salt"
       FROM ${TablesNames.AUTH}
       WHERE user_id = :a
 
@@ -21,9 +21,9 @@ export default {
   },
 
   async getSession(user_id: string) {
-    return (await oracle.op().query<Pick<Auth, 'SOCKET' | 'TOKEN' | 'TOKEN_CREATE_DATE' | 'TOKEN_EXP_DATE'>>(`
+    return (await oracle.op().query<Pick<Auth, 'socket' | 'token' | 'token_create_date' | 'token_exp_date'>>(`
 
-      SELECT token, token_create_date, token_exp_date socket
+      SELECT token "token", token_create_date "token_create_date", token_exp_date "token_exp_date", socket "socket"
       FROM ${TablesNames.AUTH}
       WHERE user_id = :a
 
@@ -31,11 +31,17 @@ export default {
   },
 
   async getSessionByToken(user_id: string, token: string) {
-    return (await oracle.op().query<Pick<Auth, 'SOCKET' | 'TOKEN' | 'TOKEN_CREATE_DATE' | 'TOKEN_EXP_DATE'>>(`
+    return (await oracle.op().query<Pick<Auth, 'socket' | 'token' | 'token_create_date' | 'token_exp_date'>>(`
 
-      SELECT token, token_create_date, token_exp_date, socket
-      FROM ${TablesNames.AUTH}
-      WHERE user_id = :a AND token = :b
+      SELECT 
+        token "token",
+        token_create_date "token_create_date",
+        token_exp_date "token_exp_date",
+        socket "socket"
+      FROM
+        ${TablesNames.AUTH}
+      WHERE
+        user_id = :a AND token = :b
 
     `, [user_id, token])).rows?.[0] || null;
   },
@@ -46,23 +52,23 @@ export default {
   // util
   // ----------------------------------------------------------------------------------------------------------------
   async exists(user_id: string) {
-    return (await oracle.op().query<{ COUNT: number }>(`
+    return (await oracle.op().query<{ count: number }>(`
 
-      SELECT COUNT(*) as COUNT
+      SELECT COUNT(*) as "count"
       FROM ${TablesNames.AUTH}
       WHERE user_id = :a
 
-    `, [user_id])).rows?.[0].COUNT! > 0;
+    `, [user_id])).rows?.[0].count! > 0;
   },
 
   async hasSession(user_id: string, token: string) {
-    return (await oracle.op().query<{ COUNT: number }>(`
+    return (await oracle.op().query<{ count: number }>(`
 
-      SELECT COUNT(*) as COUNT
+      SELECT COUNT(*) as "count"
       FROM ${TablesNames.AUTH}
       WHERE user_id = :a AND token = :b
 
-    `, [user_id, token])).rows?.[0].COUNT! > 0;
+    `, [user_id, token])).rows?.[0].count! > 0;
   },
 
 

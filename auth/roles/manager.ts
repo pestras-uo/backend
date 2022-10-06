@@ -4,12 +4,12 @@ import { Action } from "./actions";
 
 export default {
   hasRoleId(user: UserDetails, role: number) {
-    return user.ROLES.includes(role);
+    return user.roles.includes(role);
   },
 
   hasAction(user: UserDetails, action: Action) {
     const actionParts = action.split('.');
-    for (const role of user.ROLES) {
+    for (const role of user.roles) {
 
       for (const roleAction of RolesMap.get(role)!) {
         const roleActionParts = roleAction.split('.');
@@ -32,7 +32,7 @@ export default {
   },
 
   authorize(user: UserDetails, actions: Action[], affected?: UserDetails) {
-    if (affected && this.getTopRole(user.ROLES) >= this.getTopRole(affected.ROLES))
+    if (affected && this.getTopRole(user.roles) >= this.getTopRole(affected.roles))
       return false;
 
     for (const action of actions)

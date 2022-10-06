@@ -27,8 +27,6 @@ export type CreateTopicRequest = Request<
     desc_ar?: string;
     desc_en?: string;
     parent?: string;
-    groups?: string[];
-    categories?: string[];
   }
 >;
 

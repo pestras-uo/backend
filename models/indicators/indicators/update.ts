@@ -3,14 +3,11 @@ import oracle from "../../../db/oracle";
 import { HttpError } from "../../../misc/errors";
 import { HttpCode } from "../../../misc/http-codes";
 import { Indicator } from "./interface";
-import { exists, updatedNameExists } from "./util";
+import { exists } from "./util";
 
 export async function update(id: string, ind: Partial<Indicator>) {
   if (!(await exists(id)))
     throw new HttpError(HttpCode.NOT_FOUND, 'indicatorNotFound');
-
-  if (await updatedNameExists(id, ind.NAME_AR, ind.NAME_EN))
-    throw new HttpError(HttpCode.CONFLICT, "nameAlreadyExists");
 
   const date = new Date();
 
@@ -22,12 +19,12 @@ export async function update(id: string, ind: Partial<Indicator>) {
       WHERE id = :h
 
     `, [
-      ind.NAME_AR,
-      ind.NAME_EN,
-      ind.DESC_AR,
-      ind.DESC_EN,
-      ind.UNIT_AR,
-      ind.UNIT_EN,
+      ind.name_ar,
+      ind.name_en,
+      ind.desc_ar,
+      ind.desc_en,
+      ind.unit_ar,
+      ind.unit_en,
       date,
       id
     ])

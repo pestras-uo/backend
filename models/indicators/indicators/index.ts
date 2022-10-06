@@ -4,7 +4,7 @@ import { getGroups, replaceGroups } from "./groups";
 import { create } from "./insert";
 import { get, getByOrgunit, getByTopic, getPage } from "./read";
 import { activate, update, updateOrgunit, updateTopic } from "./update";
-import { exists, nameExists, updatedNameExists } from "./util";
+import { exists } from "./util";
 
 export default {
 
@@ -21,8 +21,6 @@ export default {
   // Util
   // ----------------------------------------------------------------------------
   exists,
-  nameExists,
-  updatedNameExists,
 
 
 

@@ -1,11 +1,9 @@
 export interface Orgunit {
-  ID: string;
+  id: string;
 
-  NAME_AR: string; 
-  NAME_EN: string;
-
-  IS_MASTER: number;
+  name_ar: string; 
+  name_en: string;
   
-  CREATE_DATE: Date;
-  UPDATE_DATE?: Date;
+  create_date: Date;
+  update_date?: Date;
 }
