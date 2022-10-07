@@ -12,6 +12,7 @@ import {
   ApproveReadingRequest,
   GetReadingDocumentsRequest
 } from "./interfaces";
+import pubSub from '../../../misc/pub-sub';
 
 export default {
 
@@ -28,15 +29,34 @@ export default {
   },
 
   async create(req: InsertReadingRequest) {
-    req.res.json(await readingsModel.insert(req.params.id, req.body));
+    const reading = await readingsModel.insert(req.params.id, req.body);
+    req.res.json(reading);
+
+    pubSub.emit('publish', {
+      action: req.res.locals.action,
+      issuer: req.res.locals.issuer,
+      entity_id: `${req.params.id}/${reading.id}`
+    });
   },
 
   async update(req: UpdateReadingRequest) {
     req.res.json(await readingsModel.update(req.params.id, req.params.reading_id, req.body));
+
+    pubSub.emit('publish', {
+      action: req.res.locals.action,
+      issuer: req.res.locals.issuer,
+      entity_id: `${req.params.id}/${req.params.reading_id}`
+    });
   },
 
   async approve(req: ApproveReadingRequest) {
     req.res.json(await readingsModel.approve(req.params.id, req.params.reading_id, +req.params.state));
+
+    pubSub.emit('publish', {
+      action: req.res.locals.action,
+      issuer: req.res.locals.issuer,
+      entity_id: `${req.params.id}/${req.params.reading_id}`
+    });
   },
 
   async addDocument(req: AddReadingDocumentRequest) {
@@ -45,6 +65,12 @@ export default {
     await readingsModel.addDocument(req.params.id, req.params.reading_id, path, req.body.name_ar, req.body.name_en);
 
     req.res.json({ path });
+    
+    pubSub.emit('publish', {
+      action: req.res.locals.action,
+      issuer: req.res.locals.issuer,
+      entity_id: `${req.params.id}/${req.params.reading_id}`
+    });
   },
 
   async deleteDocument(req: deleteReadingDocumentRequest) {
@@ -55,5 +81,11 @@ export default {
     fs.unlinkSync(path.join(config.uploadsDir, 'readings', req.params.id, filename));
 
     req.res.json(true);
+
+    pubSub.emit('publish', {
+      action: req.res.locals.action,
+      issuer: req.res.locals.issuer,
+      entity_id: `${req.params.id}/${req.params.reading_id}`
+    });
   }
 }

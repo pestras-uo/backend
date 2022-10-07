@@ -8,24 +8,24 @@ import { StatsConfigValidators } from "./validators";
 export default Router()
   .get(
     '/',
-    auth(['indicators.stats.get.indicator']),
+    auth('indicator-stats.get.indicator'),
     controller.get
   )
   .get(
     '/:stats_id',
-    auth(['indicators.stats.get.one']),
+    auth('indicator-stats.get.one'),
     controller.getById
   )
   .post(
     '/',
     validate(StatsConfigValidators.CREATE),
-    auth(['indicators.stats.create.one']),
+    auth('indicator-stats.create.one'),
     controller.create
   )
   .put(
     '/:stats_id',
     validate(StatsConfigValidators.UPDATE),
-    auth(['indicators.stats.update.one']),
+    auth('indicator-stats.update.one'),
     controller.update
   )
   .use('/:stats_id/results', results);

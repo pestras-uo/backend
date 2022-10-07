@@ -6,7 +6,7 @@ import { get as getConfig } from "../config/read";
 import { getAdditionalColumns } from "../config/util";
 import { IndicatorState } from "../config/interface";
 import configModel from "../config";
-import { IndicatorReading, ReadingHistoryItem } from "./interface";
+import { ManualIndicatorReading, ReadingHistoryItem } from "./interface";
 import { getById } from "./read";
 
 const chars = 'a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z'.split(',');
@@ -30,7 +30,7 @@ export async function update(
     throw new HttpError(HttpCode.NOT_FOUND, 'readingNotFound');
 
   const addColumns = (await getAdditionalColumns(indicator_id))
-    .map(c => c.column_name) as (keyof Omit<IndicatorReading, 'id'>)[];
+    .map(c => c.column_name) as (keyof Omit<ManualIndicatorReading, 'id'>)[];
 
   const history: ReadingHistoryItem[] = curr_reading.history
     ? JSON.parse(curr_reading.history)
@@ -44,8 +44,8 @@ export async function update(
   };
 
   for (const prop in reading) {
-    if (addColumns.includes(prop as keyof Omit<IndicatorReading, 'id'>))
-      currState[prop] = curr_reading[prop as keyof Omit<IndicatorReading, 'id'>]
+    if (addColumns.includes(prop as keyof Omit<ManualIndicatorReading, 'id'>))
+      currState[prop] = curr_reading[prop as keyof Omit<ManualIndicatorReading, 'id'>]
   }
 
   history.push(currState);

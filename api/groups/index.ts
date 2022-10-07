@@ -7,23 +7,23 @@ import { GroupsValidators } from "./validators";
 export default Router()
   .get(
     '/',
-    auth(['groups.get.all']),
+    auth('groups.get.all'),
     controller.getAll
   )
   .get(
     '/:id',
-    auth(["groups.get.one"]),
+    auth("groups.get.one"),
     controller.get
   )
   .post(
     '/',
     validate(GroupsValidators.CREATE),
-    auth(['groups.create']),
+    auth('groups.create'),
     controller.create
   )
   .put(
     '/:id',
     validate(GroupsValidators.UPDATE),
-    auth(['groups.update']),
+    auth('groups.update'),
     controller.update
   )

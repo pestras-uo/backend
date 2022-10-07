@@ -5,8 +5,10 @@ import { TokenMeta, TokenType, verify } from "./token";
 import usersModel from '../models/auth/user';
 import authModel from '../models/auth/auth';
 import { UserDetails } from "../models/auth/user/interface";
+import { Action } from "./roles/actions";
 
 export interface UserSession {
+  action: Action,
   user: UserDetails;
   session: {
     TOKEN: string,

@@ -5,6 +5,6 @@ import controller from "./controller";
 export default Router()
   .get(
     '/',
-    auth(["indicators.stats.get.results"]),
+    auth("indicator-stats.get.results"),
     controller.getByStatsId
   )

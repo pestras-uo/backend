@@ -16,7 +16,7 @@ import { HttpCode } from "./misc/http-codes";
 import oracle from './db/oracle';
 
 // features
-import ws from './features/ws';
+// import ws from './features/ws';
 import sse from './features/sse';
 
 // routes
@@ -27,7 +27,7 @@ import api from "./api";
   const server = http.createServer(app);
 
 
-  ws.init(server);
+  // ws.init(server);
   await oracle.connect();
 
   app.use(morgan('combined'));

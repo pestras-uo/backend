@@ -7,40 +7,40 @@ import { IndicatorConfigValidators } from "./validators";
 export default Router()
   .get(
     '/',
-    auth(["indicators.config.get.one"]),
+    auth("indicator-config.get.one"),
     controller.get
   )
   .get(
     '/arguments',
-    auth(["indicators.config.get.arguments"]),
+    auth("indicator-config.get.arguments"),
     controller.getArguments
   )
   .post(
     '/manual',
     validate(IndicatorConfigValidators.CREATE_MANUAL),
-    auth(["indicators.config.create.manual"]),
+    auth("indicator-config.create.manual"),
     controller.createManual
   )
   .post(
     '/computational',
     validate(IndicatorConfigValidators.CREATE_COMPUTATIONAL),
-    auth(["indicators.config.create.computational"]),
+    auth("indicator-config.create.computational"),
     controller.createComputational
   )
   .post(
     '/view',
     validate(IndicatorConfigValidators.CREATE_VIEW),
-    auth(["indicators.config.create.view"]),
+    auth("indicator-config.create.view"),
     controller.createView
   )
   .put(
     '/',
     validate(IndicatorConfigValidators.UPDATE),
-    auth(["indicators.config.update.one"]),
+    auth("indicator-config.update.one"),
     controller.update
   )
   .put(
     '/state/:state',
-    auth(["indicators.config.update.state"]),
+    auth("indicator-config.update.state"),
     controller.updateState
   );

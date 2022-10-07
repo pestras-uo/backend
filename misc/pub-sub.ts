@@ -1,4 +1,5 @@
 import EventEmitter from 'eventemitter2';
+import { Action } from '../auth/roles/actions';
 
 const eventEmitter = new EventEmitter({
   // set this to `true` to use wildcards
@@ -17,32 +18,33 @@ const eventEmitter = new EventEmitter({
   ignoreErrors: false
 });
 
-export interface PubSubEvent<T = any> {
-  name?: string;
-  toId?: string;
-  socket?: string;
+export interface PubSubEvent {
+  action: Action;
+  to_id?: string;
   groups?: string[];
-  data?: T;
+  roles?: number[];
+  issuer: string;
+  orgunit?: string;
+  entity_id?: string;
 }
 
 export default {
-  on<T = any>(eventName: string, listener: (e: PubSubEvent<T>) => void) {
+  on(eventName: string, listener: (e: PubSubEvent) => void) {
     eventEmitter.on(eventName, data => listener(data));
     return this;
   },
 
-  once<T = any>(eventName: string, listener: (e: PubSubEvent<T>) => void) {
+  once(eventName: string, listener: (e: PubSubEvent) => void) {
     eventEmitter.once(eventName, data => listener(data));
     return this;
   },
 
-  emit<T = any>(event: string, e: PubSubEvent<T>) {
-    e.name = event;
+  emit(event: string, e: PubSubEvent) {
     eventEmitter.emit(event, e);
     return this;
   },
 
-  emitMany<T = any>(events: string[], e: PubSubEvent<T>) {
+  emitMany(events: string[], e: PubSubEvent) {
     for (const event of events)
       this.emit(event, e);
   },
@@ -53,13 +55,19 @@ export default {
 
   inGroups(e: PubSubEvent, groups: string[]) {
     if (!e.groups)
-      return false;
-
-    if (e.groups.includes("*"))
       return true;
 
     for (const group of e.groups)
       if (groups.includes(group))
+        return true;
+  },
+
+  inRoles(e: PubSubEvent, roles: number[]) {
+    if (!e.roles)
+      return true;
+
+    for (const role of e.roles)
+      if (roles.includes(role))
         return true;
   }
 };

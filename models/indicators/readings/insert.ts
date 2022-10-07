@@ -1,10 +1,11 @@
 import oracle, { DBSchemas } from "../../../db/oracle";
 import { HttpError } from "../../../misc/errors";
 import { HttpCode } from "../../../misc/http-codes";
-import { get } from "../config/read";
+import { get as getConfig } from "../config/read";
 import { getAdditionalColumns } from "../config/util";
-import { IndicatorReading } from "./interface";
+import { ManualIndicatorReading } from "./interface";
 import { randomUUID } from 'crypto';
+import { getById } from "./read";
 
 const chars = 'a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z'.split(',');
 
@@ -12,7 +13,7 @@ export async function insert(
   indicator_id: string,
   reading: { reading_value: string, note_ar?: string, note_en?: string, [key: string]: any }
 ) {
-  const config = await get(indicator_id);
+  const config = await getConfig(indicator_id);
 
   if (config.view_name)
     throw new HttpError(HttpCode.FORBIDDEN, 'indicatorReadingsAreExternal');
@@ -21,14 +22,15 @@ export async function insert(
     throw new HttpError(HttpCode.FORBIDDEN, 'indicatorReadingsAreAutoComputed');
 
   const addColumns = (await getAdditionalColumns(indicator_id))
-    .map(c => c.column_name) as (keyof  Omit<IndicatorReading, 'id'>)[];
+    .map(c => c.column_name) as (keyof  Omit<ManualIndicatorReading, 'id'>)[];
   const bindings: any[] = [
     randomUUID(),
     reading.reading_value,
     reading.note_ar,
     reading.note_en,
     !config.require_approval,
-    config.require_approval ? null : new Date()
+    config.require_approval ? null : new Date(),
+    "[]"
   ];
 
   for (const column of addColumns)
@@ -43,7 +45,8 @@ export async function insert(
         note_ar,
         note_en,
         is_approved,
-        approve_date
+        approve_date,
+        history
         ${
           addColumns.length 
           ? ',' + addColumns.join(',') 
@@ -59,5 +62,5 @@ export async function insert(
     `, bindings)
     .commit();
 
-  return bindings[0] as string;
+  return getById(indicator_id, bindings[0]);
 }

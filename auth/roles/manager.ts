@@ -31,15 +31,22 @@ export default {
     return roles.reduce((top, curr) => curr < top ? curr : top, roles[0]);
   },
 
-  authorize(user: UserDetails, actions: Action[], affected?: UserDetails) {
+  authorize(user: UserDetails, action: Action, affected?: UserDetails) {
     if (affected && this.getTopRole(user.roles) >= this.getTopRole(affected.roles))
       return false;
 
-    for (const action of actions)
-      if (this.hasAction(user, action))
-        return true;
+    if (this.hasAction(user, action))
+      return true;
 
     return false;
+  },
+
+  actionHas(action: Action, ...blocks: string[]) {
+    for (const block of blocks)
+      if (!action.includes(block))
+        return false;
+
+    return true;
   }
 
 } as const;

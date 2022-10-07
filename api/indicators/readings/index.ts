@@ -9,45 +9,45 @@ export default Router()
   .get(
     '/',
     validate(ReadingsValidators.GET_ALL, 'query'),
-    auth(['indicators.readings.get.all']),
+    auth('indicator-readings.get.all'),
     controller.getByPage
   )
   .get(
     '/:reading_id',
-    auth(["indicators.readings.get.one"]),
+    auth("indicator-readings.get.one"),
     controller.getById
   )
   .get(
     '/:reading_id/documents',
-    auth(["indicators.readings.get.documents"]),
+    auth("indicator-readings.get.documents"),
     controller.getDocuments
   )
   .post(
     '/',
     validate(ReadingsValidators.CREATE),
-    auth(["indicators.readings.create.one"]),
+    auth("indicator-readings.create.one"),
     controller.create
   )
   .post(
     '/:reading_id/documents',
-    auth(["indicators.readings.create.documents"]),
+    auth("indicator-readings.create.documents"),
     docUpload.single('document'),
     controller.addDocument
   )
   .put(
     '/:reading_id',
     validate(ReadingsValidators.UPDATE),
-    auth(["indicators.readings.update.one"]),
+    auth("indicator-readings.update.one"),
     controller.update
   )
   .put(
     '/:reading_id/approve/:state',
-    auth(['indicators.readings.update.approve']),
+    auth('indicator-readings.update.approve'),
     controller.approve
   )
   .delete(
     '/:reading_id/documents',
     validate(ReadingsValidators.DELETE_DOCUMENT),
-    auth(['indicators.readings.delete.documents']),
+    auth('indicator-readings.delete.documents'),
     controller.deleteDocument
   )

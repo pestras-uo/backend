@@ -7,23 +7,23 @@ import orgunitsValidators from './validators';
 export default Router()
   .get(
     '/',
-    auth(['orgunits.get.many']),
+    auth('orgunits.get.many'),
     controller.getAll
   )
   .get(
     '/:id',
-    auth(['orgunits.get.one']),
+    auth('orgunits.get.one'),
     controller.getById
   )
   .post(
     '/',
     validate(orgunitsValidators.CREATE),
-    auth(['orgunits.create']),
+    auth('orgunits.create'),
     controller.create
   )
   .put(
     '/:id',
     validate(orgunitsValidators.UPDATE_NAME),
-    auth(['orgunits.update.name']),
+    auth('orgunits.update.name'),
     controller.update
   );

@@ -38,6 +38,13 @@ export default {
 
   async updateUsername(req: UpdateUsernameRequest) {
     req.res.json(await usersModel.updateUsername(req.res.locals.user.id, req.body.username));
+
+    pubSub.emit("publish", {
+      action: req.res.locals.action,
+      entity_id: req.res.locals.user.id,
+      roles: [0, 1],
+      issuer: req.res.locals.user.id
+    });
   },
 
   async updatePassword(req: UpdatePasswordRequest) {
@@ -61,12 +68,11 @@ export default {
       req.body.mobile
     ));
 
-    pubSub.emit("sse.newEmail", {
-      groups: ['admins'],
-      data: {
-        id: req.res.locals.user.id,
-        profile: req.body
-      }
+    pubSub.emit("publish", {
+      action: req.res.locals.action,
+      entity_id: req.res.locals.user.id,
+      roles: [0, 1],
+      issuer: req.res.locals.user.id
     });
   },
 
@@ -81,5 +87,12 @@ export default {
     }
 
     req.res.json({ path: avatarPath });
+
+    pubSub.emit("publish", {
+      action: req.res.locals.action,
+      entity_id: req.res.locals.user.id,
+      roles: [0, 1],
+      issuer: req.res.locals.user.id
+    });
   }
 }
