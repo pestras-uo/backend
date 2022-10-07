@@ -1,3 +1,4 @@
+import pubSub from '../../misc/pub-sub';
 import categoriesModel from '../../models/core/categories';
 import { 
   CreateCategoryRequest, 
@@ -24,7 +25,14 @@ export default {
   // create
   // --------------------------------------------------------------------
   async create(req: CreateCategoryRequest) {
-    req.res.json(await categoriesModel.create(req.body.name_ar, req.body.name_en, req.body.parent));
+    const cat = await categoriesModel.create(req.body.name_ar, req.body.name_en, req.body.parent)
+    req.res.json(cat);
+
+    pubSub.emit("publish", {
+      action: req.res.locals.action,
+      entity_id: cat.id,
+      issuer: req.res.locals.user.id
+    });
   },
 
 
@@ -34,5 +42,11 @@ export default {
   // --------------------------------------------------------------------
   async update(req: updateCategoryRequest) {
     req.res.json(await categoriesModel.update(req.params.id, req.body.name_ar, req.body.name_en));
+
+    pubSub.emit("publish", {
+      action: req.res.locals.action,
+      entity_id: req.params.id,
+      issuer: req.res.locals.user.id
+    });
   }
 }

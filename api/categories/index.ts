@@ -7,23 +7,23 @@ import { CategoriesValidators } from "./validators";
 export default Router()
   .get(
     '/',
-    auth(["categories.get.all"]),
+    auth("categories.get.all"),
     controller.getAll
   )
   .get(
     '/:id',
-    auth(["categories.get.one"]),
+    auth("categories.get.one"),
     controller.getAll
   )
   .post(
     '/',
     validate(CategoriesValidators.CREATE),
-    auth(["categories.create"]),
+    auth("categories.create"),
     controller.create
   )
   .put(
     '/:id',
     validate(CategoriesValidators.UPDATE),
-    auth(["categories.update"]),
+    auth("categories.update"),
     controller.update
   );

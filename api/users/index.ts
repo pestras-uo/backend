@@ -9,22 +9,22 @@ import { avatarUpload } from '../../middlewares/upload';
 export default Router()
   .get(
     '/', 
-    auth(["users.get.all"]), 
+    auth("users.get.all"),
     controller.getAll
   )
   .get(
     '/inactive',
-    auth(["users.get.inactive"]),
+    auth("users.get.inactive"),
     controller.getInactive
   )
   .get(
     '/orgunit/:orgunit_id', 
-    auth(["users.get.by-orgunit"]),
+    auth("users.get.by-orgunit"),
     controller.getByOrgunit
   )
   .get(
     '/:id',
-    auth(["users.get.one"]),
+    auth("users.get.one"),
     controller.get
   )
   .put(

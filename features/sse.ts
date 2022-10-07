@@ -1,19 +1,21 @@
 import { Request, Response, Router } from "express";
 import { UserSession } from "../auth";
 import auth from "../middlewares/auth";
-import { HttpCode } from "../misc/http-codes";
 import pubSub from '../misc/pub-sub';
+import { Action } from '../auth/roles/actions';
+
+interface SSEData {
+  action: Action;
+  entity_id: string;
+  issuer: string;
+  orgunit: string;
+}
 
 const connected = new Map<string, Response<any, UserSession>>();
 
 function sse(req: Request, res: Response<any, UserSession>) {
-  const headers = {
-    'Content-Type': 'text/event-stream',
-    'Connection': 'keep-alive',
-    'Cache-Control': 'no-cache'
-  };
-
-  res.writeHead(HttpCode.OK, headers);
+  res.set('Content-Type', 'text/event-stream;charset=utf-8');
+  res.set('Cache-Control', 'no-cache');
 
   connected.set(res.locals.user.id, res);
 
@@ -23,21 +25,29 @@ function sse(req: Request, res: Response<any, UserSession>) {
   });
 }
 
-pubSub.on('sse.message', e => {
-  if (e.toId) {
-    if (connected.has(e.toId))
-      connected.get(e.toId)?.json(e.data);
-
-  } else if (e.groups?.length) {
-    for (const res of connected.values())
-      if (pubSub.inGroups(e, res.locals.user.groups))
-        res.json(e.data);
-
-  } else {
-    for (const res of connected.values())
-      res.json(e.data);
+pubSub.on('publish', e => {
+  const data: SSEData = {
+    action: e.action,
+    entity_id: e.entity_id,
+    issuer: e.issuer,
+    orgunit: e.orgunit
   }
+
+  for (const res of connected.values())
+    if (
+      (
+        res.locals.user.id !== e.issuer &&
+        pubSub.inGroups(e, res.locals.user.groups) && 
+        pubSub.inRoles(e, res.locals.user.roles)
+      ) || res.locals.user.id === e.to_id
+    )
+      send(res, data);
 });
 
 export default Router()
   .get('', auth(), sse);
+
+function send(res: Response, data: SSEData) {
+  res.write('event: sse\n');
+  res.write(`data: ${JSON.stringify(data)}\n\n`);
+}

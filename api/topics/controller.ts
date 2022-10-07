@@ -13,6 +13,7 @@ import {
   UpdateTopicGroupsRequest, 
   GetTopicDocumentsRequest 
 } from "./interfaces";
+import pubSub from '../../misc/pub-sub';
 
 export default {
 
@@ -32,13 +33,20 @@ export default {
   // create
   // ------------------------------------------------------------------------------
   async create(req: CreateTopicRequest) {
-    req.res.json(await topicsModel.create(
+    const topic = await topicsModel.create(
       req.body.name_ar,
       req.body.name_en,
       req.body.parent,
       req.body.desc_ar,
       req.body.desc_en,
-    ));
+    )
+    req.res.json(topic);
+
+    pubSub.emit("publish", {
+      action: req.res.locals.action,
+      entity_id: topic.id,
+      issuer: req.res.locals.user.id
+    });
   },
 
 
@@ -54,6 +62,12 @@ export default {
       req.body.desc_ar,
       req.body.desc_en,
     ));
+
+    pubSub.emit("publish", {
+      action: req.res.locals.action,
+      entity_id: req.params.id,
+      issuer: req.res.locals.user.id
+    });
   },
 
 
@@ -63,6 +77,12 @@ export default {
   // ------------------------------------------------------------------------------
   async updateGroups(req: UpdateTopicGroupsRequest) {
     req.res.json(await topicsModel.replaceGroups(req.params.id, req.body.groups));
+
+    pubSub.emit("publish", {
+      action: req.res.locals.action,
+      entity_id: req.params.id,
+      issuer: req.res.locals.user.id
+    });
   },
 
 
@@ -72,6 +92,12 @@ export default {
   // ------------------------------------------------------------------------------
   async updateCategories(req: UpdateTopicCategoriesRequest) {
     req.res.json(await topicsModel.replaceCategories(req.params.id, req.body.categories));
+
+    pubSub.emit("publish", {
+      action: req.res.locals.action,
+      entity_id: req.params.id,
+      issuer: req.res.locals.user.id
+    });
   },
 
 
@@ -89,6 +115,12 @@ export default {
     await topicsModel.addDocument(req.params.id, path, req.body.name_ar, req.body.name_en);
 
     req.res.json({ path });
+
+    pubSub.emit("publish", {
+      action: req.res.locals.action,
+      entity_id: req.params.id,
+      issuer: req.res.locals.user.id
+    });
   },
 
   async removeDocument(req: deleteTopicDocumentRequest) {
@@ -99,5 +131,11 @@ export default {
     fs.unlinkSync(path.join(config.uploadsDir, 'topics', req.params.id, filename));
 
     req.res.json(true);
+
+    pubSub.emit("publish", {
+      action: req.res.locals.action,
+      entity_id: req.params.id,
+      issuer: req.res.locals.user.id
+    });
   }
 }

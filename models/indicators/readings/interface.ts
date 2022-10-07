@@ -1,6 +1,11 @@
 import { Document } from "../..";
 
-export interface IndicatorReading {
+export interface ViewIndicatorReading {
+  reading_value: number;
+  [key: string]: number | string | Date;
+}
+
+export interface ManualIndicatorReading {
   id: string;
 
   reading_value: number;
@@ -15,6 +20,18 @@ export interface IndicatorReading {
   
   create_date: Date;
   update_date?: Date;
+
+  [key: string]: number | string | Date;
+}
+
+export interface ComputationalIndicatorReading {
+  id: string;
+
+  reading_value: number;
+  
+  create_date: Date;
+
+  [key: string]: number | string | Date;
 }
 
 export interface ReadingHistoryItem {
@@ -25,7 +42,7 @@ export interface ReadingHistoryItem {
   
   update_date: string;
 
-  [key: string]: any;
+  [key: string]: number | string | Date;
 }
 
 export interface ReadingDocument extends Document {

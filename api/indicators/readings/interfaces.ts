@@ -1,11 +1,11 @@
 import { Request } from "express";
-import { IndicatorReading, ReadingDocument } from "../../../models/indicators/readings/interface";
+import { ManualIndicatorReading, ReadingDocument } from "../../../models/indicators/readings/interface";
 
 export type GetIndicatorReadingsRequest = Request<
   // params
   { id: string },
   // response
-  IndicatorReading[],
+  ManualIndicatorReading[],
   // body
   null,
   // query
@@ -19,7 +19,7 @@ export type GetReadingByIdRequest = Request<
   // params
   { id: string, reading_id: string },
   // response
-  IndicatorReading
+  ManualIndicatorReading
 >;
 
 export type GetReadingDocumentsRequest = Request<
@@ -33,7 +33,7 @@ export type InsertReadingRequest = Request<
   // params
   { id: string },
   // response
-  string,
+  ManualIndicatorReading,
   // body
   { 
     reading_value: string, 
@@ -79,7 +79,7 @@ export type AddReadingDocumentRequest = Request<
 
 export type deleteReadingDocumentRequest = Request<
   // params
-  { id: string },
+  { id: string, reading_id: string },
   // reponse
   boolean,
   // body

@@ -3,12 +3,12 @@ import { HttpError } from "../../misc/errors";
 import { HttpCode } from "../../misc/http-codes";
 import usersModel from '../../models/auth/user';
 import pubSub from "../../misc/pub-sub";
-import { 
-  ActivateUserRequest, 
-  UpdateUserOrgunitRequest, 
-  CreateUserRequest, 
-  UpdateUserGroupsRequest, 
-  UpdateUserRolesRequest 
+import {
+  ActivateUserRequest,
+  UpdateUserOrgunitRequest,
+  CreateUserRequest,
+  UpdateUserGroupsRequest,
+  UpdateUserRolesRequest
 } from "./interfaces";
 
 
@@ -30,7 +30,15 @@ export default {
     if (!user)
       throw new HttpError(HttpCode.UNKNOWN_ERROR, "errorCreatingUser");
 
-    return req.res.json(user);
+    req.res.json(user);
+
+    pubSub.emit("publish", {
+      action: req.res.locals.action,
+      entity_id: user.id,
+      orgunit: user.orgunit_id,
+      roles: [0, 1],
+      issuer: req.res.locals.user.id
+    });
   },
 
   async activateUser(req: ActivateUserRequest) {
@@ -38,6 +46,13 @@ export default {
     const state = +req.params.state;
 
     req.res.json(await usersModel.activate(user_id, state));
+
+    pubSub.emit("publish", {
+      action: req.res.locals.action,
+      entity_id: user_id,
+      roles: [0, 1],
+      issuer: req.res.locals.user.id
+    });
   },
 
   async updateRoles(req: UpdateUserRolesRequest) {
@@ -49,15 +64,16 @@ export default {
 
     await usersModel.replaceRoles(user_id, roles);
 
-    pubSub.emit("sse.message", {
-      toId: user_id,
-      data: {
-        action: "user_role.update",
-        roles
-      }
+    req.res.json(true);
+
+    pubSub.emit("publish", {
+      action: req.res.locals.action,
+      to_id: user_id,
+      roles: [0, 1],
+      entity_id: user_id,
+      issuer: req.res.locals.user.id
     });
 
-    req.res.json(true);
   },
 
   async updateGroups(req: UpdateUserGroupsRequest) {
@@ -66,18 +82,28 @@ export default {
 
     await usersModel.replaceGroups(user_id, groups);
 
-    pubSub.emit("sse.message", {
-      toId: user_id,
-      data: {
-        action: "user_role.update",
-        groups
-      }
+    req.res.json(true);
+
+    pubSub.emit("publish", {
+      action: req.res.locals.action,
+      to_id: user_id,
+      roles: [0, 1],
+      entity_id: user_id,
+      issuer: req.res.locals.user.id
     });
 
-    req.res.json(true);
   },
 
-  async updateOrgunit(req: UpdateUserOrgunitRequest) {    
+  async updateOrgunit(req: UpdateUserOrgunitRequest) {
     req.res.json(await usersModel.updateOrgunit(req.params.id, req.body.orgunit));
+
+    pubSub.emit("publish", {
+      action: req.res.locals.action,
+      to_id: req.params.id,
+      roles: [0, 1],
+      orgunit: req.body.orgunit,
+      entity_id: req.params.id,
+      issuer: req.res.locals.user.id
+    });
   }
 }

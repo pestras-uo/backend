@@ -7,14 +7,15 @@ import RolesManager from "../auth/roles/manager";
 import { HttpError } from "../misc/errors";
 import userModel from '../models/auth/user';
 
-export default function (actions: Action[] = [], tokenType = TokenType.SESSION) {
+
+export default function (action?: Action, tokenType = TokenType.SESSION) {
 
   return async (req: Request, _: Response, next: NextFunction) => {
     const affectedUserId = (req.baseUrl + req.path).startsWith('/api/admin') 
       ? req.params.id 
       : null;
 
-    const token = req.header("Authorization")?.split(" ")[1];
+    const token = req.header("Authorization")?.split(" ")[1] || (req.query.t as string);
     const data = await verifyToken(token, tokenType);
 
     if (!data)
@@ -23,20 +24,21 @@ export default function (actions: Action[] = [], tokenType = TokenType.SESSION) 
     if (!data.user.is_active)
       throw new HttpError(HttpCode.UNAUTHORIZED, 'userIsInactive');
 
-    if (actions?.length > 0) {
+    if (action) {
 
       if (affectedUserId) {
         const affectedUser = await getAffectedUser(affectedUserId); 
 
-        if (!RolesManager.authorize(data.user, actions, affectedUser))
+        if (!RolesManager.authorize(data.user, action, affectedUser))
           throw new HttpError(HttpCode.UNAUTHORIZED, "unauthorizedRole");
 
       } else {
-        if (!RolesManager.authorize(data.user, actions))
+        if (!RolesManager.authorize(data.user, action))
           throw new HttpError(HttpCode.UNAUTHORIZED, "unauthorizedRole");
       }
     }
 
+    req.res.locals.action = action;
     req.res.locals.user = data.user;
     req.res.locals.session = data.session;
 

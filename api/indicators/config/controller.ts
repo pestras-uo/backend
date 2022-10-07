@@ -1,3 +1,4 @@
+import pubSub from '../../../misc/pub-sub';
 import indConfigModel from '../../../models/indicators/config';
 import {
   GetIndicatorConfigRequest,
@@ -31,6 +32,12 @@ export default {
       kpi_min: req.body.kpi_min,
       kpi_max: req.body.kpi_max
     }, req.body.additional_columns));
+
+    pubSub.emit('publish', {
+      action: req.res.locals.action,
+      issuer: req.res.locals.issuer,
+      entity_id: req.params.id
+    });
   },
 
   async createComputational(req: CreateComputationalIndicatorRequest) {
@@ -44,6 +51,12 @@ export default {
       kpi_min: req.body.kpi_min,
       kpi_max: req.body.kpi_max
     }, req.body.args));
+
+    pubSub.emit('publish', {
+      action: req.res.locals.action,
+      issuer: req.res.locals.issuer,
+      entity_id: req.params.id
+    });
   },
 
   async createView(req: CreateViewIndicatorRequest) {
@@ -57,6 +70,12 @@ export default {
       kpi_min: req.body.kpi_min,
       kpi_max: req.body.kpi_max
     }, req.body.additional_columns));
+
+    pubSub.emit('publish', {
+      action: req.res.locals.action,
+      issuer: req.res.locals.issuer,
+      entity_id: req.params.id
+    });
   },
 
   async update(req: UpdateIndicatorConfigRequest) {
@@ -68,9 +87,21 @@ export default {
       kpi_min: req.body.kpi_min,
       kpi_max: req.body.kpi_max
     }));
+
+    pubSub.emit('publish', {
+      action: req.res.locals.action,
+      issuer: req.res.locals.issuer,
+      entity_id: req.params.id
+    });
   },
 
   async updateState(req: UpdateIndicatorStateRequest) {
     req.res.json(await indConfigModel.updateState(req.params.id, +req.params.state));
+
+    pubSub.emit('publish', {
+      action: req.res.locals.action,
+      issuer: req.res.locals.issuer,
+      entity_id: req.params.id
+    });
   }
 }

@@ -10,30 +10,30 @@ export default Router()
   .post(
     "/create",
     validate(schemas.CREATE_USER),
-    auth(["users.create"]),
+    auth("users.create"),
     controller.createUser
   )
   .put(
     '/:id/roles',
     validate(schemas.UPDATE_USER_ROLES),
-    auth(["users.update.roles"]),
+    auth("users.update.roles"),
     controller.updateRoles
   )
   .put(
     '/:id/groups',
     validate(schemas.UPDATE_USER_GROUPS),
-    auth(["users.update.groups"]),
+    auth("users.update.groups"),
     controller.updateGroups
   )
   .put(
     '/:id/orgunit',
     validate(schemas.CHANGE_USER_ORG),
-    auth(["users.update.orgunit"]),
+    auth("users.update.orgunit"),
     exists(TablesNames.ORGUNITS, "body.orgunit"),
     controller.updateOrgunit
   )
   .put(
     '/:id/activate/:state',
-    auth(["users.update.active"]),
+    auth("users.update.active"),
     controller.activateUser
   )

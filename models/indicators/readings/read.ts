@@ -3,7 +3,7 @@ import { HttpError } from '../../../misc/errors';
 import { HttpCode } from '../../../misc/http-codes';
 import { get as getConfig } from '../config/read'
 import { getAdditionalColumns } from '../config/util';
-import { IndicatorReading } from './interface';
+import { ManualIndicatorReading } from './interface';
 
 export async function get(
   indicator_id: string,
@@ -19,7 +19,7 @@ export async function get(
     .map(c => `${c.column_name} "${c.column_name}"`).join(',');
 
   return (await oracle.op(DBSchemas.READINGS)
-    .query<IndicatorReading>(`
+    .query<ManualIndicatorReading>(`
     
       SELECT
         id "id",
@@ -52,7 +52,7 @@ export async function getViewReadings(
     throw new HttpError(HttpCode.NOT_FOUND, 'viewNameNotFound', { indicator_id });
 
   return (await oracle.op(DBSchemas.READINGS)
-    .query<IndicatorReading>(`
+    .query<ManualIndicatorReading>(`
     
       SELECT *
       FROM ${view_name}
@@ -73,7 +73,7 @@ export async function getById(
     .map(c => `${c.column_name} "${c.column_name}"`).join(',');
 
   return (await oracle.op(DBSchemas.READINGS)
-    .query<IndicatorReading>(`
+    .query<ManualIndicatorReading>(`
     
       SELECT
         id "id",
