@@ -72,12 +72,6 @@ export default Router()
     auth('indicators.update.categories'),
     controller.updateCategories
   )
-  .put(
-    '/:id/groups',
-    validate(IndicatorsValidators.UPDATE_GROUPS),
-    auth('indicators.update.groups'),
-    controller.updateGroups
-  )
 
   .delete(
     '/:id/document',

@@ -6,8 +6,6 @@ export enum TablesNames {
   GROUPS = "groups",
   ROLES = "roles",
   USERS = "users",
-  USER_GROUP = "user_group",
-  USER_ROLE = "user_role",
   
   CATEGORIES = "categories",
 
@@ -15,12 +13,10 @@ export enum TablesNames {
   TOPICS = "topics",
   TOPIC_CAT = "topic_category",
   TOPIC_DOC = "topic_document",
-  TOPIC_GROUP = "topic_group",
 
   INDICATORS = "indicators",
   IND_CAT = "indicator_category",
   IND_DOC = "indicator_document",
-  IND_GROUP = "indicator_group",
   
   IND_CONF = "indicator_config",
   IND_ARG = "indicator_argument",
@@ -48,9 +44,9 @@ export async function getChildren(table: string, serial: string) {
 
     SELECT id 'id'
     FROM ${table}
-    WHERE id LIKE '${serial}%'
+    WHERE id LIKE :a
 
-  `);
+  `, [`${serial}%`]);
 
   if (!result.rows)
     return [];
@@ -64,7 +60,7 @@ export async function getChildren(table: string, serial: string) {
 export async function exists(tableName: TablesNames, id: string) {
   return (await oracle.op().query<{ count: number }>(`
     
-      SELECT COUNT(*) 'count'
+      SELECT COUNT(*) "count"
       FROM ${tableName}
       WHERE ID = :a
     

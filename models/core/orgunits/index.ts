@@ -9,7 +9,7 @@ export default {
 
   // Getters
   // ----------------------------------------------------------------------------
-  async getAll() {
+  async getAll(parents: string[]) {
     return (await oracle.op().query<Orgunit>(`
 
       SELECT 
@@ -20,8 +20,10 @@ export default {
         update_date "update_date"
       FROM
         ${TablesNames.ORGUNITS}
+      WHERE
+        ${parents.map((_, i) => `id LIKE :a${i}`).join(' OR ')}
 
-    `)).rows || [];
+    `, parents.map(p => `${p}%`))).rows || [];
   },
 
   async get(id: string) {
@@ -61,10 +63,10 @@ export default {
 
   // create
   // ----------------------------------------------------------------------------
-  async create(name_ar: string, name_en: string, parent?: string) {
+  async create(name_ar: string, name_en: string, parent_id?: string) {
 
-    const siblings = !!parent ? [] : await getChildren(TablesNames.ORGUNITS, parent!);
-    const id = Serial.gen(parent, siblings);
+    const siblings = !!parent_id ? [] : await getChildren(TablesNames.ORGUNITS, parent_id!);
+    const id = Serial.gen(parent_id, siblings);
 
     await oracle.op()
       .write(`

@@ -1,4 +1,4 @@
-import manager from "../../auth/roles/manager";
+import { getTopRole } from "../../auth/roles/manager";
 import { HttpError } from "../../misc/errors";
 import { HttpCode } from "../../misc/http-codes";
 import usersModel from '../../models/auth/user';
@@ -7,8 +7,8 @@ import {
   ActivateUserRequest,
   UpdateUserOrgunitRequest,
   CreateUserRequest,
-  UpdateUserGroupsRequest,
-  UpdateUserRolesRequest
+  UpdateUserRolesRequest,
+  UpdateUserGroupsRequest
 } from "./interfaces";
 
 
@@ -17,14 +17,16 @@ export default {
   async createUser(req: CreateUserRequest) {
     const body = req.body;
 
-    if (manager.getTopRole(req.res.locals.user.roles) >= manager.getTopRole(body.roles))
+    // only root user can create admins
+    if (getTopRole(body.roles) === 1 && getTopRole(req.res.locals.user.roles) !== 0)
       throw new HttpError(HttpCode.UNAUTHORIZED, "unauthorizedRole");
 
     const user = await usersModel.create(
       req.body.orgunit,
       req.body.username,
+      req.body.password,
       req.body.roles,
-      req.body.password
+      req.body.groups
     );
 
     if (!user)
@@ -59,10 +61,11 @@ export default {
     const roles = req.body.roles;
     const user_id = req.params.id;
 
-    if (manager.getTopRole(req.res.locals.user.roles) >= manager.getTopRole(roles))
+    // only root user can create admins
+    if (getTopRole(roles) === 1 && getTopRole(req.res.locals.user.roles) !== 0)
       throw new HttpError(HttpCode.UNAUTHORIZED, "unauthorizedRole");
 
-    await usersModel.replaceRoles(user_id, roles);
+    await usersModel.updateRoles(user_id, roles);
 
     req.res.json(true);
 
@@ -73,14 +76,13 @@ export default {
       entity_id: user_id,
       issuer: req.res.locals.user.id
     });
-
   },
 
   async updateGroups(req: UpdateUserGroupsRequest) {
     const groups = req.body.groups;
     const user_id = req.params.id;
 
-    await usersModel.replaceGroups(user_id, groups);
+    await usersModel.updateGroups(user_id, groups);
 
     req.res.json(true);
 
@@ -91,7 +93,6 @@ export default {
       entity_id: user_id,
       issuer: req.res.locals.user.id
     });
-
   },
 
   async updateOrgunit(req: UpdateUserOrgunitRequest) {

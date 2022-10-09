@@ -1,5 +1,6 @@
-import oracledb, { autoCommit } from 'oracledb';
+import oracledb from 'oracledb';
 import config from "../config";
+import pubSub from '../misc/pub-sub';
 
 oracledb.outFormat = oracledb.OUT_FORMAT_OBJECT;
 oracledb.autoCommit = true;
@@ -50,6 +51,8 @@ const oracle = {
       });
 
       console.log("connected to database successfully");
+
+      pubSub.emit('dbConnected', null);
 
 
     } catch (error) {

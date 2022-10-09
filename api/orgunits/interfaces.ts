@@ -1,11 +1,18 @@
 import { Request } from "express";
+import { UserSession } from "../../auth";
 import { Orgunit } from "../../models/core/orgunits/interface";
 
 export type GetAllOrgunitsRequest = Request<
   // params
   any,
   // response
-  Orgunit[]
+  Orgunit[],
+  // body
+  null,
+  // query
+  null,
+  // locals
+  UserSession
 >;
 
 export type GetOrgunitsByIdRequest = Request<

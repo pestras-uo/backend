@@ -18,12 +18,12 @@ export default Router()
   .post(
     '/',
     validate(orgunitsValidators.CREATE),
-    auth('orgunits.create'),
+    auth('orgunits.create.one'),
     controller.create
   )
   .put(
     '/:id',
     validate(orgunitsValidators.UPDATE_NAME),
-    auth('orgunits.update.name'),
+    auth('orgunits.update.one'),
     controller.update
   );

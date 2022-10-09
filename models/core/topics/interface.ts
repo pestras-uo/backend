@@ -1,6 +1,6 @@
 import { Document } from "../..";
 
-export interface Topic {
+interface BasicTopic {
   id: string;
 
   name_ar: string;
@@ -10,17 +10,17 @@ export interface Topic {
   desc_en?: string;
 
   create_date: Date;
+  create_by: string;
   update_date?: Date;
+  update_by?: string;
 }
 
-export interface TopicDetails extends Topic {
-  groups: number[];
-  categories: number[];
+export interface DBTopic extends BasicTopic {
+  categories: string;
 }
 
-export interface TopicDetailsQueryResultItem extends Topic {
-  group_id: number;
-  category_id: number;
+export interface Topic extends BasicTopic {
+  categories: string[];
 }
 
 export interface TopicDocument extends Document {

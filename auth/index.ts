@@ -2,14 +2,17 @@ import { HttpError } from "../misc/errors";
 import { HttpCode } from "../misc/http-codes";
 import { TokenMeta, TokenType, verify } from "./token";
 
-import usersModel from '../models/auth/user';
 import authModel from '../models/auth/auth';
-import { UserDetails } from "../models/auth/user/interface";
+import { User } from "../models/auth/user/interface";
 import { Action } from "./roles/actions";
+import { Group } from "../models/auth/groups/interface";
+import { cache } from "../cache";
+import { authorize } from "./roles/manager";
 
 export interface UserSession {
+  groups: Group[],
   action: Action,
-  user: UserDetails;
+  user: User;
   session: {
     TOKEN: string,
     TOKEN_CREATE_DATE: Date,
@@ -17,22 +20,42 @@ export interface UserSession {
   }
 }
 
-export function verifyToken(token: string, type: TokenType) {
+export async function authenticate(
+  token: string,
+  type: TokenType,
+  action?: Action,
+  entity_id?: string,
+  payload?: { [key: string]: any }
+) {
   const tokenData = verify(token);
 
   if (tokenData.type !== type)
     throw new HttpError(HttpCode.INVALID_TOKEN, "invalidTokenType");
 
-  // Check token expire date
-  if (tokenData.type === TokenType.SESSION) {
-    return validateSessionToken(tokenData.id, token);
-
-  }
-  // else if (tokenData.type === TokenType.API) {
-  //   // TODO: validate api token
+  // TODO: validate api token
+  // if (tokenData.type === TokenType.API)
   //   return validateApiAccess(tokenData.id);
-  // }
-  return null;
+
+  const session = await validateSessionToken(tokenData.id, token);
+  const user = cache.users.get(tokenData.id);
+
+  if (!user)
+    throw new HttpError(HttpCode.UNAUTHORIZED, "tokenExpired");
+
+  if (!user.is_active)
+    throw new HttpError(HttpCode.UNAUTHORIZED, 'userIsInactive');
+
+  if (action && !authorize(action, user, entity_id, payload))
+    throw new HttpError(HttpCode.UNAUTHORIZED, "unauthorizedRole");
+
+  return {
+    user,
+    session: {
+      TOKEN: token,
+      TOKEN_CREATE_DATE: session.token_create_date,
+      TOKEN_EXP_DATE: session.token_exp_date
+    } as TokenMeta
+  };
 }
 
 // validate session
@@ -49,19 +72,10 @@ async function validateSessionToken(user_id: string, token: string) {
     throw new HttpError(HttpCode.INVALID_TOKEN, "tokenExpired");
   }
 
-  const user = await usersModel.get(user_id);
-
-  if (!user)
-    throw new HttpError(HttpCode.UNAUTHORIZED, "tokenExpired");
-
   return {
-    user,
-    session: {
-      TOKEN: token,
-      TOKEN_CREATE_DATE: session.token_create_date,
-      TOKEN_EXP_DATE: session.token_exp_date
-    } as TokenMeta
-  };
+    token_create_date: session.token_create_date,
+    token_exp_date: session.token_exp_date
+  }
 }
 
 
@@ -70,5 +84,5 @@ async function validateSessionToken(user_id: string, token: string) {
 // validate api access
 // ----------------------------------------------------------------------------------------------------------
 async function validateApiAccess(api_id: string) {
-  return false;
+  throw new HttpError(HttpCode.SERVIC_UNAVAILABLE, "serviceUnavailable");
 }

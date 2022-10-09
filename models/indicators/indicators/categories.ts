@@ -4,33 +4,20 @@ import { HttpError } from "../../../misc/errors";
 import { HttpCode } from "../../../misc/http-codes";
 import { exists } from "./util";
 
-export async function getCategories(indicator_id: string) {
-  return ((await oracle.op().query<{ category_id: string }>(`
-  
-    SELECT category_id "category_id"
-    FROM ${TablesNames.IND_CAT}
-    WHERE indicator_id = :a
-  
-  `, [indicator_id])).rows || []).map(r => r.category_id);
-}
-
-export async function replaceCategories(id: string, categories: string[]) {
+export async function updateCategories(id: string, categories: string[], issuer_id: string) {
   if (!(await exists(id)))
     throw new HttpError(HttpCode.NOT_FOUND, 'indicatorNotFound');
+
+  const date = new Date();
 
   await oracle.op()
     .write(`
     
-      DELETE FROM ${TablesNames.IND_CAT}
-      WHERE indicator_id = :a
+      UPDATE ${TablesNames.INDICATORS}
+      SET categories = :a, update_date = :b, update_by = :c
+      WHERE id = :d
     
-    `, [id])
-    .writeMany(`
-    
-      INSERT INTO ${TablesNames.IND_CAT} (indicator_id, category_id)
-      VALUES (:a, :b)
-    
-    `, categories.map(c => [id, c]))
+    `, [JSON.stringify(categories), date, issuer_id, id])
     .commit();
 
   return true;

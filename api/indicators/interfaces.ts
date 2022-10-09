@@ -1,11 +1,18 @@
 import { Request } from "express";
-import { Indicator, IndicatorDetails, IndicatorDocument } from "../../models/indicators/indicators/interface";
+import { UserSession } from "../../auth";
+import { Indicator, IndicatorDocument } from "../../models/indicators/indicators/interface";
 
 export type GetIndicatorsByTopicRequest = Request<
   // params
   { topic_id: string },
   // response
-  Indicator[]
+  Indicator[],
+  // body
+  null,
+  // query
+  null,
+  // locals
+  UserSession
 >;
 
 export type GetIndicatorsByOrgunitRequest = Request<
@@ -19,7 +26,7 @@ export type GetIndicatorsByIdRequest = Request<
   // params
   { id: string },
   // response
-  IndicatorDetails
+  Indicator
 >;
 
 export type GetIndicatorsDocumentsRequest = Request<
@@ -33,21 +40,9 @@ export type CreateIndicatorRequest = Request<
   // params
   any,
   // response
-  IndicatorDetails,
+  Indicator,
   // body
-  {
-    orgunit_id: string;
-    topic_id: string;
-
-    name_ar: string;
-    name_en: string;
-    desc_ar?: string;
-    desc_en?: string;
-    unit_ar?: string;
-    unit_en?: string;
-
-    parent?: string;
-  }
+  Omit<Indicator, 'id' | 'create_date' | 'update_date' | 'is_active'> & { parent_id?: string }
 >
 
 export type UpdateIndicatorRequest = Request<
@@ -89,15 +84,6 @@ export type ActivateIndicatorRequest = Request<
   { id: string, state: string },
   // response
   Date
->;
-
-export type UpdateIndicatorGroupsRequest = Request<
-  // params
-  { id: string },
-  // response
-  boolean,
-  // body
-  { groups: string[]; }
 >;
 
 export type UpdateIndicatorCategoriesRequest = Request<

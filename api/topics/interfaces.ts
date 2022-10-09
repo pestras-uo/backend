@@ -21,13 +21,7 @@ export type CreateTopicRequest = Request<
   // response
   Topic,
   // body
-  {
-    name_ar: string;
-    name_en: string;
-    desc_ar?: string;
-    desc_en?: string;
-    parent?: string;
-  }
+  Omit<Topic, 'id' | 'create_date' | 'create_by'> & { parent_id?: string; }
 >;
 
 export type UpdateTopicRequest = Request<
@@ -42,22 +36,13 @@ export type UpdateTopicRequest = Request<
     desc_ar?: string;
     desc_en?: string;
   }
->; 
-
-export type UpdateTopicGroupsRequest = Request<
-  // params
-  { id: string },
-  // response
-  boolean,
-  // body
-  { groups: string[]; }
->; 
+>;
 
 export type UpdateTopicCategoriesRequest = Request<
   // params
   { id: string },
   // response
-  boolean,
+  Date,
   // body
   { categories: string[]; }
 >; 

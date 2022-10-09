@@ -18,12 +18,24 @@ export default Router()
   .post(
     '/',
     validate(GroupsValidators.CREATE),
-    auth('groups.create'),
+    auth('groups.create.one'),
     controller.create
   )
   .put(
     '/:id',
     validate(GroupsValidators.UPDATE),
-    auth('groups.update'),
+    auth('groups.update.one'),
     controller.update
+  )
+  .put(
+    '/:id/actions',
+    validate(GroupsValidators.UPDATE_ROLES),
+    auth('groups.update.actions'),
+    controller.updateRoles
+  )
+  .put(
+    '/:id/orgunits',
+    validate(GroupsValidators.UPDATE_ORGUNIT),
+    auth('groups.update.orgunit'),
+    controller.updateOrgunit
   )
