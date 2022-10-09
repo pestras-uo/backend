@@ -2,10 +2,10 @@ import { TablesNames } from "../..";
 import oracle from "../../../db/oracle";
 import { HttpError } from "../../../misc/errors";
 import { HttpCode } from "../../../misc/http-codes";
-import { Indicator } from "./interface";
+import { DBIndicator } from "./interface";
 import { exists } from "./util";
 
-export async function update(id: string, ind: Partial<Indicator>) {
+export async function update(id: string, ind: Partial<DBIndicator>, issuer_id: string) {
   if (!(await exists(id)))
     throw new HttpError(HttpCode.NOT_FOUND, 'indicatorNotFound');
 
@@ -15,8 +15,8 @@ export async function update(id: string, ind: Partial<Indicator>) {
     .write(`
     
       UPDATE ${TablesNames.INDICATORS}
-      SET name_ar = :a, name_en = :b, desc_ar = :c, desc_en = :d, unit_ar = :e, unit_en = :f, update_date = :g
-      WHERE id = :h
+      SET name_ar = :a, name_en = :b, desc_ar = :c, desc_en = :d, unit_ar = :e, unit_en = :f, update_date = :g, update_by = :h
+      WHERE id = :i
 
     `, [
       ind.name_ar,
@@ -26,6 +26,7 @@ export async function update(id: string, ind: Partial<Indicator>) {
       ind.unit_ar,
       ind.unit_en,
       date,
+      issuer_id,
       id
     ])
     .commit();
@@ -33,7 +34,7 @@ export async function update(id: string, ind: Partial<Indicator>) {
   return date;
 }
 
-export async function updateOrgunit(id: string, orgunit_id: string) {
+export async function updateOrgunit(id: string, orgunit_id: string, issuer_id: string) {
   if (!(await exists(id)))
     throw new HttpError(HttpCode.NOT_FOUND, 'indicatorNotFound');
 
@@ -43,16 +44,16 @@ export async function updateOrgunit(id: string, orgunit_id: string) {
     .write(`
     
       UPDATE ${TablesNames.INDICATORS}
-      SET orgunit_id = :a, update_date = :b
-      WHERE id = :c
+      SET orgunit_id = :a, update_date = :b, update_by = :c
+      WHERE id = :d
     
-    `, [orgunit_id, date, id])
+    `, [orgunit_id, date, issuer_id, id])
     .commit();
 
   return date;
 }
 
-export async function updateTopic(id: string, topic_id: string) {
+export async function updateTopic(id: string, topic_id: string, issuer_id: string) {
   if (!(await exists(id)))
     throw new HttpError(HttpCode.NOT_FOUND, 'indicatorNotFound');
 
@@ -62,16 +63,16 @@ export async function updateTopic(id: string, topic_id: string) {
     .write(`
     
       UPDATE ${TablesNames.INDICATORS}
-      SET topic_id = :a, update_date = :b
-      WHERE id = :c
+      SET topic_id = :a, update_date = :b, update_by = :c
+      WHERE id = :d
     
-    `, [topic_id, date, id])
+    `, [topic_id, date, issuer_id, id])
     .commit();
 
   return date;
 }
 
-export async function activate(id: string, state = 1) {
+export async function activate(id: string, state = 1, issuer_id: string) {
   if (!(await exists(id)))
     throw new HttpError(HttpCode.NOT_FOUND, 'indicatorNotFound');
 
@@ -81,10 +82,10 @@ export async function activate(id: string, state = 1) {
     .write(`
     
       UPDATE ${TablesNames.INDICATORS}
-      SET is_active = :a, update_date = :b
-      WHERE id = :c
+      SET is_active = :a, update_date = :b, update_by = :c
+      WHERE id = :d
     
-    `, [state, date, id])
+    `, [state, date, issuer_id, id])
     .commit();
 
   return date;

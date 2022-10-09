@@ -1,12 +1,12 @@
 import { Request } from "express";
 import { UserSession } from "../../auth";
-import { UserDetails } from "../../models/auth/user/interface";
+import { User } from "../../models/auth/user/interface";
 
 export type LoginRequest = Request<
   // params
   any,
   // response
-  { user: UserDetails, token: string },
+  { user: User, token: string },
   // body
   { username: string; password: string; remember: boolean; }
 >;
@@ -15,7 +15,7 @@ export type VerifySessionRequest = Request<
   // params
   any,
   // response
-  { user: UserDetails, token: string },
+  { user: User, token: string },
   // body
   any,
   // query

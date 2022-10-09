@@ -1,6 +1,6 @@
 import { Document } from "../..";
 
-export interface Indicator {
+interface BasicIndicator {
   id: string;
   orgunit_id: string;
   topic_id: string;
@@ -17,17 +17,17 @@ export interface Indicator {
   is_active: 1 | 0;
 
   create_date: Date;
+  create_by: string;
   update_date?: Date;
+  update_by: string;
 }
 
-export interface IndicatorDetails extends Indicator {
-  groups: number[];
-  categories: number[];
+export interface DBIndicator extends BasicIndicator {
+  categories: string;
 }
 
-export interface IndicatorDetailsQueryResultItem extends Indicator {
-  group_id: number;
-  category_id: number;
+export interface Indicator extends BasicIndicator {
+  categories: string[];
 }
 
 export interface IndicatorDocument extends Document {

@@ -8,7 +8,8 @@ export const Actions = [
   "users.get.one",
   "users.get.inactive",
   "users.get.by-orgunit",
-  "users.create",
+  "users.create.*",
+  "users.create.one",
   "users.update.*",
   "users.update.orgunit",
   "users.update.username",
@@ -24,8 +25,12 @@ export const Actions = [
   "groups.get.*",
   "groups.get.all",
   "groups.get.one",
-  "groups.create",
-  "groups.update",
+  "groups.create.*",
+  "groups.create.one",
+  "groups.update.*",
+  "groups.update.one",
+  "groups.update.actions",
+  "groups.update.orgunit",
 
   
   // Orgunits
@@ -33,17 +38,20 @@ export const Actions = [
   "orgunits.get.*",
   "orgunits.get.one",
   "orgunits.get.many",
-  "orgunits.create",
+  "orgunits.create.*",
+  "orgunits.create.one",
   "orgunits.update.*",
-  "orgunits.update.name",
+  "orgunits.update.one",
 
   // Categories
   "categories.*",
   "categories.get.*",
   "categories.get.all",
   "categories.get.one",
-  "categories.create",
-  "categories.update",
+  "categories.create.*",
+  "categories.create.one",
+  "categories.update.*",
+  "categories.update.one",
 
   // topics
   "topics.*",

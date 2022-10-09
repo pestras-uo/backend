@@ -1,18 +1,19 @@
 import { Request } from "express";
 import { UserSession } from "../../auth";
-import { UserDetails } from "../../models/auth/user/interface";
+import { User } from "../../models/auth/user/interface";
 
 export type CreateUserRequest = Request<
   // params
   any, 
   // response
-  UserDetails,
+  User,
   // body
   {
     orgunit: string;
     username: string;
     password: string;
     roles: number[];
+    groups: string[];
   },
   // query,
   any,
@@ -43,9 +44,14 @@ export type UpdateUserRolesRequest = Request<
 export type UpdateUserGroupsRequest = Request<
   // params
   { id: string },
+  // response
   boolean,
   // body
-  { groups: string[]; }
+  { groups: string[]; },
+  // query
+  any,
+  // locals
+  UserSession
 >;
 
 export type UpdateUserOrgunitRequest = Request<

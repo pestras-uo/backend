@@ -1,8 +1,7 @@
-import { getCategories, replaceCategories } from "./categories";
+import { updateCategories } from "./categories";
 import { addDocument, deleteDocument, getDocuments } from "./documents";
-import { getGroups, replaceGroups } from "./groups";
 import { create } from "./insert";
-import { get, getByOrgunit, getByTopic, getPage } from "./read";
+import { get, getByOrgunit, getByTopic, getIndicatorsWithProjection } from "./read";
 import { activate, update, updateOrgunit, updateTopic } from "./update";
 import { exists } from "./util";
 
@@ -10,10 +9,10 @@ export default {
 
   // Getters
   // ----------------------------------------------------------------------------
-  getPage,
   get,
   getByTopic,
   getByOrgunit,
+  getIndicatorsWithProjection,
 
 
 
@@ -42,18 +41,9 @@ export default {
 
 
 
-  // groups
-  // ----------------------------------------------------------------------------------------------------------------
-  getGroups,
-  replaceGroups,
-
-
-
-
   // category
   // ----------------------------------------------------------------------------
-  getCategories,
-  replaceCategories,
+  updateCategories,
 
 
 

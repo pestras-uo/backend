@@ -1,5 +1,5 @@
 import { Validall } from "@pestras/validall";
-import { RolesList } from "../../auth/roles";
+import { Role } from "../../auth/roles";
 
 const passwordRegex = /^[a-zA-Z0-9!@#$%^&*-_=+.|<>:;'"()]{8,64}$/;
 const usernameRegex = /^[a-zA-Z0-9_\-.]{4,64}$/;
@@ -7,8 +7,8 @@ const usernameRegex = /^[a-zA-Z0-9_\-.]{4,64}$/;
 enum AdminValidators {
   CREATE_USER = "createUser",
   UPDATE_USER_ROLES = "updateUserRoles",
-  CHANGE_USER_ORG = "changeOrganization",
-  UPDATE_USER_GROUPS = "UpdateUserGroups"
+  UPDATE_USER_GROUPS = "updateUserGroups",
+  CHANGE_USER_ORG = "changeOrganization"
 };
 
 new Validall(AdminValidators.CREATE_USER, {
@@ -17,34 +17,14 @@ new Validall(AdminValidators.CREATE_USER, {
   password: { $type: 'string', $regex: passwordRegex, $required: true, $message: 'invalidPassword' },
   roles: {
     $required: true,
-    $length: { $gt: 0 },
+    $is: "notEmpty",
     $message: "$rolesAreRequired",
     $each: {
       $type: 'number',
-      $enum: RolesList.slice(1),
+      $inRange: [Role.ADMIN, Role.VIEWER],
       $message: "invalidRole"
     }
-  }
-});
-
-new Validall(AdminValidators.UPDATE_USER_ROLES, {
-  roles: {
-    $required: true,
-    $length: { $lt: RolesList.length },
-    $message: "$rolesAreRequired",
-    $each: {
-      $type: 'number',
-      $enum: RolesList.slice(1),
-      $message: "invalidRole"
-    }
-  }
-});
-
-new Validall(AdminValidators.CHANGE_USER_ORG, {
-  orgunit: { $type: 'string', $required: true, $message: 'organizationIdIsRequired' }
-});
-
-new Validall(AdminValidators.UPDATE_USER_GROUPS, {
+  },
   groups: {
     $default: [],
     $each: {
@@ -52,6 +32,33 @@ new Validall(AdminValidators.UPDATE_USER_GROUPS, {
       $message: "invalidGroup"
     }
   }
+});
+
+new Validall(AdminValidators.UPDATE_USER_ROLES, {
+  roles: {
+    $required: true,
+    $is: "notEmpty",
+    $message: "$rolesAreRequired",
+    $each: {
+      $type: 'number',
+      $inRange: [Role.ADMIN, Role.VIEWER],
+      $message: "invalidRole"
+    }
+  }
+});
+
+new Validall(AdminValidators.UPDATE_USER_GROUPS, {
+  roles: {
+    $default: [],
+    $each: {
+      $type: 'string',
+      $message: "invalidGroup"
+    }
+  }
+});
+
+new Validall(AdminValidators.CHANGE_USER_ORG, {
+  orgunit: { $type: 'string', $required: true, $message: 'organizationIdIsRequired' }
 });
 
 export default AdminValidators;

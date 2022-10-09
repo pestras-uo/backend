@@ -9,7 +9,12 @@ import {
 
 export default {
   async getAll(req: GetAllOrgunitsRequest) {
-    req.res.json(await orgsModel.getAll());
+    const parents = [req.res.locals.user.orgunit_id];
+    
+    for (const group of req.res.locals.user.groups)
+      parents.push(group.orgunit_id);
+
+    req.res.json(await orgsModel.getAll(parents));
   },
 
   async getById(req: GetOrgunitsByIdRequest) {

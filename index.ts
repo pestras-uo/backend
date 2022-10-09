@@ -11,6 +11,7 @@ import http from 'http';
 import path from 'path';
 import { HttpError } from "./misc/errors";
 import { HttpCode } from "./misc/http-codes";
+import './cache';
 
 // db
 import oracle from './db/oracle';

@@ -6,7 +6,6 @@ export enum IndicatorsValidators {
   UPDATE_ORGUNIT = 'updateIndicatorOrgunit',
   UPDATE_TOPIC = 'updateIndicatorTopic',
   UPDATE_CATEGORIES = 'updateIndicatorCategories',
-  UPDATE_GROUPS = 'updateIndicatorGroups',
   ADD_DOCUMENT = 'addIndicatorDocument',
   DELETE_DOCUMENT = 'deleteIndicaotDocument'
 }
@@ -22,7 +21,11 @@ new Validall(IndicatorsValidators.CREATE, {
   desc_en: { $type: 'string', $default: '', $message: 'invalidDescEn' },
 
   unit_ar: { $type: 'string', $default: '%', $message: 'invalidUnitAr' },
-  unit_en: { $type: 'string', $default: '%', $message: 'invalidUnitEn' }
+  unit_en: { $type: 'string', $default: '%', $message: 'invalidUnitEn' },
+
+  categories: { $default: [], $each: { $type: 'string', $message: 'invalidCategory' } },
+  
+  parent_id: { $type: 'string', $default: '', $message: 'invalidParentId' }
 });
 
 new Validall(IndicatorsValidators.UPDATE, {
@@ -46,10 +49,6 @@ new Validall(IndicatorsValidators.UPDATE_TOPIC, {
 
 new Validall(IndicatorsValidators.UPDATE_CATEGORIES, {
   categories: { $default: [], $each: { $type: 'string', $message: 'invalidCategory' } }
-});
-
-new Validall(IndicatorsValidators.UPDATE_GROUPS, {
-  groups: { $default: [], $each: { $type: 'string', $message: 'invalidGroup' } }
 });
 
 new Validall(IndicatorsValidators.ADD_DOCUMENT, {

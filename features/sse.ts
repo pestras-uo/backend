@@ -37,7 +37,7 @@ pubSub.on('publish', e => {
     if (
       (
         res.locals.user.id !== e.issuer &&
-        pubSub.inGroups(e, res.locals.user.groups) && 
+        pubSub.inGroups(e, res.locals.user.groups.map(g => g.id)) && 
         pubSub.inRoles(e, res.locals.user.roles)
       ) || res.locals.user.id === e.to_id
     )

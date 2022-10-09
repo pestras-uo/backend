@@ -1,12 +1,11 @@
 import { getChildren, TablesNames } from "../..";
-import oracle, { DBSchemas } from "../../../db/oracle";
+import oracle from "../../../db/oracle";
 import serial from "../../../util/serial";
 import { Indicator } from "./interface";
 import { get } from "./read";
 
-export async function create(ind: Partial<Indicator>, parent?: string) {
-  const siblings = !!parent ? [] : await getChildren(TablesNames.INDICATORS, parent!);
-  const id = serial.gen(parent, siblings);
+export async function create(ind: Omit<Indicator, 'id' | 'create_date' | 'update_date' | 'is_active'>, parent_id: string, issuer_id: string) {
+  const id = serial.gen(parent_id, !!parent_id ? [] : await getChildren(TablesNames.INDICATORS, parent_id!));
 
   await oracle.op()
     .write(`
@@ -20,9 +19,11 @@ export async function create(ind: Partial<Indicator>, parent?: string) {
         desc_en, 
         desc_ar, 
         unit_ar, 
-        unit_en
+        unit_en,
+        categories,
+        create_by
       )
-      VALUES (:a, :b, :c, :d, :e, :f, :g, :h, :i)
+      VALUES (:a, :b, :c, :d, :e, :f, :g, :h, :i, :j, :k)
 
     `, [
       id,
@@ -33,7 +34,9 @@ export async function create(ind: Partial<Indicator>, parent?: string) {
       ind.desc_ar,
       ind.desc_en,
       ind.unit_ar,
-      ind.unit_en
+      ind.unit_en,
+      JSON.stringify(ind.categories),
+      issuer_id
     ])
     .commit();
 

@@ -9,8 +9,7 @@ import {
   GetAllTopicsRequest, 
   GetTopicByIdRequest, 
   UpdateTopicRequest, 
-  UpdateTopicCategoriesRequest, 
-  UpdateTopicGroupsRequest, 
+  UpdateTopicCategoriesRequest,
   GetTopicDocumentsRequest 
 } from "./interfaces";
 import pubSub from '../../misc/pub-sub';
@@ -34,11 +33,9 @@ export default {
   // ------------------------------------------------------------------------------
   async create(req: CreateTopicRequest) {
     const topic = await topicsModel.create(
-      req.body.name_ar,
-      req.body.name_en,
-      req.body.parent,
-      req.body.desc_ar,
-      req.body.desc_en,
+      req.body,
+      req.body.parent_id,
+      req.res.locals.user.id
     )
     req.res.json(topic);
 
@@ -61,23 +58,8 @@ export default {
       req.body.name_en,
       req.body.desc_ar,
       req.body.desc_en,
+      req.res.locals.user.id
     ));
-
-    pubSub.emit("publish", {
-      action: req.res.locals.action,
-      entity_id: req.params.id,
-      issuer: req.res.locals.user.id
-    });
-  },
-
-
-
-
-  // groups
-  // ------------------------------------------------------------------------------
-  async updateGroups(req: UpdateTopicGroupsRequest) {
-    req.res.json(await topicsModel.replaceGroups(req.params.id, req.body.groups));
-
     pubSub.emit("publish", {
       action: req.res.locals.action,
       entity_id: req.params.id,
@@ -91,7 +73,11 @@ export default {
   // categories
   // ------------------------------------------------------------------------------
   async updateCategories(req: UpdateTopicCategoriesRequest) {
-    req.res.json(await topicsModel.replaceCategories(req.params.id, req.body.categories));
+    req.res.json(await topicsModel.updateCategories(
+      req.params.id,
+      req.body.categories,
+      req.res.locals.user.id
+    ));
 
     pubSub.emit("publish", {
       action: req.res.locals.action,

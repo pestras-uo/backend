@@ -41,12 +41,6 @@ export default Router()
     controller.update
   )
   .put(
-    '/:id/groups',
-    validate(TopicsValidators.UPDATE_GROUPS),
-    auth("topics.update.groups"),
-    controller.updateGroups
-  )
-  .put(
     '/:id/categories',
     validate(TopicsValidators.UPDATE_CATEGORIES),
     auth("topics.update.categories"),

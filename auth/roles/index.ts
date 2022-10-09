@@ -1,21 +1,60 @@
 import { Action } from "./actions";
 
-const RolesMap = new Map<number, Action[]>();
+export enum Role {
+  ROOT,
+  ADMIN,
+  AUTHOR,
+  ANALYST,
+  CONTRIBUTER,
+  VIEWER
+}
+
+export const RolesMap = new Map<Role, Action[]>();
 
 // root
-RolesMap.set(0, ["*"]);
+RolesMap.set(Role.ROOT, ["*"]);
 // admin
-RolesMap.set(1, ["users.*", "groups.*", "orgunits.*"]);
+RolesMap.set(Role.ADMIN, [
+  "users.*",
+  "groups.*",
+  "orgunits.*"
+]);
 // author
-RolesMap.set(2, ["categories.*", "topics.*", "indicators.*", "indicator-config.*"]);
+RolesMap.set(Role.AUTHOR, [
+  "users.get.*",
+  "orgunits.get.*",
+  "categories.*",
+  "topics.*",
+  "indicators.*",
+  "indicator-config.*",
+  "indicator-stats.get.*",
+  "indicator-readings.get.*"
+]);
 // analyst
-RolesMap.set(3, ["indicator-stats.*"]);
+RolesMap.set(Role.ANALYST, [
+  "users.get.*",
+  "orgunits.get.*",
+  "categories.get.*",
+  "topics.get.*",
+  "indicators.get.*",
+  "indicator-config.get.*",
+  "indicator-stats.*",
+  "indicator-readings.get.*"
+]);
 // contributer
-RolesMap.set(4, ["indicator-readings.*"]);
+RolesMap.set(Role.CONTRIBUTER, [
+  "users.get.*",
+  "orgunits.get.*",
+  "categories.get.*",
+  "topics.get.*",
+  "indicators.get.*",
+  "indicator-config.get.*",
+  "indicator-stats.get.*",
+  "indicator-readings.*"
+]);
 // viewer
-RolesMap.set(5, [
-  "users.get.one",
-  "groups.get.*",
+RolesMap.set(Role.VIEWER, [
+  "users.get.*",
   "orgunits.get.*",
   "categories.get.*",
   "topics.get.*",
@@ -24,7 +63,3 @@ RolesMap.set(5, [
   "indicator-readings.get.*",
   "indicator-stats.get.*"
 ]);
-
-const RolesList = Array.from(RolesMap.keys());
-
-export { RolesMap, RolesList };

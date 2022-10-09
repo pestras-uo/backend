@@ -11,7 +11,6 @@ import {
   RemoveIndicatorDocuemntRequest,
   UpdateIndicatorRequest,
   UpdateIndicatorCategoriesRequest,
-  UpdateIndicatorGroupsRequest,
   UpdateIndicatorOrgunitRequest,
   UpdateIndicatorTopicRequest,
   ActivateIndicatorRequest,
@@ -24,7 +23,12 @@ export default {
   // read
   // --------------------------------------------------------------------------------------
   async getByTopic(req: GetIndicatorsByTopicRequest) {
-    req.res.json(await indicatorsModel.getByTopic(req.params.topic_id));
+    const parents = [req.res.locals.user.orgunit_id];
+    
+    for (const group of req.res.locals.user.groups)
+      parents.push(group.orgunit_id);
+
+    req.res.json(await indicatorsModel.getByTopic(req.params.topic_id, parents));
   },
 
   async getByOrgunit(req: GetIndicatorsByOrgunitRequest) {
@@ -41,16 +45,7 @@ export default {
   // create
   // --------------------------------------------------------------------------------------
   async create(req: CreateIndicatorRequest) {
-    const indicator = await indicatorsModel.create({
-      orgunit_id: req.body.orgunit_id,
-      topic_id: req.body.topic_id,
-      name_ar: req.body.name_ar,
-      name_en: req.body.name_en,
-      desc_ar: req.body.desc_ar,
-      desc_en: req.body.desc_en,
-      unit_ar: req.body.unit_ar,
-      unit_en: req.body.unit_en,
-    }, req.body.parent);
+    const indicator = await indicatorsModel.create(req.body, req.body.parent_id, req.res.locals.user.id);
 
     req.res.json(indicator);
 
@@ -68,14 +63,7 @@ export default {
   // update
   // --------------------------------------------------------------------------------------
   async update(req: UpdateIndicatorRequest) {
-    req.res.json(await indicatorsModel.update(req.params.id, {
-      name_ar: req.body.name_ar,
-      name_en: req.body.name_en,
-      desc_ar: req.body.desc_ar,
-      desc_en: req.body.desc_en,
-      unit_ar: req.body.unit_ar,
-      unit_en: req.body.unit_en,
-    }));
+    req.res.json(await indicatorsModel.update(req.params.id, req.body, req.res.locals.user.id));
 
     pubSub.emit('publish', {
       action: req.res.locals.action,
@@ -85,7 +73,7 @@ export default {
   },
 
   async updateOrgunit(req: UpdateIndicatorOrgunitRequest) {
-    req.res.json(await indicatorsModel.updateOrgunit(req.params.id, req.body.orgunit_id));
+    req.res.json(await indicatorsModel.updateOrgunit(req.params.id, req.body.orgunit_id, req.res.locals.user.id));
 
     pubSub.emit('publish', {
       action: req.res.locals.action,
@@ -95,8 +83,7 @@ export default {
   },
 
   async updateTopic(req: UpdateIndicatorTopicRequest) {
-    req.res.json(await indicatorsModel.updateOrgunit(req.params.id, req.body.topic_id));
-
+    req.res.json(await indicatorsModel.updateOrgunit(req.params.id, req.body.topic_id, req.res.locals.user.id));
     pubSub.emit('publish', {
       action: req.res.locals.action,
       issuer: req.res.locals.issuer,
@@ -105,23 +92,7 @@ export default {
   },
 
   async activate(req: ActivateIndicatorRequest) {
-    req.res.json(await indicatorsModel.activate(req.params.id, +req.params.state));
-
-    pubSub.emit('publish', {
-      action: req.res.locals.action,
-      issuer: req.res.locals.issuer,
-      entity_id: req.params.id
-    });
-  },
-
-
-
-
-  // groups
-  // --------------------------------------------------------------------------------------
-  async updateGroups(req: UpdateIndicatorGroupsRequest) {
-    req.res.json(await indicatorsModel.replaceGroups(req.params.id, req.body.groups));
-
+    req.res.json(await indicatorsModel.activate(req.params.id, +req.params.state, req.res.locals.user.id));
     pubSub.emit('publish', {
       action: req.res.locals.action,
       issuer: req.res.locals.issuer,
@@ -135,7 +106,7 @@ export default {
   // categorries
   // --------------------------------------------------------------------------------------
   async updateCategories(req: UpdateIndicatorCategoriesRequest) {
-    req.res.json(await indicatorsModel.replaceGroups(req.params.id, req.body.categories));
+    req.res.json(await indicatorsModel.updateCategories(req.params.id, req.body.categories, req.res.locals.user.id));
 
     pubSub.emit('publish', {
       action: req.res.locals.action,

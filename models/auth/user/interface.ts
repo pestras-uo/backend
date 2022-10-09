@@ -1,4 +1,7 @@
-export interface User {
+import { Role } from "../../../auth/roles";
+import { Group } from "../groups/interface";
+
+interface userBase {
   id: string;
   orgunit_id: string;
 
@@ -16,12 +19,12 @@ export interface User {
   update_date?: Date;
 }
 
-export interface UserDetails extends User {
-  groups: string[];
-  roles: number[];
+export interface DBUser extends userBase {
+  roles: string;
+  groups: string;  
 }
 
-export interface UserDetailsQueryResultItem extends User {
-  group_id: string;
-  role_id: number;
+export interface User extends userBase {
+  groups: Group[];
+  roles: Role[];
 }

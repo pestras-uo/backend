@@ -10,7 +10,7 @@ export default Router()
   .post(
     "/create",
     validate(schemas.CREATE_USER),
-    auth("users.create"),
+    auth("users.create.one"),
     controller.createUser
   )
   .put(

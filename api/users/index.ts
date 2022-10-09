@@ -2,7 +2,6 @@ import { Router } from 'express';
 import auth from '../../middlewares/auth';
 import controller from './controller';
 import validate from '../../middlewares/validate';
-import { TokenType } from '../../auth/token';
 import { UserValidators } from './validators';
 import { avatarUpload } from '../../middlewares/upload';
 

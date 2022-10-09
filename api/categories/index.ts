@@ -18,12 +18,12 @@ export default Router()
   .post(
     '/',
     validate(CategoriesValidators.CREATE),
-    auth("categories.create"),
+    auth("categories.create.one"),
     controller.create
   )
   .put(
     '/:id',
     validate(CategoriesValidators.UPDATE),
-    auth("categories.update"),
+    auth("categories.update.one"),
     controller.update
   );
