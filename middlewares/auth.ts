@@ -3,7 +3,6 @@ import { TokenType } from '../auth/token';
 import { authenticate } from "../auth";
 import { Action } from "../auth/roles/actions";
 
-
 export default function (action?: Action, tokenType = TokenType.SESSION) {
 
   return async (req: Request, _: Response, next: NextFunction) => {

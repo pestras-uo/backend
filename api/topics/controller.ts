@@ -60,7 +60,6 @@ export default {
       req.body.desc_en,
       req.res.locals.user.id
     ));
-
     pubSub.emit("publish", {
       action: req.res.locals.action,
       entity_id: req.params.id,

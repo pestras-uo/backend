@@ -84,7 +84,6 @@ export default {
 
   async updateTopic(req: UpdateIndicatorTopicRequest) {
     req.res.json(await indicatorsModel.updateOrgunit(req.params.id, req.body.topic_id, req.res.locals.user.id));
-
     pubSub.emit('publish', {
       action: req.res.locals.action,
       issuer: req.res.locals.issuer,
@@ -94,7 +93,6 @@ export default {
 
   async activate(req: ActivateIndicatorRequest) {
     req.res.json(await indicatorsModel.activate(req.params.id, +req.params.state, req.res.locals.user.id));
-
     pubSub.emit('publish', {
       action: req.res.locals.action,
       issuer: req.res.locals.issuer,
