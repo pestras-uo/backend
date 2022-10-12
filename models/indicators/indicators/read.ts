@@ -25,9 +25,9 @@ export async function get(id: string) {
     FROM
       ${TablesNames.INDICATORS}
     WHERE
-      I.id = :a
+      id = :a
 
-  `, [id])).rows[0] || null;
+  `, [id, 0])).rows[0] || null;
 
   return result
     ? { ...omit(result, ['categories']), categories: JSON.parse(result.categories) } as Indicator
@@ -90,9 +90,9 @@ export async function getByOrgunit(orgunit_id: string, active = 1) {
     FROM
       ${TablesNames.INDICATORS}
     WHERE
-      orgunit_id = :a AND is_active = ${active}
+      orgunit_id = :a AND is_active = :b
 
-  `, [orgunit_id])).rows || [];
+  `, [orgunit_id, active])).rows || [];
 
   return result.map(i => ({
     ...omit(i, ['categories']),

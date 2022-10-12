@@ -97,10 +97,12 @@ export const Actions = [
   "indicator-config.create.*",
   "indicator-config.create.manual",
   "indicator-config.create.computational",
-  "indicator-config.create.view",
+  "indicator-config.create.external",
+  "indicator-config.create.split",
   "indicator-config.update.*",
   "indicator-config.update.one",
   "indicator-config.update.state",
+  "indicator-config.update.external",
 
   // readings
   "indicator-readings.*",
@@ -121,15 +123,9 @@ export const Actions = [
   "indicator-readings.delete.documents",
 
   // stats
-  "indicator-stats.*",
-  "indicator-stats.get.*",
-  "indicator-stats.get.indicator",
-  "indicator-stats.get.one",
-  "indicator-stats.get.results",
-  "indicator-stats.create.*",
-  "indicator-stats.create.one",
-  "indicator-stats.update.*",
-  "indicator-stats.update.one"
+  "indicator-stats-results.*",
+  "indicator-stats-results.get.*",
+  "indicator-stats-results.get.one"
   
 ] as const;
 

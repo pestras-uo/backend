@@ -1,3 +1,10 @@
+export enum IndicatorType {
+  MANUAL,
+  COMPUTATIONAL,
+  EXTERNAL,
+  PARTITION
+}
+
 export enum IndicatorInterval {
   NONE = 0,
   MONTHLY = 1,
@@ -7,50 +14,80 @@ export enum IndicatorInterval {
 }
 
 export enum ColumnType {
+  ID,
+  REF,
   NUMBER,
   TEXT,
-  DATE
+  CATEGORY,
+  DATE,
+  JSON,
+  BOOL
 }
 
 export enum IndicatorState {
   IDLE,
   COMPUTING,
-  ANALYZING
+  ANALYZING,
+  REVIEW
 }
 
-export interface IndicatorConfig {
+export type FilterOperator = '=' | '>' | '<' | '>=' | '<=' | '<>' | 'LIKE' | 'IS';
+
+export type FilterOption = [string, FilterOperator, number | string];
+
+export interface FilterOptions {
+  and?: (FilterOption | FilterOptions)[];
+  or?: (FilterOption | FilterOptions)[];
+}
+
+export interface ComputeOptions {
+  equation: string;
+  join_on: [string, string][];
+  arguments: {
+    id: string;
+    variable: string;
+    clone_columns: string[];
+    filter_opitons: FilterOptions;
+  }[];
+}
+
+export interface ReadingColumn {
+  name: string;
+  type: ColumnType;
+  
+  is_reading_value?: boolean;
+  is_reading_date?: boolean;
+  is_system?: boolean;
+  
+  category_id?: string;
+
+  name_ar: string;
+  name_en: string;
+}
+
+export interface BasicIndConf {
   indicator_id: string;
 
-  reading_value_name_ar: string;
-  reading_value_name_en: string;
+  source_name: string;
+  type: IndicatorType;
 
   intervals?: IndicatorInterval;
   evaluation_day?: number;
-  require_approval?: 0 | 1;
 
   kpi_min?: number;
   kpi_max?: number;
-
-  view_name?: string;
-  equation?: string;
-  match_by_columns?: string;
   
   state?: IndicatorState;
 }
 
-export interface IndicatorArgument {
-  indicator_id: string;
-  argument_id: string;
-  variable: string;
+export interface DBIndConf extends BasicIndConf{
+  compute_options?: string;
+  filter_options?: string;
+  columns?: string;
 }
 
-export interface ReadingColumn {
-  id: string;
-  indicator_id: string;
-
-  column_name: string;
-  type: ColumnType;
-
-  name_ar: string;
-  name_en: string;
+export interface IndConf extends BasicIndConf {
+  compute_options?: ComputeOptions; 
+  filter_options?: FilterOptions;
+  columns?: ReadingColumn[];
 }

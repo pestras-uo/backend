@@ -52,7 +52,7 @@ export default {
     pubSub.emit('publish', {
       action: req.res.locals.action,
       issuer: req.res.locals.issuer,
-      entity_id: indicator.id,
+      entities_ids: [indicator.id],
       orgunit: indicator.orgunit_id
     });
   },
@@ -68,7 +68,7 @@ export default {
     pubSub.emit('publish', {
       action: req.res.locals.action,
       issuer: req.res.locals.issuer,
-      entity_id: req.params.id
+      entities_ids: [req.params.id]
     });
   },
 
@@ -78,7 +78,7 @@ export default {
     pubSub.emit('publish', {
       action: req.res.locals.action,
       issuer: req.res.locals.issuer,
-      entity_id: req.params.id
+      entities_ids: [req.params.id]
     });
   },
 
@@ -87,7 +87,7 @@ export default {
     pubSub.emit('publish', {
       action: req.res.locals.action,
       issuer: req.res.locals.issuer,
-      entity_id: req.params.id
+      entities_ids: [req.params.id]
     });
   },
 
@@ -96,7 +96,7 @@ export default {
     pubSub.emit('publish', {
       action: req.res.locals.action,
       issuer: req.res.locals.issuer,
-      entity_id: req.params.id
+      entities_ids: [req.params.id]
     });
   },
 
@@ -111,7 +111,7 @@ export default {
     pubSub.emit('publish', {
       action: req.res.locals.action,
       issuer: req.res.locals.issuer,
-      entity_id: req.params.id
+      entities_ids: [req.params.id]
     });
   },
 
@@ -134,7 +134,7 @@ export default {
     pubSub.emit('publish', {
       action: req.res.locals.action,
       issuer: req.res.locals.issuer,
-      entity_id: req.params.id
+      entities_ids: [req.params.id]
     });
   },
 
@@ -149,7 +149,7 @@ export default {
     pubSub.emit('publish', {
       action: req.res.locals.action,
       issuer: req.res.locals.issuer,
-      entity_id: req.params.id
+      entities_ids: [req.params.id]
     });
   }
 }

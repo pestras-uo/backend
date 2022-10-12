@@ -1,17 +1,15 @@
-import { createManualIndicator } from "./create-munual";
-import { createViewIndicator } from "./create-view";
+import { createManualIndicator } from "./create-manual";
+import { createExternalIndicator } from "./create-external";
 import { createComputationalIndicator } from "./create-computational";
-import { update, updateManyState, updateState } from "./update";
+import { update, updateExternalIndicatorConfig, updateState } from "./update";
 import { get } from "./read";
-import { getArgumentIndicators, getArguments } from "./arguments";
-import { getAdditionalColumns } from "./util";
+import { splitIndicator } from "./split";
 
 export default {
 
   // getters
   // ----------------------------------------------------------------------
   get,
-  getAdditionalColumns,
 
 
 
@@ -19,8 +17,9 @@ export default {
   // create manual indicator config
   // ----------------------------------------------------------------------
   createComputationalIndicator,
-  createViewIndicator,
+  createExternalIndicator,
   createManualIndicator,
+  splitIndicator,
 
 
 
@@ -29,13 +28,5 @@ export default {
   // ---------------------------------------------------------------------------
   update,
   updateState,
-  updateManyState,
-
-
-
-
-  // arguments
-  // ---------------------------------------------------------------------------
-  getArguments,
-  getArgumentIndicators
+  updateExternalIndicatorConfig
 }

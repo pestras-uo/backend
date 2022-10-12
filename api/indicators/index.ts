@@ -8,7 +8,7 @@ import { IndicatorsValidators } from "./validators";
 import { docUpload } from '../../middlewares/upload';
 import config from "./config";
 import readings from "./readings";
-import stats from "./stats";
+import statsResults from "./stats-results";
 
 export default Router()
   .get(
@@ -81,4 +81,4 @@ export default Router()
   )
   .use('/:id/config', exists(TablesNames.INDICATORS, 'params.id'), config)
   .use('/:id/readings', exists(TablesNames.INDICATORS, 'params.id'), readings)
-  .use('/:id/stats', exists(TablesNames.INDICATORS, 'params.id'), stats)
+  .use('/:id/stats-results', exists(TablesNames.INDICATORS, 'params.id'), statsResults)

@@ -1,85 +1,99 @@
 import oracle, { DBSchemas } from "../../../db/oracle";
 import { HttpError } from "../../../misc/errors";
 import { HttpCode } from "../../../misc/http-codes";
-import { getArgumentIndicators } from "../config/arguments";
 import { get as getConfig } from "../config/read";
-import { getAdditionalColumns } from "../config/util";
-import { IndicatorState } from "../config/interface";
+import { IndicatorState, IndicatorType } from "../config/interface";
 import configModel from "../config";
-import { ManualIndicatorReading, ReadingHistoryItem } from "./interface";
+import { ReadingHistoryItem } from "./interface";
 import { getById } from "./read";
-
-const chars = 'a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z'.split(',');
 
 export async function update(
   indicator_id: string,
   id: string,
-  reading: { reading_value: number, note_ar?: string, note_en?: string, [key: string]: any }
+  reading: { [key: string]: any },
+  issuer: string
 ) {
   const config = await getConfig(indicator_id);
 
-  if (config.view_name)
+  if (config.type === IndicatorType.EXTERNAL)
     throw new HttpError(HttpCode.FORBIDDEN, 'indicatorReadingsAreExternal');
 
-  if (config.equation)
+  if (config.type === IndicatorType.COMPUTATIONAL)
     throw new HttpError(HttpCode.FORBIDDEN, 'indicatorReadingsAreAutoComputed');
+
+  if (config.type === IndicatorType.PARTITION)
+    throw new HttpError(HttpCode.FORBIDDEN, 'indicatorReadingsAreOnlyReferences');
 
   const curr_reading = await getById(indicator_id, id);
 
   if (!curr_reading)
     throw new HttpError(HttpCode.NOT_FOUND, 'readingNotFound');
+  
+  const insertedColumns: { name: string, value: any }[] = [];
 
-  const addColumns = (await getAdditionalColumns(indicator_id))
-    .map(c => c.column_name) as (keyof Omit<ManualIndicatorReading, 'id'>)[];
+  for (const colName in reading) {
+    const column = config.columns.find(c => c.name === colName);
+
+    if (!column)
+      throw new HttpError(HttpCode.NOT_FOUND, 'columnNotFound', { column: colName });
+
+    if (column.is_system)
+      throw new HttpError(HttpCode.FORBIDDEN, 'cannotSetSystemColumnValue', { column: colName });
+
+    insertedColumns.push({ name: colName, value: reading[colName] });
+  }
 
   const history: ReadingHistoryItem[] = curr_reading.history
     ? JSON.parse(curr_reading.history)
     : [];
 
   const currState: ReadingHistoryItem = {
-    reading_value: curr_reading.reading_value,
-    note_ar: curr_reading.note_ar,
-    note_en: curr_reading.note_en,
-    update_date: curr_reading.update_date.toISOString()
+    update_date: curr_reading.update_date.toISOString(),
+    update_by: curr_reading.update_by
   };
 
-  for (const prop in reading) {
-    if (addColumns.includes(prop as keyof Omit<ManualIndicatorReading, 'id'>))
-      currState[prop] = curr_reading[prop as keyof Omit<ManualIndicatorReading, 'id'>]
-  }
+  for (const column of insertedColumns)
+    currState[column.name] = curr_reading[column.name];
 
   history.push(currState);
+
+  const bindings: any[] = [
+    0,
+    JSON.stringify(history),
+    new Date(),
+    issuer,
+    ...insertedColumns.map(c => c.value),
+    id
+  ];
 
   // update reading
   await oracle.op(DBSchemas.READINGS)
     .write(`
     
-      UPDATE ${indicator_id}
+      UPDATE ${config.source_name}
       SET
-        ${Object.keys(reading).map((k, i) => `${k} = :${chars[i]},`)}
-        history = :x
-        update_date = :y
+        is_approved = :a
+        history = :b,
+        update_date = :c,
+        update_by = :d
+        ${insertedColumns.map((c, i) => `${c.name} = :e${i}`).join(',')}
       WHERE
-        id = :z
+        id = :f
     
-    `, [
-      ...Object.values(reading),
-      JSON.stringify(history),
-      new Date(),
-      id
-    ])
+    `, bindings)
     .commit();
 
   // set indicator state to analyzing
   configModel.updateState(indicator_id, IndicatorState.ANALYZING);
-  // set all indicators state that use this reading as argument
-  // to computing
-  getArgumentIndicators(indicator_id)
-    .then(ids => configModel.updateManyState(ids, IndicatorState.COMPUTING));
 
   return true;
 }
 
+
+
+
+// approve
+// -------------------------------------------------------------------------------------
 export async function approve(
   indicator_id: string,
   id: string,
@@ -87,11 +101,8 @@ export async function approve(
 ) {
   const config = await getConfig(indicator_id);
 
-  if (config.view_name)
-    throw new HttpError(HttpCode.FORBIDDEN, 'indicatorReadingsAreExternal');
-
-  if (config.equation)
-    throw new HttpError(HttpCode.FORBIDDEN, 'indicatorReadingsAreAutoComputed');
+  if (config.type !== IndicatorType.MANUAL)
+    throw new HttpError(HttpCode.FORBIDDEN, 'indicatorReadingsCannotBeApproved');
 
   const reading = await getById(indicator_id, id);
 
@@ -101,7 +112,7 @@ export async function approve(
   await oracle.op(DBSchemas.READINGS)
     .write(`
 
-      UPDATE ${indicator_id}
+      UPDATE ${config.source_name}
       SET is_approved = :a, approve_date = :b
       WHERE id = :c
     

@@ -15,7 +15,7 @@ export default Router()
     validate(validators.LOGIN),
     controller.login
   )
-  .post(
+  .delete(
     '/logout',
     auth(),
     controller.logout

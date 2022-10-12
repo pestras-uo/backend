@@ -14,15 +14,11 @@ new Validall(ReadingsValidators.GET_ALL, {
 });
 
 new Validall(ReadingsValidators.CREATE, {
-  reading_value: { $type: 'number', $required: true, $message: 'readingValueIsRequired' },
-  note_ar: { $type: 'string', $nullable: true, $message: 'invalidDescAr' },
-  note_en: { $type: 'string', $nullable: true, $message: 'invalidDescEn' }
+  reading_value: { $type: 'number', $required: true, $message: 'readingValueIsRequired' }
 });
 
 new Validall(ReadingsValidators.UPDATE, {
-  reading_value: { $type: 'number', $required: true, $message: 'valueIsRequired' },
-  note_ar: { $type: 'string', $nullable: true, $message: 'invalidDescAr' },
-  note_en: { $type: 'string', $nullable: true, $message: 'invalidDescEn' }
+  reading_value: { $type: 'number', $required: true, $message: 'valueIsRequired' }
 });
 
 new Validall(ReadingsValidators.ADD_DOCUMENT, {

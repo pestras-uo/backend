@@ -41,7 +41,7 @@ export default {
 
     pubSub.emit("publish", {
       action: req.res.locals.action,
-      entity_id: topic.id,
+      entities_ids: [topic.id],
       issuer: req.res.locals.user.id
     });
   },
@@ -62,7 +62,7 @@ export default {
     ));
     pubSub.emit("publish", {
       action: req.res.locals.action,
-      entity_id: req.params.id,
+      entities_ids: [req.params.id],
       issuer: req.res.locals.user.id
     });
   },
@@ -81,7 +81,7 @@ export default {
 
     pubSub.emit("publish", {
       action: req.res.locals.action,
-      entity_id: req.params.id,
+      entities_ids: [req.params.id],
       issuer: req.res.locals.user.id
     });
   },
@@ -104,7 +104,7 @@ export default {
 
     pubSub.emit("publish", {
       action: req.res.locals.action,
-      entity_id: req.params.id,
+      entities_ids: [req.params.id],
       issuer: req.res.locals.user.id
     });
   },
@@ -120,7 +120,7 @@ export default {
 
     pubSub.emit("publish", {
       action: req.res.locals.action,
-      entity_id: req.params.id,
+      entities_ids: [req.params.id],
       issuer: req.res.locals.user.id
     });
   }

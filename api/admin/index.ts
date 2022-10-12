@@ -36,4 +36,4 @@ export default Router()
     '/:id/activate/:state',
     auth("users.update.active"),
     controller.activateUser
-  )
+  );

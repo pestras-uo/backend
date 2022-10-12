@@ -10,7 +10,6 @@ interface BasicIndicator {
 
   desc_ar?: string;
   desc_en?: string;
-
   unit_ar?: string;
   unit_en?: string;
 

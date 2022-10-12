@@ -11,23 +11,16 @@ export enum TablesNames {
 
   ORGUNITS = "orgunits",
   TOPICS = "topics",
-  TOPIC_CAT = "topic_category",
   TOPIC_DOC = "topic_document",
 
   INDICATORS = "indicators",
-  IND_CAT = "indicator_category",
-  IND_DOC = "indicator_document",
+  IND_DOC = "indicator_document",  
+  IND_CONF = "indicator_config",  
+  IND_STATS_RESULT = "descriptive_stats_result",
   
-  IND_CONF = "indicator_config",
-  IND_ARG = "indicator_argument",
-  READ_ADD_COLS = "reading_additional_columns",
-  
-  STATS_CONF = "stats_config",
-  DESC_STATS_RESULT = "descriptive_stats_result",
-  
+  READ_DOC = "reading_document",
+
   WEB_SERVICE_CONFIG = 'indicator_web_service_config',
-  
-  READ_DOC = "reading_document"
 }
 
 export interface Document {  
@@ -40,11 +33,13 @@ export interface Document {
 }
 
 export async function getChildren(table: string, serial: string) {
+  serial = !!serial ? serial + '_' : '';
+
   const result = await oracle.op().query<{ id: string }>(`
 
     SELECT id 'id'
     FROM ${table}
-    WHERE id LIKE :a
+    WHERE REGEXP_LIKE (id, '^${serial}[A-Z0-9]{4}$')
 
   `, [`${serial}%`]);
 

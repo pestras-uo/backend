@@ -1,40 +1,51 @@
 import oracle from "../../../db/oracle";
+import { TablesNames } from "../../";
+import { ColumnType, FilterOptions, IndConf, IndicatorState, IndicatorType, ReadingColumn } from "./interface";
 import { HttpError } from "../../../misc/errors";
 import { HttpCode } from "../../../misc/http-codes";
-import { TablesNames } from "../../";
-import { IndicatorConfig, IndicatorState } from "./interface";
-import { exists, existsMany } from "./util";
+import { get } from "./read";
 
 export async function update(
   indicator_id: string,
-  config: Omit<IndicatorConfig, 'indicator_id' | 'view_name' | 'equation' | 'match_by_columns'>
+  config: Omit<
+    IndConf,
+    'indicator_id' |
+    'source_name' |
+    'type' |
+    'state' |
+    'is_partition' |
+    'compute_options' |
+    'filter_options' |
+    'columns'
+  >
 ) {
-  if (!(await exists(indicator_id)))
+  const currConf = await get(indicator_id);
+
+  if (!currConf)
     throw new HttpError(HttpCode.NOT_FOUND, 'indicatorConfigNotFound');
+
+  if (currConf.type !== IndicatorType.COMPUTATIONAL)
+    throw new HttpError(HttpCode.FORBIDDEN, 'cannotChangeNoneComputationalIndicatorState');
 
   await oracle.op()
     .write(`
   
       UPDATE ${TablesNames.IND_CONF}
       SET 
-        reading_value_name_ar = :a,
-        reading_value_name_en = :b,
         interval = :c,
         evaluation_day = :d,
-        required_aproval = :e,
         kpi_min = :f,
         kpi_max = :g
-      WHERE indicator_id = :h
-  
+      WHERE 
+        indicator_id = :h OR (indicator_id LIKE :i AND type = :j)
     `, [
-      config.reading_value_name_ar,
-      config.reading_value_name_en,
       config.intervals,
       config.evaluation_day,
-      config.require_approval,
       config.kpi_min ?? null,
       config.kpi_max ?? null,
-      indicator_id
+      indicator_id,
+      `${indicator_id}_%`,
+      IndicatorType.PARTITION
     ])
     .commit();
 
@@ -43,8 +54,13 @@ export async function update(
 
 
 export async function updateState(id: string, state = IndicatorState.IDLE) {
-  if (!(await exists(id)))
-    throw new HttpError(HttpCode.NOT_FOUND, 'indicatorNotFound');
+  const currConf = await get(id);
+
+  if (!currConf)
+    throw new HttpError(HttpCode.NOT_FOUND, 'indicatorConfigNotFound');
+
+  if (currConf.type !== IndicatorType.COMPUTATIONAL)
+    throw new HttpError(HttpCode.FORBIDDEN, 'cannotChangeNoneComputationalIndicatorState');
 
   await oracle.op()
     .write(`
@@ -59,19 +75,35 @@ export async function updateState(id: string, state = IndicatorState.IDLE) {
   return true;
 }
 
+// TODO
+export async function updateExternalIndicatorConfig(
+  id: string,
+  source_name: string,
+  filter_options: FilterOptions,
+  columns: ReadingColumn[] = []
+) {
+  const currConf = await get(id);
 
-export async function updateManyState(ids: string[], state = IndicatorState.IDLE) {
-  if (!(await existsMany(ids)))
-    throw new HttpError(HttpCode.NOT_FOUND, 'indicatorNotFound');
+  if (!currConf)
+    throw new HttpError(HttpCode.NOT_FOUND, 'indicatorConfigNotFound');
+
+  if (currConf.type !== IndicatorType.EXTERNAL)
+    throw new HttpError(HttpCode.FORBIDDEN, 'cannotChangeNoneExternalIndicatorConfig');
+
+  if (!columns.length)
+    throw new HttpError(HttpCode.BAD_REQUEST, 'readingValueColumnIsRequired');
+
+  if (currConf.intervals && (!columns[2] || columns[2].type !== ColumnType.DATE))
+    throw new HttpError(HttpCode.BAD_REQUEST, 'dateColumnIsRequired');
 
   await oracle.op()
     .write(`
     
-      UPDATE ${TablesNames.INDICATORS}
-      SET state = :a, update_date = :b
-      WHERE id IN :c
+      UPDATE ${TablesNames.IND_CONF}
+      SET source_name = :a = :b, filter_options = :c columns = :d
+      WHERE id = :e OR (indicator_id id LIKE :f AND type = :g) 
     
-    `, [state, new Date(), ids])
+    `, [source_name, filter_options, JSON.stringify(columns), id, `${id}_%`, IndicatorType.PARTITION])
     .commit();
 
   return true;

@@ -1,5 +1,5 @@
 import { Request } from "express";
-import { Category } from "../../models/core/categories/interface";
+import { Category, CategoryType } from "../../models/core/categories/interface";
 
 export type GetAllCategoriesRequest = Request<
   // params
@@ -21,7 +21,7 @@ export type CreateCategoryRequest = Request<
   // response
   Category,
   // body
-  { name_ar: string; name_en: string; parent?: string; }
+  { name_ar: string; name_en: string; type: CategoryType, parent?: string; }
 >;
 
 export type updateCategoryRequest = Request<

@@ -29,23 +29,23 @@ export default {
   },
 
   async create(req: InsertReadingRequest) {
-    const reading = await readingsModel.insert(req.params.id, req.body);
+    const reading = await readingsModel.insert(req.params.id, req.body, req.res.locals.user.id);
     req.res.json(reading);
 
     pubSub.emit('publish', {
       action: req.res.locals.action,
-      issuer: req.res.locals.issuer,
-      entity_id: `${req.params.id}/${reading.id}`
+      issuer: req.res.locals.user.id,
+      entities_ids: [`${req.params.id}/${reading.id}`]
     });
   },
 
   async update(req: UpdateReadingRequest) {
-    req.res.json(await readingsModel.update(req.params.id, req.params.reading_id, req.body));
+    req.res.json(await readingsModel.update(req.params.id, req.params.reading_id, req.body, req. res.locals.user.id));
 
     pubSub.emit('publish', {
       action: req.res.locals.action,
-      issuer: req.res.locals.issuer,
-      entity_id: `${req.params.id}/${req.params.reading_id}`
+      issuer: req.res.locals.user.id,
+      entities_ids: [`${req.params.id}/${req.params.reading_id}`]
     });
   },
 
@@ -54,8 +54,8 @@ export default {
 
     pubSub.emit('publish', {
       action: req.res.locals.action,
-      issuer: req.res.locals.issuer,
-      entity_id: `${req.params.id}/${req.params.reading_id}`
+      issuer: req.res.locals.user.id,
+      entities_ids: [`${req.params.id}/${req.params.reading_id}`]
     });
   },
 
@@ -68,8 +68,8 @@ export default {
     
     pubSub.emit('publish', {
       action: req.res.locals.action,
-      issuer: req.res.locals.issuer,
-      entity_id: `${req.params.id}/${req.params.reading_id}`
+      issuer: req.res.locals.user.id,
+      entities_ids: [`${req.params.id}/${req.params.reading_id}`]
     });
   },
 
@@ -84,8 +84,8 @@ export default {
 
     pubSub.emit('publish', {
       action: req.res.locals.action,
-      issuer: req.res.locals.issuer,
-      entity_id: `${req.params.id}/${req.params.reading_id}`
+      issuer: req.res.locals.user.id,
+      entities_ids: [`${req.params.id}/${req.params.reading_id}`]
     });
   }
 }

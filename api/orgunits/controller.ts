@@ -27,7 +27,7 @@ export default {
 
     pubSub.emit("publish", {
       action: req.res.locals.action,
-      entity_id: org.id,
+      entities_ids: [org.id],
       issuer: req.res.locals.user.id
     });
   },
@@ -37,7 +37,7 @@ export default {
 
     pubSub.emit("publish", {
       action: req.res.locals.action,
-      entity_id: req.params.id,
+      entities_ids: [req.params.id],
       issuer: req.res.locals.user.id
     });
   }

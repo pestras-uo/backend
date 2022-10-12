@@ -1,4 +1,4 @@
-import { getTopRole } from "../../auth/roles/manager";
+import { getTopRole } from "../../auth/util";
 import { HttpError } from "../../misc/errors";
 import { HttpCode } from "../../misc/http-codes";
 import usersModel from '../../models/auth/user';
@@ -36,7 +36,7 @@ export default {
 
     pubSub.emit("publish", {
       action: req.res.locals.action,
-      entity_id: user.id,
+      entities_ids: [user.id],
       orgunit: user.orgunit_id,
       roles: [0, 1],
       issuer: req.res.locals.user.id
@@ -51,7 +51,7 @@ export default {
 
     pubSub.emit("publish", {
       action: req.res.locals.action,
-      entity_id: user_id,
+      entities_ids: [user_id],
       roles: [0, 1],
       issuer: req.res.locals.user.id
     });
@@ -73,7 +73,7 @@ export default {
       action: req.res.locals.action,
       to_id: user_id,
       roles: [0, 1],
-      entity_id: user_id,
+      entities_ids: [user_id],
       issuer: req.res.locals.user.id
     });
   },
@@ -90,20 +90,20 @@ export default {
       action: req.res.locals.action,
       to_id: user_id,
       roles: [0, 1],
-      entity_id: user_id,
+      entities_ids: [user_id],
       issuer: req.res.locals.user.id
     });
   },
 
   async updateOrgunit(req: UpdateUserOrgunitRequest) {
-    req.res.json(await usersModel.updateOrgunit(req.params.id, req.body.orgunit));
+    req.res.json(await usersModel.updateOrgunit(req.params.id, req.body.orgunit_id));
 
     pubSub.emit("publish", {
       action: req.res.locals.action,
       to_id: req.params.id,
       roles: [0, 1],
-      orgunit: req.body.orgunit,
-      entity_id: req.params.id,
+      orgunit: req.body.orgunit_id,
+      entities_ids: [req.params.id],
       issuer: req.res.locals.user.id
     });
   }
