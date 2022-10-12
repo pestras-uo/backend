@@ -1,4 +1,4 @@
-import { get, getById, getViewReadings } from "./read";
+import { get, getById } from "./read";
 import { exists } from "./util";
 import { insert } from "./insert";
 import { approve, update } from "./update";
@@ -9,7 +9,6 @@ export default {
   // getters
   // --------------------------------------------------------------------------------------
   get,
-  getViewReadings,
   getById,
   getDocuments,
 

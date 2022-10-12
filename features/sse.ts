@@ -6,7 +6,7 @@ import { Action } from '../auth/roles/actions';
 
 interface SSEData {
   action: Action;
-  entity_id: string;
+  entities_ids: string[];
   issuer: string;
   orgunit: string;
 }
@@ -28,7 +28,7 @@ function sse(req: Request, res: Response<any, UserSession>) {
 pubSub.on('publish', e => {
   const data: SSEData = {
     action: e.action,
-    entity_id: e.entity_id,
+    entities_ids: e.entities_ids,
     issuer: e.issuer,
     orgunit: e.orgunit
   }

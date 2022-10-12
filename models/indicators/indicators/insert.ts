@@ -4,7 +4,7 @@ import serial from "../../../util/serial";
 import { Indicator } from "./interface";
 import { get } from "./read";
 
-export async function create(ind: Omit<Indicator, 'id' | 'create_date' | 'update_date' | 'is_active'>, parent_id: string, issuer_id: string) {
+export async function create(ind: Omit<Indicator, 'id' | 'create_date' | 'create_by' | 'update_date' | 'update_by' | 'is_active'>, parent_id: string, issuer_id: string) {
   const id = serial.gen(parent_id, !!parent_id ? [] : await getChildren(TablesNames.INDICATORS, parent_id!));
 
   await oracle.op()

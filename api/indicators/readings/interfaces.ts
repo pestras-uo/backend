@@ -1,11 +1,14 @@
 import { Request } from "express";
+import { UserSession } from "../../../auth";
 import { ManualIndicatorReading, ReadingDocument } from "../../../models/indicators/readings/interface";
 
+// GET
+// --------------------------------------------------------------------------------
 export type GetIndicatorReadingsRequest = Request<
   // params
   { id: string },
   // response
-  ManualIndicatorReading[],
+  any[],
   // body
   null,
   // query
@@ -29,39 +32,22 @@ export type GetReadingDocumentsRequest = Request<
   ReadingDocument[]
 >;
 
+
+
+
+// POST
+// --------------------------------------------------------------------------------
 export type InsertReadingRequest = Request<
   // params
   { id: string },
   // response
-  ManualIndicatorReading,
+  any,
   // body
-  { 
-    reading_value: string, 
-    note_ar?: string, 
-    note_en?: string, 
-    [key: string]: any 
-  }
->;
-
-export type UpdateReadingRequest = Request<
-  // params
-  { id: string, reading_id: string },
-  // response
-  boolean,
-  // body
-  {
-    reading_value: number;
-    note_ar?: string;
-    note_en?: string;
-    [key: string]: any;
-  }
->;
-
-export type ApproveReadingRequest = Request<
-  // params
-  { id: string, reading_id: string, state: string },
-  // response
-  boolean
+  { [key: string]: any },
+  // query
+  null,
+  // locals
+  UserSession
 >;
 
 export type AddReadingDocumentRequest = Request<
@@ -77,6 +63,36 @@ export type AddReadingDocumentRequest = Request<
   }
 >;
 
+
+
+
+// PUT
+// --------------------------------------------------------------------------------
+export type UpdateReadingRequest = Request<
+  // params
+  { id: string, reading_id: string },
+  // response
+  boolean,
+  // body
+  { [key: string]: any; },
+  // query
+  null,
+  // locals
+  UserSession
+>;
+
+export type ApproveReadingRequest = Request<
+  // params
+  { id: string, reading_id: string, state: string },
+  // response
+  boolean
+>;
+
+
+
+
+// DELETE
+// --------------------------------------------------------------------------------
 export type deleteReadingDocumentRequest = Request<
   // params
   { id: string, reading_id: string },

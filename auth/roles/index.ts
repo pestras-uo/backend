@@ -27,18 +27,7 @@ RolesMap.set(Role.AUTHOR, [
   "topics.*",
   "indicators.*",
   "indicator-config.*",
-  "indicator-stats.get.*",
-  "indicator-readings.get.*"
-]);
-// analyst
-RolesMap.set(Role.ANALYST, [
-  "users.get.*",
-  "orgunits.get.*",
-  "categories.get.*",
-  "topics.get.*",
-  "indicators.get.*",
-  "indicator-config.get.*",
-  "indicator-stats.*",
+  "indicator-stats-results.get.*",
   "indicator-readings.get.*"
 ]);
 // contributer
@@ -49,7 +38,7 @@ RolesMap.set(Role.CONTRIBUTER, [
   "topics.get.*",
   "indicators.get.*",
   "indicator-config.get.*",
-  "indicator-stats.get.*",
+  "indicator-stats-results.get.*",
   "indicator-readings.*"
 ]);
 // viewer
@@ -61,5 +50,5 @@ RolesMap.set(Role.VIEWER, [
   "indicators.get.*",
   "indicator-config.get.*",
   "indicator-readings.get.*",
-  "indicator-stats.get.*"
+  "indicator-stats-results.get.*"
 ]);

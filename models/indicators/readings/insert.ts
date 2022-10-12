@@ -2,65 +2,87 @@ import oracle, { DBSchemas } from "../../../db/oracle";
 import { HttpError } from "../../../misc/errors";
 import { HttpCode } from "../../../misc/http-codes";
 import { get as getConfig } from "../config/read";
-import { getAdditionalColumns } from "../config/util";
-import { ManualIndicatorReading } from "./interface";
 import { randomUUID } from 'crypto';
 import { getById } from "./read";
-
-const chars = 'a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z'.split(',');
+import { ColumnType, IndicatorType } from "../config/interface";
 
 export async function insert(
   indicator_id: string,
-  reading: { reading_value: string, note_ar?: string, note_en?: string, [key: string]: any }
+  reading: { [key: string]: any },
+  issuer: string
 ) {
   const config = await getConfig(indicator_id);
 
-  if (config.view_name)
+  if (config.type == IndicatorType.EXTERNAL)
     throw new HttpError(HttpCode.FORBIDDEN, 'indicatorReadingsAreExternal');
 
-  if (config.equation)
+  if (config.type == IndicatorType.COMPUTATIONAL)
     throw new HttpError(HttpCode.FORBIDDEN, 'indicatorReadingsAreAutoComputed');
 
-  const addColumns = (await getAdditionalColumns(indicator_id))
-    .map(c => c.column_name) as (keyof  Omit<ManualIndicatorReading, 'id'>)[];
+  if (config.type === IndicatorType.PARTITION)
+    throw new HttpError(HttpCode.FORBIDDEN, 'indicatorReadingsAreOnlyReferences');
+
+  const id = randomUUID();
+  const insertedColumns: { name: string, value: any }[] = [];
+  let columnsMustInsertCount = config.columns.filter(c => c.is_system && c.type !== ColumnType.TEXT).length;
+  let valueIsSet = false;
+  let dateIsSet = false;
+
+  for (const colName in reading) {
+    const column = config.columns.find(c => c.name === colName);
+
+    if (!column)
+      throw new HttpError(HttpCode.NOT_FOUND, 'columnNotFound', { column: colName });
+
+    if (column.is_system)
+      throw new HttpError(HttpCode.FORBIDDEN, 'cannotSetSystemColumnValue', { column: colName });
+
+    insertedColumns.push({ name: colName, value: reading[colName] });
+
+    if (column.is_reading_value)
+      valueIsSet = true;
+    if (column.is_reading_date)
+      dateIsSet = true;
+
+    if (column.type !== ColumnType.TEXT)
+      columnsMustInsertCount--;
+  }
+
+  if (!valueIsSet)
+    throw new HttpError(HttpCode.BAD_REQUEST, 'readingValueIsRequred');
+
+  if (config.intervals && !dateIsSet)
+    throw new HttpError(HttpCode.BAD_REQUEST, 'readingDateIsRequred');
+
+  if (columnsMustInsertCount > 0)
+    throw new HttpError(HttpCode.BAD_REQUEST, 'notAllRequiredColumnWhereProvided');
+
   const bindings: any[] = [
-    randomUUID(),
-    reading.reading_value,
-    reading.note_ar,
-    reading.note_en,
-    !config.require_approval,
-    config.require_approval ? null : new Date(),
+    id,
+    new Date(),
+    issuer,
+    0,
     "[]"
   ];
 
-  for (const column of addColumns)
-    bindings.push(reading[column]);
+  for (const column of insertedColumns)
+    bindings.push(column.value);
 
   await oracle.op(DBSchemas.READINGS)
     .write(`
     
-      INSERT INTO ${indicator_id} (
+      INSERT INTO ${config.source_name} (
         id,
-        reading_value,
-        note_ar,
-        note_en,
+        create_date,
+        create_by,
         is_approved,
-        approve_date,
-        history
-        ${
-          addColumns.length 
-          ? ',' + addColumns.join(',') 
-          : ''
-        }
+        history,
+        ${insertedColumns.map(c => c.name)}
       ) VALUES (
-        :a, :b, :c, :d, :e, :f ${
-          addColumns.length
-          ? chars.slice(6, addColumns.length).join(',:')
-          : ''
-        }
+        :a, :b, :c, :d, :e, ${insertedColumns.map((_, i) => `:f${i}`).join(',')}
       )
     `, bindings)
     .commit();
 
-  return getById(indicator_id, bindings[0]);
+  return getById(indicator_id, id);
 }

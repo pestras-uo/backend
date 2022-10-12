@@ -41,7 +41,7 @@ export default {
 
     pubSub.emit("publish", {
       action: req.res.locals.action,
-      entity_id: req.res.locals.user.id,
+      entities_ids: [req.res.locals.user.id],
       roles: [0, 1],
       issuer: req.res.locals.user.id
     });
@@ -70,7 +70,7 @@ export default {
 
     pubSub.emit("publish", {
       action: req.res.locals.action,
-      entity_id: req.res.locals.user.id,
+      entities_ids: [req.res.locals.user.id],
       roles: [0, 1],
       issuer: req.res.locals.user.id
     });
@@ -90,7 +90,7 @@ export default {
 
     pubSub.emit("publish", {
       action: req.res.locals.action,
-      entity_id: req.res.locals.user.id,
+      entities_ids: [req.res.locals.user.id],
       roles: [0, 1],
       issuer: req.res.locals.user.id
     });

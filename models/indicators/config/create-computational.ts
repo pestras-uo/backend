@@ -2,43 +2,82 @@ import oracle, { DBSchemas } from "../../../db/oracle";
 import { HttpError } from "../../../misc/errors";
 import { HttpCode } from "../../../misc/http-codes";
 import { TablesNames } from "../../";
-import { ColumnType, IndicatorArgument, IndicatorConfig, IndicatorInterval, ReadingColumn } from "./interface";
-import { exists, getAdditionalColumns } from "./util";
-import { randomUUID } from 'crypto';
+import { IndConf, IndicatorInterval, IndicatorType, ReadingColumn } from "./interface";
+import { exists } from "./util";
+import { mapColumnTypeToDbType, systemColumns } from "../util";
+import { get } from "./read";
 
 export async function createComputationalIndicator(
   indicator_id: string,
-  config: Omit<IndicatorConfig, 'indicator_id' | 'require_approval' | 'view_name' | 'match_by_columns'>,
-  args: Omit<IndicatorArgument, 'indicator_id'>[],
-  matchBy: string[][] = []
+  config: Omit<
+    IndConf,
+    'indicator_id' |
+    'source_name' |
+    'type' |
+    'state' |
+    'filter_options'
+  >
 ) {
 
+  // make sure indicator has no config made already
   if (await exists(indicator_id))
     throw new HttpError(HttpCode.CONFLICT, "indicatorConfigAlreadyExists");
 
-  if (args.length === 0)
+  // make sure compute options are provided
+  // and at least one argument provided as well
+  if (!config.compute_options || config.compute_options.arguments.length === 0)
     throw new HttpError(HttpCode.NOT_EXTENDED, "argumentsAreRequired");
 
-  const additionalColumns = new Map<string, ReadingColumn>();
+  if (!config.columns.find(c => c.is_reading_value))
+    throw new HttpError(HttpCode.BAD_REQUEST, 'readingValueColumnIsRequired');
+
+  if (config.intervals && !config.columns.find(c => c.is_reading_date))
+    throw new HttpError(HttpCode.BAD_REQUEST, 'readingDateColumnIsRequired');
+
+  // prepare reading columns
+  const columns = new Map<string, ReadingColumn>();
   const argsColumns: { [key: string]: ReadingColumn[] } = {};
 
-  if (matchBy.length > 0) {
-    for (const arg of args)
-      argsColumns[arg.variable] = await getAdditionalColumns(indicator_id);
 
-    for (const match of matchBy) {
-      for (const part of match) {
-        const [variable, column_id] = part.split('.');
+  // add id column
+  columns.set("id", systemColumns.id);
+  columns.set("create_date", systemColumns.create_date);
+
+  // loop arguments and get additional column if provided
+  for (const arg of config.compute_options.arguments) {
+    // get argument columns
+    argsColumns[arg.variable] = (await get(indicator_id)).columns;
+
+    // clone additional columns when provided
+    if (arg.clone_columns.length > 0) {
+      for (const columnName of arg.clone_columns) {
+        const column = argsColumns[arg.variable].find(c => c.name === columnName);
+
+        if (!column || column.is_system || column.is_reading_date || column.is_reading_value)
+          continue;
+
+        columns.set(column.name, argsColumns[arg.variable].find(c => c.name === column.name));
+      }
+    }
+
+    // clone any column used in join clause
+    if (config.compute_options.join_on.length > 0) {
+
+      for (const join of config.compute_options.join_on) {
+        const [variable, column_name] = join[0].split('.');
+
+        if (columns.has(column_name))
+          continue;
 
         if (!argsColumns[variable])
           throw new HttpError(HttpCode.BAD_REQUEST, `undefinedVariable`, variable);
 
-        const column = argsColumns[variable].find(c => c.id === column_id);
+        const column = argsColumns[variable].find(c => c.name === column_name);
 
         if (!column)
-          throw new HttpError(HttpCode.BAD_REQUEST, `columnNotFound`, column_id);
+          throw new HttpError(HttpCode.BAD_REQUEST, `columnNotFound`, column_name);
 
-        additionalColumns.set(column_id, column);
+        columns.set(column_name, column);
       }
     }
   }
@@ -49,78 +88,38 @@ export async function createComputationalIndicator(
     
       INSERT INTO ${TablesNames.IND_CONF} (
         indicator_id,
-        reading_value_name_ar,
-        reading_value_name_en,
+        source_name,
+        type,
         intervals,
         evaluation_day,
-        equation,
-        match_by_columns,
+        compute_options,
         kpi_min,
-        kpi_max
+        kpi_max,
+        columns
       ) VALUES (:a, :b, :c, :d, :e, :f, :g, :h, :i)
     
     `, [
       indicator_id,
-      config.reading_value_name_ar,
-      config.reading_value_name_en,
+      indicator_id,
+      IndicatorType.COMPUTATIONAL,
       config.intervals ?? IndicatorInterval.NONE,
       config.evaluation_day ?? 1,
-      config.equation,
-      JSON.stringify(matchBy),
+      config.compute_options,
       config.kpi_min || null,
-      config.kpi_max || null
+      config.kpi_max || null,
+      JSON.stringify(columns)
     ])
-    // insert indicator reading additional columns
-    .writeMany(`
-    
-      INSERT INTO ${TablesNames.READ_ADD_COLS} (
-        id, indicator_id, column_name, type, name_ar, name_en
-      ) VALUES (
-        :a, :b, :c, :d, :e, :f
-      )
-    
-    `, Array.from(additionalColumns.values()).map(c => [
-      randomUUID(),
-      indicator_id,
-      c.column_name,
-      c.name_ar,
-      c.name_en,
-      c.type
-    ]))
     .commit();
 
   // create indicator readings table
   await oracle.op(DBSchemas.READINGS)
     .write(`
       
-        CREATE TABLE ${indicator_id} (
-          id NVARCHAR(36) CONSTRAINT ${indicator_id}_pk PRIMARY KEY,
-          reading_value Number NOT NULL,
-          note_ar NVARCHAR(128),
-          note_en NVARCHAR(128),
-          is_approved NUMBER DEFAULT :a,
-          approve_date DATE,
-          create_date DATE DEFAULT SYSDATE,
-          update_date DATE,
-          ${additionalColumns.size > 0
-        ? Array.from(additionalColumns.values())
-          .map(c => c.column_name + ' ' + mapCatTypeToDbType(c.type)).join(',') + ','
-        : ''
-      }
-          history NVARCHAR(1024)
-        )
-      
-      `, [1])
+      CREATE TABLE ${indicator_id} (
+        ${Array.from(columns.values()).map(c => c.name + ' ' + mapColumnTypeToDbType(c.type)).join(',')}
+      )    
+    `)
     .commit();
 
-  return true;
-}
-
-// util
-function mapCatTypeToDbType(type: ColumnType) {
-  return type === ColumnType.NUMBER
-    ? 'NUMBER'
-    : ColumnType.TEXT
-      ? 'VARCHAR2(64)'
-      : 'DATE'
+  return get(indicator_id);
 }

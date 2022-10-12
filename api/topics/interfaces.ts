@@ -15,13 +15,32 @@ export type GetTopicByIdRequest = Request<
   Topic
 >;
 
+export type GetTopicDocumentsRequest = Request<
+  // params
+  { id: string },
+  // response
+  TopicDocument[]
+>;
+
 export type CreateTopicRequest = Request<
   // params
   any,
   // response
   Topic,
   // body
-  Omit<Topic, 'id' | 'create_date' | 'create_by'> & { parent_id?: string; }
+  Omit<
+    Topic, 
+    'id' | 'create_date' | 'create_by' | 'update_date' | 'update_by'
+  > & { parent_id?: string; }
+>;
+
+export type AddTopicDocumentRequest  = Request<
+  // params
+  { id: string },
+  // response
+  { path: string },
+  // body
+  { name_ar: string, name_en: string, document: any }
 >;
 
 export type UpdateTopicRequest = Request<
@@ -46,22 +65,6 @@ export type UpdateTopicCategoriesRequest = Request<
   // body
   { categories: string[]; }
 >; 
-
-export type GetTopicDocumentsRequest = Request<
-  // params
-  { id: string },
-  // response
-  TopicDocument[]
->;
-
-export type AddTopicDocumentRequest  = Request<
-  // params
-  { id: string },
-  // response
-  { path: string },
-  // body
-  { name_ar: string, name_en: string, document: any }
->;
 
 export type deleteTopicDocumentRequest = Request<
   // params

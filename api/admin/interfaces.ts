@@ -60,5 +60,5 @@ export type UpdateUserOrgunitRequest = Request<
   // response
   Date,
   // body
-  { orgunit: string; }
+  { orgunit_id: string; }
 >;

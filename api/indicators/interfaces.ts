@@ -42,8 +42,24 @@ export type CreateIndicatorRequest = Request<
   // response
   Indicator,
   // body
-  Omit<Indicator, 'id' | 'create_date' | 'update_date' | 'is_active'> & { parent_id?: string }
+  Omit<
+    Indicator, 
+    'id' | 'create_date' | 'create_by' | 'update_date' | 'update_by' | 'is_active'
+    > & { parent_id?: string }
 >
+
+export type AddIndicatorDocumentRequest = Request<
+  // params
+  { id: string },
+  // response
+  { path: string },
+  // body
+  {
+    name_ar: string;
+    name_en: string;
+    document: any;
+  }
+>;
 
 export type UpdateIndicatorRequest = Request<
   // params
@@ -93,19 +109,6 @@ export type UpdateIndicatorCategoriesRequest = Request<
   boolean,
   // body
   { categories: string[]; }
->;
-
-export type AddIndicatorDocumentRequest = Request<
-  // params
-  { id: string },
-  // response
-  { path: string },
-  // body
-  {
-    name_ar: string;
-    name_en: string;
-    document: any;
-  }
 >;
 
 export type RemoveIndicatorDocuemntRequest = Request<

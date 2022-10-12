@@ -1,7 +1,7 @@
 {
-  "name": "express-backend",
+  "name": "urban-observatory-backend",
   "version": "1.0.0",
-  "description": "",
+  "description": "Urban observatory system backend api",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

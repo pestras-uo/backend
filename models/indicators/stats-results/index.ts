@@ -8,8 +8,7 @@ export default {
     return (await oracle.op().query<DescStatsResult>(`
     
       SELECT
-        config_id "config_id",
-        group_column "group_column",
+        indicator_id "indicator_id",
         interval_date "interval_date",
         count "count",
         min "min",
@@ -25,7 +24,7 @@ export default {
         mode "mode",
         skew "skew"
       FROM
-        ${TablesNames.DESC_STATS_RESULT}
+        ${TablesNames.IND_STATS_RESULT}
       WHERE
         config_id = :a
     

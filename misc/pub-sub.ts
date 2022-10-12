@@ -25,7 +25,7 @@ export interface PubSubEvent {
   roles?: number[];
   issuer: string;
   orgunit?: string;
-  entity_id?: string;
+  entities_ids?: string[];
 }
 
 export default {

@@ -1,7 +1,6 @@
 export interface DescStatsResult {
-  config_id: string;
+  indicator_id: string;
 
-  group_column?: string;
   interval_date: Date;
 
   count: number;

@@ -10,11 +10,6 @@ export default Router()
     auth("indicator-config.get.one"),
     controller.get
   )
-  .get(
-    '/arguments',
-    auth("indicator-config.get.arguments"),
-    controller.getArguments
-  )
   .post(
     '/manual',
     validate(IndicatorConfigValidators.CREATE_MANUAL),
@@ -28,10 +23,16 @@ export default Router()
     controller.createComputational
   )
   .post(
-    '/view',
-    validate(IndicatorConfigValidators.CREATE_VIEW),
-    auth("indicator-config.create.view"),
-    controller.createView
+    '/external',
+    validate(IndicatorConfigValidators.CREATE_EXTERNAL),
+    auth("indicator-config.create.external"),
+    controller.createExternal
+  )
+  .post(
+    '/split',
+    validate(IndicatorConfigValidators.SPLIT),
+    auth("indicator-config.create.split"),
+    controller.split
   )
   .put(
     '/',
@@ -43,4 +44,9 @@ export default Router()
     '/state/:state',
     auth("indicator-config.update.state"),
     controller.updateState
-  );
+  )
+  .put(
+    '/external',
+    auth("indicator-config.update.external"),
+    controller.updateExternalIndicatorConfig
+  )

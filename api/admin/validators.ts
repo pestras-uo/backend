@@ -58,7 +58,7 @@ new Validall(AdminValidators.UPDATE_USER_GROUPS, {
 });
 
 new Validall(AdminValidators.CHANGE_USER_ORG, {
-  orgunit: { $type: 'string', $required: true, $message: 'organizationIdIsRequired' }
+  orgunit_id: { $type: 'string', $required: true, $message: 'organizationIdIsRequired' }
 });
 
 export default AdminValidators;

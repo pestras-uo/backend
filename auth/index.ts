@@ -7,7 +7,7 @@ import { User } from "../models/auth/user/interface";
 import { Action } from "./roles/actions";
 import { Group } from "../models/auth/groups/interface";
 import { cache } from "../cache";
-import { authorize } from "./roles/manager";
+import { authorize } from "./util";
 
 export interface UserSession {
   groups: Group[],

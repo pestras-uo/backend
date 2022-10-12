@@ -1,10 +1,10 @@
-import { User } from "../../models/auth/user/interface";
-import { RolesMap } from '.';
-import { Action } from "./actions";
-import { Group } from "../../models/auth/groups/interface";
-import serial from "../../util/serial";
+import { User } from "../models/auth/user/interface";
+import { RolesMap } from './roles';
+import { Action } from "./roles/actions";
+import { Group } from "../models/auth/groups/interface";
+import serial from "../util/serial";
 import { Request } from "express";
-import { cache } from "../../cache";
+import { cache } from "../cache";
 
 export function actionsMatch(left: Action, right: Action) {
   const leftParts = left.split(".");

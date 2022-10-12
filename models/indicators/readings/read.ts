@@ -1,9 +1,10 @@
 import oracle, { DBSchemas } from '../../../db/oracle';
 import { HttpError } from '../../../misc/errors';
 import { HttpCode } from '../../../misc/http-codes';
-import { get as getConfig } from '../config/read'
-import { getAdditionalColumns } from '../config/util';
+import { ColumnType, IndicatorType } from '../config/interface';
+import { get as getConfig } from '../config/read';
 import { ManualIndicatorReading } from './interface';
+import { buildWhereClause } from '../util';
 
 export async function get(
   indicator_id: string,
@@ -11,82 +12,67 @@ export async function get(
   limit = 100
 ) {
   const config = await getConfig(indicator_id);
+  let columns = `${config.columns.map(c => `${c.name} "${c.name}"`).join(",")}`;
+  let whereClause = '';
 
-  if (config.view_name)
-    return getViewReadings(indicator_id, offset, limit, config.view_name);
-
-  const additionalColumns = (await getAdditionalColumns(indicator_id))
-    .map(c => `${c.column_name} "${c.column_name}"`).join(',');
+  if (config.filter_options)
+    whereClause = `WHERE ${buildWhereClause(config.filter_options)}`;
 
   return (await oracle.op(DBSchemas.READINGS)
     .query<ManualIndicatorReading>(`
     
       SELECT
-        id "id",
-        reading_value "reading_value",
-        ${!!additionalColumns ? additionalColumns + ',' : ''}
-        note_ar "note_ar",
-        note_en "note_en",
-        is_approved "is_approved",
-        approve_date "approve_date",
-        create_date "create_date",
-        update_date "update_date"
-      FROM ${indicator_id}
-        OFFSET :b ROWS
-        FETCH NEXT :c ROWS ONLY
+        ${columns}
+      FROM 
+        ${config.source_name}
+      ${whereClause}
+      OFFSET :b ROWS
+      FETCH NEXT :c ROWS ONLY
 
     `, [offset, limit])).rows || [];
 }
 
 
-
-export async function getViewReadings(
-  indicator_id: string,
-  offset = 0,
-  limit = 100,
-  view_name = ''
-) {
-  view_name = view_name || (await getConfig(indicator_id)).view_name;
-
-  if (!view_name)
-    throw new HttpError(HttpCode.NOT_FOUND, 'viewNameNotFound', { indicator_id });
-
-  return (await oracle.op(DBSchemas.READINGS)
-    .query<ManualIndicatorReading>(`
-    
-      SELECT *
-      FROM ${view_name}
-      OFFSET :a ROWS
-      FETCH NEXT :b ROWS ONLY
-
-    `, [offset, limit])).rows || [];
-}
-
-
-export async function getById(
-  indicator_id: string,
-  id: string
-) {
+export async function getById(indicator_id: string, id: string) {
   const config = await getConfig(indicator_id);
-  const readingTableName = config.view_name || indicator_id;
-  const additionalColumns = (await getAdditionalColumns(indicator_id))
-    .map(c => `${c.column_name} "${c.column_name}"`).join(',');
+
+  if (!config)
+    throw new HttpError(HttpCode.NOT_FOUND, 'indicaotrConfigNotFound');
+
+  if (config.type !== IndicatorType.MANUAL)
+    return null;
+
+  const columns = `${config.columns.map(c => `${c.name} "${c.name}"`).join(",")}`;
+  const idColumn = config.columns.find(c => c.type === ColumnType.ID);
 
   return (await oracle.op(DBSchemas.READINGS)
     .query<ManualIndicatorReading>(`
     
       SELECT
-        id "id",
-        reading_value "reading_value",
-        ${!!additionalColumns ? additionalColumns + ',' : ''}
-        note_ar "note_ar",
-        note_en "note_en",
-        is_approved "is_approved",
-        approve_date "approve_date",
-        create_date "create_date",
-        update_date "update_date"
-      FROM ${readingTableName}
-      WHERE id = :a
+        ${columns}
+      FROM
+        ${config.source_name}
+      WHERE ${idColumn.name} = :a
 
     `, [id])).rows[0] || null;
+}
+
+export async function getHistory(indicator_id: string, id: string) {
+  const config = await getConfig(indicator_id);
+
+  if (!config)
+    throw new HttpError(HttpCode.NOT_FOUND, 'indicaotrConfigNotFound');
+
+  if (config.type !== IndicatorType.MANUAL)
+    return [];
+
+  const historyStr = ((await oracle.op(DBSchemas.READINGS).query<{ history: string }>(`
+  
+    SELECT history "history"
+    FROM ${config.source_name}
+    WHERE id = :id
+  
+  `, [id])).rows[0] || null)?.history || '[]';
+
+  return JSON.parse(historyStr);
 }
